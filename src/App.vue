@@ -192,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     </section>
 
+
     <!-- Modal for gallery -->
     <div class="modal fade" id="modalImage" tabindex="-1" aria-hidden="true" data-bs-keyboard="true">
       <div class="modal-dialog modal-xl modal-dialog-centered">
