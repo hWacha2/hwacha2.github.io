@@ -1,0 +1,105 @@
+/* Кнопка Nexus Mods */
+.btn-nexus {
+    position: relative;
+    background: linear-gradient(90deg, rgba(20,20,22,0.98) 0%, rgba(30,30,35,0.98) 50%, rgba(20,20,22,0.98) 100%);
+    color: #fff;
+    overflow: hidden;
+    isolation: isolate;
+    z-index: 1;
+    border: 2px solid rgba(230,131,43,0.2);
+}
+
+/* Оранжевый акцент слева */
+.btn-nexus::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 15%;
+    background: linear-gradient(180deg,
+        rgba(230,131,43,0.95) 0%,
+        rgba(230,131,43,0.6) 40%,
+        rgba(230,131,43,0.2) 70%,
+        rgba(230,131,43,0.0) 100%);
+    filter: blur(15px);
+    transform: translateX(-10%);
+    mix-blend-mode: screen;
+    z-index: -1;
+    transition: all 0.3s ease;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* Оранжевый акцент справа (более мягкий) */
+.btn-nexus::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 15%;
+    background: linear-gradient(180deg,
+        rgba(230,131,43,0.8) 0%,
+        rgba(230,131,43,0.5) 40%,
+        rgba(230,131,43,0.15) 70%,
+        rgba(230,131,43,0.0) 100%);
+    filter: blur(15px);
+    transform: translateX(10%);
+    mix-blend-mode: screen;
+    z-index: -1;
+    transition: all 0.3s ease;
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+/* Эффект свечения при наведении */
+.btn-nexus:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(230,131,43,0.25);
+    border-color: rgba(230,131,43,0.4);
+}
+
+.btn-nexus:hover::before {
+    transform: translateX(5%);
+    filter: blur(16px);
+    width: 20%;
+}
+
+.btn-nexus:hover::after {
+    transform: translateX(-5%);
+    filter: blur(16px);
+    width: 20%;
+}
+
+/* Контент поверх акцентов */
+.btn-nexus > svg,
+.btn-nexus > .label {
+    position: relative;
+    z-index: 2;
+}
+
+/* Специально для иконки Nexus (она сложная) */
+.btn-nexus svg {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Оранжевые части в иконке Nexus (у них свой цвет) */
+.btn-nexus svg [style*="fill:#faa431"],
+.btn-nexus svg [style*="fill:#e6832b"] {
+    filter: brightness(1.1) drop-shadow(0 0 4px rgba(230,131,43,0.5));
+}
+
+/* Анимация для иконки */
+.btn-nexus:hover svg {
+    animation: nexusPulse 1.5s ease infinite;
+}
+
+@keyframes nexusPulse {
+    0%, 100% {
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+    50% {
+        filter: drop-shadow(0 4px 8px rgba(230,131,43,0.5));
+    }
+}

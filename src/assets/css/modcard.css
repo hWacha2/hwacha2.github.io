@@ -1,0 +1,28 @@
+.mod-tile {
+  background: linear-gradient(180deg, #1d1d21, #1d1d21);
+
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: transform .15s ease, box-shadow .2s ease;
+}
+
+.mod-tile:hover {
+
+  box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+}
+
+.mod-thumb {
+  height: 100%;
+  overflow: hidden;
+}
+
+.mod-thumb img {
+  transition: transform .25s ease;
+}
+
+.mod-thumb:hover img {
+  transform: scale(1.05);
+}
+
+.mod-footer {
+  opacity: .85;
+}

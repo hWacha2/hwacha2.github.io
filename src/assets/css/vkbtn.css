@@ -1,0 +1,27 @@
+.btn-vk-depth {
+    position: relative;
+    background: linear-gradient(145deg, #0066DD, #0088FF);
+    color: #fff;
+    overflow: hidden;
+    isolation: isolate;
+    z-index: 1;
+}
+
+/* Эффект глубины */
+.btn-vk-depth::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    background: linear-gradient(145deg, #0088FF, #0066DD);
+    border-radius: inherit;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+}
+
+.btn-vk-depth:hover::before {
+    opacity: 0.4;
+}

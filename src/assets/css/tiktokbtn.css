@@ -1,0 +1,71 @@
+/* Родительская кнопка */
+.btn-tiktok {
+    position: relative;  /* ВАЖНО: чтобы псевдоэлементы позиционировались относительно кнопки */
+    background: linear-gradient(90deg, rgba(0,0,0,0.98) 0%, rgba(20,20,20,0.98) 50%, rgba(0,0,0,0.98) 100%);
+    color: #fff;
+    overflow: hidden;    /* Чтобы акценты не вылезали за границы */
+    isolation: isolate;   /* Создает новый контекст наложения */
+    z-index: 1;
+
+}
+
+/* Базовые стили для псевдоэлементов */
+.btn-tiktok::before,
+.btn-tiktok::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 12%;
+    z-index: -1;         /* Отправляем под содержимое */
+    border-radius: inherit;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+/* Левый акцент (розовый) */
+.btn-tiktok::before {
+    left: 0;
+    background: linear-gradient(180deg,
+        rgba(238,29,82,0.95) 0%,
+        rgba(238,29,82,0.6) 45%,
+        rgba(238,29,82,0.15) 75%,
+        rgba(238,29,82,0.0) 100%);
+    filter: blur(10px);
+    mix-blend-mode: screen;
+}
+
+/* Правый акцент (бирюзовый) */
+.btn-tiktok::after {
+    right: 0;
+    background: linear-gradient(180deg,
+        rgba(105,201,208,0.95) 0%,
+        rgba(105,201,208,0.6) 45%,
+        rgba(105,201,208,0.15) 75%,
+        rgba(105,201,208,0.0) 100%);
+    filter: blur(10px);
+    mix-blend-mode: screen;
+}
+
+/* Контент поверх акцентов */
+.btn-tiktok > svg,
+.btn-tiktok > .label {
+    position: relative;
+    z-index: 1;           /* Выше псевдоэлементов */
+}
+
+/* Hover эффекты */
+.btn-tiktok:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(2,6,23,0.65);
+}
+
+.btn-tiktok:hover::before {
+    transform: translateX(6%);
+    filter: blur(12px);
+}
+
+.btn-tiktok:hover::after {
+    transform: translateX(-6%);
+    filter: blur(12px);
+}
