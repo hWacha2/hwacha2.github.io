@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <Star class="star-background" />
   </div>
 
+
   <!-- Language Switcher -->
   <button class="lang-switcher" @click="toggleLang" :title="currentLang === 'en' ? 'Switch to Russian' : 'Переключить на English'">
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
