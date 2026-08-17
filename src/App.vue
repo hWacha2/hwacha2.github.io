@@ -680,6 +680,7 @@ footer {
   overflow: hidden;
 }
 
+
 .hero-cover-bg {
   position: absolute;
   top: 0;
