@@ -1,5 +1,5 @@
 <script setup>
-import {ref, onMounted, reactive} from "vue";
+import {ref, onMounted, reactive, provide} from "vue";
 import ModTile from './components/ModTile.vue';
 import Star from './components/StarCanvas.vue';
 import TelegramSlider from './components/TelegramSlider.vue';
@@ -14,6 +14,8 @@ const translations = reactive({
     socialTitle: "All social media:",
     supportSubtitle: "Support me:",
     lastWorks: "Latest posts on Telegram",
+    postTg:"Post in Telegram",
+    toPost:"Go to post →",
     openChannel: "Open channel →",
     clickHint: "click on the image to view",
     modsTitle: "Mods and projects",
@@ -33,6 +35,8 @@ const translations = reactive({
     socialTitle: "Все соц. сети:",
     supportSubtitle: "Поддержать меня:",
     lastWorks: "Последние посты в Telegram",
+    postTg:"Пост в Telegram",
+    toPost:"Перейти к посту →",
     openChannel: "Oткрыть канал →",
     clickHint: "тыкни на изображение для просмотра",
     modsTitle: "Моды и проекты",
@@ -88,6 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
     img.loading = 'lazy';
   });
 });
+
+provide('t', t);
+provide('currentLang', currentLang);
 </script>
 
 <template>
@@ -427,48 +434,6 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Modal for gallery */
-.modal-content {
-  background: rgba(10, 10, 15, 0.6) !important;
-  border: none !important;
-  width: auto !important;
-  margin: 0 auto;
-  display: inline-block !important;
-}
-
-.modal-body {
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-body img {
-  max-width: 95vw !important;
-  max-height: 85vh !important;
-  width: auto !important;
-  height: auto !important;
-  object-fit: contain;
-  border-radius: 16px;
-  margin: 0 auto;
-}
-
-.modal-dialog {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  margin: 1rem;
-  max-width: none !important;
-  width: auto !important;
-}
-
-@media (max-width: 576px) {
-  .modal-body img {
-    max-width: 98vw !important;
-    max-height: 80vh !important;
-  }
-}
 
 .social-row {
   display: flex;

@@ -98,8 +98,8 @@
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content card-glass "
              style="background: rgba(30, 30, 40, 0.95); border: 1px solid rgba(255,255,255,0.1);">
-          <div class="modal-header border-0">
-            <h5 class="modal-title text-white">Пост в Telegram</h5>
+          <div class="modal-header p-0 mb-3 border-0">
+            <h5 class="modal-title text-white">{{t("postTg")}}</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Закрыть"></button>
           </div>
@@ -118,23 +118,22 @@
             </div>
 
             <!-- Полный текст с сохранением форматирования -->
-            <div class="tg-modal-text text-white mb-3">
+            <div class="tg-modal-text text-white mb-2">
               {{ selectedPost.fullText }}
             </div>
 
-            <small class="text-secondary d-block mb-3">{{ selectedPost.date }}</small>
+            <small class="text-secondary d-block">{{ selectedPost.date }}</small>
           </div>
 
-          <div class="modal-footer border-0">
-            <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Закрыть</button>
+          <div class="modal-footer border-0 mt-0">
             <a
                 v-if="selectedPost"
                 :href="selectedPost.link"
                 target="_blank"
                 rel="noopener"
-                class="btn btn-primary btn-sm"
+                class="social-btn btn-to-tg"
             >
-              Перейти к посту →
+              {{t("toPost")}}
             </a>
           </div>
         </div>
@@ -144,8 +143,8 @@
 </template>
 
 <script setup>
-import {ref, onMounted} from 'vue';
-
+import {ref, onMounted, inject} from 'vue';
+const t = inject('t');
 const posts = ref([]);
 const loading = ref(true);
 const error = ref(false);
@@ -414,6 +413,47 @@ onMounted(async () => {
   background: linear-gradient(210deg, rgba(10,15,20,0.95), rgba(30,30,35,0.90)) !important;
   border: 1px solid rgba(255,255,255,0.1) !important;
   border-radius: 12px !important;
+}
+.btn-to-tg
+{
+    background: linear-gradient(90deg, #101010, #0b0c0f);
+}
+
+
+/* Modal for gallery */
+.modal-content {
+  background: rgba(10, 10, 15, 0.6) !important;
+  border: none !important;
+  width: auto !important;
+  margin: 0 auto;
+  display: inline-block !important;
+}
+
+.modal-body {
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-body img {
+  max-width: 90vw !important;
+  max-height: 80vh !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+  border-radius: 16px;
+  margin: 0 auto;
+}
+
+.modal-dialog {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  margin: 1rem;
+
+  width: auto !important;
 }
 
 </style>
