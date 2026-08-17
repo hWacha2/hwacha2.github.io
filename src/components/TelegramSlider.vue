@@ -439,7 +439,7 @@ onMounted(async () => {
 
 .modal-body img {
   max-width: 90vw !important;
-  max-height: 80vh !important;
+  max-height: 70vh !important;
   width: auto !important;
   height: auto !important;
   object-fit: contain;
