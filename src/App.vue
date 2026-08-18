@@ -8,14 +8,15 @@ import TelegramSlider from './components/TelegramSlider.vue';
 const currentLang = ref('en');
 const supportedLangs = ['en', 'ru'];
 
+
 const translations = reactive({
   en: {
     subtitle: "Artist meme maker, and a bit of a programmer...",
     socialTitle: "All social media:",
     supportSubtitle: "Support me:",
     lastWorks: "Latest posts on Telegram",
-    postTg:"Post in Telegram",
-    toPost:"Go to post →",
+    postTg: "Post in Telegram",
+    toPost: "Go to post →",
     openChannel: "Open channel →",
     clickHint: "click on the image to view",
     modsTitle: "Mods and projects",
@@ -35,8 +36,8 @@ const translations = reactive({
     socialTitle: "Все соц. сети:",
     supportSubtitle: "Поддержать меня:",
     lastWorks: "Последние посты в Telegram",
-    postTg:"Пост в Telegram",
-    toPost:"Перейти к посту →",
+    postTg: "Пост в Telegram",
+    toPost: "Перейти к посту →",
     openChannel: "Oткрыть канал →",
     clickHint: "тыкни на изображение для просмотра",
     modsTitle: "Моды и проекты",
@@ -67,6 +68,11 @@ function detectLanguage() {
   return 'en';
 }
 
+const avatarLoaded = ref(false);
+const avatarImg = ref(null);
+
+const coverLoaded = ref(false);
+
 function toggleLang() {
   const idx = supportedLangs.indexOf(currentLang.value);
   currentLang.value = supportedLangs[(idx + 1) % supportedLangs.length];
@@ -84,6 +90,18 @@ onMounted(() => {
       document.getElementById('modalTitle').textContent = title;
     });
   });
+
+  if (avatarImg.value?.complete && avatarImg.value?.naturalWidth > 0) {
+    avatarLoaded.value = true;
+  }
+  const img = new Image();
+  img.src = '/cover.png';
+  img.onload = () => (coverLoaded.value = true);
+  img.onerror = () => (coverLoaded.value = true); // не оставляем скелетон навечно
+  // если картинка уже в кэше
+  if (img.complete && img.naturalWidth > 0) {
+    coverLoaded.value = true;
+  }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -115,10 +133,23 @@ provide('currentLang', currentLang);
 
   <main class="container contglass mt-4 p-4">
     <section class="hero-cover-layout">
-      <div class="hero-cover-bg"></div>
+      <!-- Скелетон, пока фон грузится -->
+      <div v-if="!coverLoaded" class="hero-cover-skeleton"></div>
+      <!-- Сам фон -->
+      <div class="hero-cover-bg" :class="{ 'is-loaded': coverLoaded }"></div>
+
       <div class="hero-content-overlay">
         <div class="mt-2 mb-2">
-          <img src="/ava.png" alt="avatar" class="avatar"/>
+          <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded }">
+            <img
+                ref="avatarImg"
+                src="/ava.png"
+                alt="avatar"
+                class="avatar"
+                @load="avatarLoaded = true"
+                @error="avatarLoaded = true"
+            />
+          </div>
         </div>
         <h1 class="h3 mb-2">ishwacha</h1>
         <p class="fw-weight-bold mb-2">{{ t('subtitle') }}</p>
@@ -291,25 +322,22 @@ provide('currentLang', currentLang);
   </main>
 
 
-
   <main class="container contglass mt-3 p-4">
     <!-- GALLERY -->
     <section id="gallery">
       <div class="d-flex justify-content-between align-items-center">
-      <h2 class="h5 mb-0">{{t("lastWorks")}}</h2>
-      <a
-          href="https://t.me/ishwacha"
-          target="_blank"
-          rel="noopener"
-          class="text-secondary small text-decoration-none"
-      >
-        {{t("openChannel")}}
-      </a>
-    </div>
-    <TelegramSlider/>
+        <h2 class="h5 mb-0">{{ t("lastWorks") }}</h2>
+        <a
+            href="https://t.me/ishwacha"
+            target="_blank"
+            rel="noopener"
+            class="text-secondary small text-decoration-none"
+        >
+          {{ t("openChannel") }}
+        </a>
+      </div>
+      <TelegramSlider/>
     </section>
-
-
 
 
     <hr class="border-1 border-secondary my-5"/>
@@ -493,6 +521,42 @@ body {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
 }
 
+/* ═══ Аватар со скелетоном ═══ */
+.avatar-holder {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  border-radius: 50%; /* такое же скругление, как у .avatar */
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Картинка невидима до загрузки, но занимает место — нет скачка вёрстки */
+.avatar-holder .avatar {
+  opacity: 0;
+  transition: opacity .4s ease;
+  display: block;
+}
+
+.avatar-holder.is-loaded .avatar {
+  opacity: 1;
+}
+
+/* Шиммер, пока картинка не загрузилась */
+.avatar-holder:not(.is-loaded)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: avatar-shimmer 1.5s infinite;
+}
+
+@keyframes avatar-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 footer {
   padding: 2rem 1rem;
   text-align: center;
@@ -545,12 +609,13 @@ footer {
     padding: 0.5rem 0.6rem;
     font-size: 1rem;
   }
+
 =
 
-  .card-glass {
-    font-size: 0.8rem;
-    padding: 0.75rem;
-  }
+.card-glass {
+  font-size: 0.8rem;
+  padding: 0.75rem;
+}
 
   .mod-card {
     padding: 0.75rem;
@@ -640,6 +705,40 @@ footer {
 }
 
 
+
+/* ═══ Скелетон фона ═══ */
+.hero-cover-skeleton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  z-index: -50;
+  /* та же маска, чтобы шиммер таял к низу как фон */
+  mask-image: linear-gradient(to bottom,
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 60%,
+    rgba(0, 0, 0, 0) 90%,
+    rgba(0, 0, 0, 0) 100%);
+}
+
+.hero-cover-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: cover-shimmer 1.6s infinite;
+}
+
+@keyframes cover-shimmer {
+  100% { transform: translateX(100%); }
+}
+
+/* ═══ Фон: плавное проявление ═══ */
 .hero-cover-bg {
   position: absolute;
   top: 0;
@@ -651,11 +750,18 @@ footer {
   background-position: center;
   border-radius: inherit;
   mask-image: linear-gradient(to bottom,
-  rgba(0, 0, 0, 1) 0%,
-  rgba(0, 0, 0, 1) 60%,
-  rgba(0, 0, 0, 0) 90%,
-  rgba(0, 0, 0, 0) 100%);
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 1) 60%,
+    rgba(0, 0, 0, 0) 90%,
+    rgba(0, 0, 0, 0) 100%);
   z-index: -50;
+  /* новое: */
+  opacity: 0;
+  transition: opacity .6s ease;
+}
+
+.hero-cover-bg.is-loaded {
+  opacity: 1;
 }
 
 .hero-content-overlay {
