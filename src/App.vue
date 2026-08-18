@@ -11,6 +11,7 @@ const supportedLangs = ['en', 'ru'];
 
 const translations = reactive({
   en: {
+    autoTranslated: "Auto-translated" ,
     subtitle: "Artist meme maker, and a bit of a programmer...",
     socialTitle: "All social media:",
     supportSubtitle: "Support me:",
@@ -32,6 +33,7 @@ const translations = reactive({
     art4: "Shakra is a soft pillow"
   },
   ru: {
+    autoTranslated: "Переведено автоматически",
     subtitle: "Художник мемодел, и немного программист...",
     socialTitle: "Все соц. сети:",
     supportSubtitle: "Поддержать меня:",
@@ -52,6 +54,7 @@ const translations = reactive({
     art3: "микуууу",
     art4: "Шакра мягкая подушка"
   }
+
 });
 
 const t = (key) => translations[currentLang.value]?.[key] || translations['en'][key] || key;

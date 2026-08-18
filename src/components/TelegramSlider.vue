@@ -107,6 +107,7 @@
         tabindex="-1"
         aria-hidden="true"
     >
+
       <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content card-glass "
              style="background: rgba(30, 30, 40, 0.95); border: 1px solid rgba(255,255,255,0.1);">
@@ -159,9 +160,12 @@
 </template>
 
 <script setup>
-import {ref, onMounted, inject} from 'vue';
+import {ref, onMounted, inject, watch} from 'vue';
 
 const t = inject('t');
+const currentLang = inject('currentLang', ref('en')); // язык из App.vue
+
+
 const posts = ref([]);
 const loading = ref(true);
 const error = ref(false);
@@ -251,7 +255,9 @@ async function fetchTelegram() {
     parsed.push({
       title: fullText.substring(0, 60) + (fullText.length > 60 ? '...' : ''),
       fullText,
+      originalText: fullText,        // ← сразу сохраняем оригинал
       quotedText,
+      originalQuoted: quotedText,    // ← и оригинал цитаты
       link,
       images,
       date: formatDate(isoDate),
@@ -263,6 +269,93 @@ async function fetchTelegram() {
       .sort((a, b) => b.timestamp - a.timestamp)
       .slice(0, POSTS_LIMIT);
 }
+
+
+function hashStr(s) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i) | 0;
+  return h.toString(36);
+}
+
+async function fetchJsonVia(url) {
+  // Сначала через ваш воркер, потом напрямую
+  const attempts = [`${PROXY_BASE}${encodeURIComponent(url)}`, url];
+  for (const u of attempts) {
+    try {
+      const r = await fetch(u);
+      if (r.ok) return await r.json();
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
+async function translateText(text, tl) {
+  if (!text || text.length > 4000) return text;
+
+  // Кэш в localStorage — пост переводится один раз
+  const key = `tgtr_${tl}_${hashStr(text)}`;
+  try {
+    const cached = localStorage.getItem(key);
+    if (cached) return cached;
+  } catch {
+  }
+
+  let result = null;
+
+  // 1) Google (бесплатно, без ключа)
+  const gUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+  const gData = await fetchJsonVia(gUrl);
+  if (gData && Array.isArray(gData[0])) {
+    result = gData[0].map(s => s[0]).join('');
+  }
+
+  // 2) Фолбэк MyMemory
+  if (!result) {
+    const mUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ru|${tl}`;
+    const mData = await fetchJsonVia(mUrl);
+    const tr = mData?.responseData?.translatedText;
+    if (tr && !/MYMEMORY WARNING/i.test(tr)) result = tr;
+  }
+
+  if (result && result !== text) {
+    try {
+      localStorage.setItem(key, result);
+    } catch {
+    }
+    return result;
+  }
+  return text;
+}
+
+async function applyTranslations() {
+  const lang = currentLang.value;
+
+  for (const post of posts.value) {
+    // Страховка: если оригинала нет — считаем оригиналом текущий текст
+    if (!post.originalText) post.originalText = post.fullText || '';
+
+    if (lang === 'ru') {
+      post.fullText = post.originalText;
+      post.quotedText = post.originalQuoted || '';
+      post.translated = false;
+    } else {
+      post.fullText = await translateText(post.originalText, lang);
+      if (post.originalQuoted) {
+        post.quotedText = await translateText(post.originalQuoted, lang);
+      }
+      post.translated = post.fullText !== post.originalText;
+    }
+
+    // Безопасное обновление заголовка
+    const text = post.fullText || '';
+    post.title = text.substring(0, 60) + (text.length > 60 ? '...' : '');
+  }
+}
+
+// При переключении языка — переводим/возвращаем оригинал
+watch(currentLang, () => applyTranslations());
 
 function formatDate(iso) {
   if (!iso) return '';
@@ -546,6 +639,7 @@ onMounted(async () => {
   height: 12px;
   flex-shrink: 0;
 }
+
 /* ═══ Цитата в модалке ═══ */
 .tg-quote {
   border-left: 3px solid #229ED9;
