@@ -371,6 +371,16 @@ function formatDate(iso) {
 onMounted(async () => {
   try {
     posts.value = await fetchTelegram();
+
+    // Сохраняем оригиналы
+    posts.value.forEach(p => {
+      p.originalText = p.fullText;
+      p.originalQuoted = p.quotedText || '';
+    });
+
+    // 👇 Переводим сразу при загрузке, если язык не RU
+    await applyTranslations();
+
     if (posts.value.length === 0) error.value = true;
   } catch (e) {
     console.error('Telegram fetch error:', e);
