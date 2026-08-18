@@ -2,7 +2,18 @@
   <section id="telegram-gallery">
 
 
-    <div v-if="loading" class="text-secondary text-center py-4">Загрузка постов...</div>
+    <div v-if="loading" class="tg-slider d-flex overflow-x-auto gap-3 pb-3 pt-3">
+      <div
+          v-for="n in 4"
+          :key="n"
+          class="tg-card card-glass p-2 flex-shrink-0"
+          style="width: 320px;"
+      >
+        <div class="skeleton skeleton-img"></div>
+        <div class="skeleton skeleton-line mt-2" style="width: 80%;"></div>
+        <div class="skeleton skeleton-line mt-2" style="width: 45%;"></div>
+      </div>
+    </div>
     <div v-else-if="error" class="text-center py-4">
       <p class="text-secondary mb-2">Не удалось загрузить посты автоматически</p>
       <a href="https://t.me/ishwacha" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
@@ -29,14 +40,14 @@
       >
         <div v-if="post.images.length > 0" class="tg-image-wrap position-relative">
           <!-- Размытый тёмный фон (только внутри этого div) -->
-          <img :src="post.images[0]" class="gallery-img-blur" aria-hidden="true" />
+          <img :src="post.images[0]" class="gallery-img-blur" aria-hidden="true"/>
           <!-- Чёткая картинка поверх -->
           <img
-            :src="post.images[0]"
-            :alt="post.title"
-            class="gallery-img"
-            loading="lazy"
-            @error="$event.target.style.display = 'none'"
+              :src="post.images[0]"
+              :alt="post.title"
+              class="gallery-img"
+              loading="lazy"
+              @error="$event.target.style.display = 'none'"
           />
           <!-- Бейдж "+N" для альбомов -->
           <div v-if="post.images.length > 1" class="tg-multi-badge">
@@ -52,7 +63,8 @@
         <div v-else class="tg-card-noimage">
           <div class="tg-noimage-icon mb-2">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" opacity="0.6">
-              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+              <path
+                  d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
             </svg>
           </div>
           <div class="tg-noimage-text">{{ post.fullText }}</div>
@@ -99,7 +111,7 @@
         <div class="modal-content card-glass "
              style="background: rgba(30, 30, 40, 0.95); border: 1px solid rgba(255,255,255,0.1);">
           <div class="modal-header p-0 mb-3 border-0">
-            <h5 class="modal-title text-white">{{t("postTg")}}</h5>
+            <h5 class="modal-title text-white">{{ t("postTg") }}</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Закрыть"></button>
           </div>
@@ -115,6 +127,10 @@
                   style="max-height: 350px; object-fit: cover;"
                   @error="$event.target.style.display = 'none'"
               />
+            </div>
+            <!-- Цитата, если пост — ответ -->
+            <div v-if="selectedPost.quotedText" class="tg-quote mb-3">
+              {{ selectedPost.quotedText }}
             </div>
 
             <!-- Полный текст с сохранением форматирования -->
@@ -133,7 +149,7 @@
                 rel="noopener"
                 class="social-btn btn-to-tg"
             >
-              {{t("toPost")}}
+              {{ t("toPost") }}
             </a>
           </div>
         </div>
@@ -144,6 +160,7 @@
 
 <script setup>
 import {ref, onMounted, inject} from 'vue';
+
 const t = inject('t');
 const posts = ref([]);
 const loading = ref(true);
@@ -184,20 +201,35 @@ async function fetchTelegram() {
     const msg = wrap.querySelector('.tgme_widget_message');
     if (!msg) return;
 
-    const textEl = msg.querySelector('.tgme_widget_message_text');
+    // ── Пропускаем сервисные сообщения: у них нет счётчика просмотров ──
+    if (!msg.querySelector('.tgme_widget_message_views')) return;
+    // страховка по классу
+    if ((msg.getAttribute('class') || '').includes('service') || msg.querySelector('[class*="service"]')) return;
+
+    // ── Текст: берём ПОСЛЕДНИЙ .tgme_widget_message_text, не лежащий внутри цитаты ──
+    // (цитата ответа тоже имеет этот класс и идёт первой в DOM)
+    const allTexts = Array.from(msg.querySelectorAll('.tgme_widget_message_text'));
+    const textEl = allTexts.filter(el => !el.closest('[class*="reply"]')).pop() || allTexts.pop();
     if (!textEl) return;
 
-    // Сохраняем innerText с переносами строк
-    const fullText = textEl.innerText?.trim() || '';
+    const fullText = (textEl.textContent || '').trim();
     if (!fullText) return;
+
+    // ── Цитата (если пост — ответ на другой) ──
+    let quotedText = '';
+    const replyWrap = msg.querySelector('[class*="reply"]');
+    if (replyWrap) {
+      const name = replyWrap.querySelector('[class*="name"]')?.textContent?.trim() || '';
+      const quote = replyWrap.querySelector('[class*="text"]')?.textContent?.trim() || '';
+      quotedText = [name, quote].filter(Boolean).join('\n');
+    }
 
     const linkEl = msg.querySelector('a.tgme_widget_message_date');
     const link = linkEl?.href || `https://t.me/${CHANNEL}`;
 
     // Все картинки
     const images = [];
-    const photoWraps = msg.querySelectorAll('.tgme_widget_message_photo_wrap');
-    photoWraps.forEach(pw => {
+    msg.querySelectorAll('.tgme_widget_message_photo_wrap').forEach(pw => {
       const style = pw.getAttribute('style') || '';
       const match = style.match(/url\(['"]?([^'")]+)['"]?\)/);
       if (match) images.push(match[1]);
@@ -219,6 +251,7 @@ async function fetchTelegram() {
     parsed.push({
       title: fullText.substring(0, 60) + (fullText.length > 60 ? '...' : ''),
       fullText,
+      quotedText,
       link,
       images,
       date: formatDate(isoDate),
@@ -258,17 +291,30 @@ onMounted(async () => {
 <style>
 /* ═══ База ═══ */
 .card-glass {
-  background: linear-gradient(210deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-  border: 1px solid rgba(255,255,255,0.04);
+  background: linear-gradient(210deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 1rem;
 }
 
 /* ═══ Слайдер ═══ */
-.tg-slider { height: 430px; }
-.tg-slider::-webkit-scrollbar { height: 6px; }
-.tg-slider::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 3px; }
-.tg-slider::-webkit-scrollbar-thumb { background: rgba(34,158,217,0.35); border-radius: 3px; }
+.tg-slider {
+  height: 430px;
+}
+
+.tg-slider::-webkit-scrollbar {
+  height: 6px;
+}
+
+.tg-slider::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 3px;
+}
+
+.tg-slider::-webkit-scrollbar-thumb {
+  background: rgba(34, 158, 217, 0.35);
+  border-radius: 3px;
+}
 
 /* ═══ Карточка ═══ */
 .tg-card {
@@ -319,22 +365,28 @@ onMounted(async () => {
   min-height: 0;
   border-radius: 8px;
   padding: 1.2rem;
-  background: linear-gradient(135deg, rgba(34,158,217,0.12), rgba(34,158,217,0.04));
-  border: 1px dashed rgba(34,158,217,0.25);
+  background: linear-gradient(135deg, rgba(34, 158, 217, 0.12), rgba(34, 158, 217, 0.04));
+  border: 1px dashed rgba(34, 158, 217, 0.25);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transition: all .18s ease;
 }
+
 .tg-card:hover .tg-card-noimage {
-  background: linear-gradient(135deg, rgba(34,158,217,0.18), rgba(34,158,217,0.08));
-  border-color: rgba(34,158,217,0.4);
+  background: linear-gradient(135deg, rgba(34, 158, 217, 0.18), rgba(34, 158, 217, 0.08));
+  border-color: rgba(34, 158, 217, 0.4);
 }
-.tg-noimage-icon { color: #229ED9; flex-shrink: 0; }
+
+.tg-noimage-icon {
+  color: #229ED9;
+  flex-shrink: 0;
+}
+
 .tg-noimage-text {
   font-size: 0.85rem;
   line-height: 1.6;
-  color: rgba(255,255,255,0.85);
+  color: rgba(255, 255, 255, 0.85);
   white-space: pre-wrap;
   word-break: break-word;
   overflow: hidden;
@@ -345,7 +397,10 @@ onMounted(async () => {
 }
 
 /* ═══ Подпись (вне blur-зоны) ═══ */
-.tg-card-footer { flex-shrink: 0; }
+.tg-card-footer {
+  flex-shrink: 0;
+}
+
 .tg-card-title {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -355,8 +410,9 @@ onMounted(async () => {
 /* ═══ Бейджи ═══ */
 .tg-multi-badge {
   position: absolute;
-  top: 10px; right: 10px;
-  background: rgba(0,0,0,0.7);
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
   backdrop-filter: blur(4px);
   color: #fff;
   font-size: 0.75rem;
@@ -368,10 +424,11 @@ onMounted(async () => {
   gap: 4px;
   z-index: 2;
 }
+
 .tg-mini-badge {
   font-size: 0.7rem;
   color: #229ED9;
-  background: rgba(34,158,217,0.12);
+  background: rgba(34, 158, 217, 0.12);
   padding: 2px 8px;
   border-radius: 10px;
 }
@@ -408,15 +465,16 @@ onMounted(async () => {
   background: rgba(34, 158, 217, 0.35);
   border-radius: 3px;
 }
+
 .modal-content.card-glass {
 
-  background: linear-gradient(210deg, rgba(10,15,20,0.95), rgba(30,30,35,0.90)) !important;
-  border: 1px solid rgba(255,255,255,0.1) !important;
+  background: linear-gradient(210deg, rgba(10, 15, 20, 0.95), rgba(30, 30, 35, 0.90)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 12px !important;
 }
-.btn-to-tg
-{
-    background: linear-gradient(90deg, #101010, #0b0c0f);
+
+.btn-to-tg {
+  background: linear-gradient(90deg, #101010, #0b0c0f);
 }
 
 
@@ -456,4 +514,49 @@ onMounted(async () => {
   width: auto !important;
 }
 
+/* ═══ Скелетоны загрузки ═══ */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+  animation: tg-shimmer 1.5s infinite;
+}
+
+@keyframes tg-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.skeleton-img {
+  flex: 1;
+  min-height: 0;
+}
+
+.skeleton-line {
+  height: 12px;
+  flex-shrink: 0;
+}
+/* ═══ Цитата в модалке ═══ */
+.tg-quote {
+  border-left: 3px solid #229ED9;
+  background: rgba(34, 158, 217, 0.08);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.6);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 120px;
+  overflow: hidden;
+}
 </style>
