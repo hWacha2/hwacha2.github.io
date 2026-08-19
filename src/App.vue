@@ -424,7 +424,7 @@ body {
 .lang-switcher {
   position: fixed;
   top: 1rem;
-  right: 1rem;
+  left: 1rem;
   z-index: 9999;
   display: inline-flex;
   align-items: center;
@@ -570,7 +570,7 @@ footer {
 @media (max-width: 576px) {
   .lang-switcher {
     top: 0.5rem;
-    right: 0.5rem;
+    left: 0.5rem;
     padding: 0.35rem 0.6rem;
     font-size: 0.75rem;
   }
