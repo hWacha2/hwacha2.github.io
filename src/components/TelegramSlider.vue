@@ -621,6 +621,14 @@ onMounted(() => loadPosts());
 }
 
 /* Скроллбар слайдера */
+
+/* Firefox */
+.tg-slider {
+  scrollbar-color: rgba(34, 158, 217, 0.35) rgba(255, 255, 255, 0.03);
+  scrollbar-width: thin;
+}
+
+/* Chrome / Safari / Edge */
 .tg-slider::-webkit-scrollbar {
   height: 6px;
 }
@@ -633,6 +641,10 @@ onMounted(() => loadPosts());
 .tg-slider::-webkit-scrollbar-thumb {
   background: rgba(34, 158, 217, 0.35);
   border-radius: 3px;
+}
+
+.tg-slider::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 158, 217, 0.55);
 }
 
 .modal-content.card-glass {
