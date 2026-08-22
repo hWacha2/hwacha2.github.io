@@ -11,18 +11,20 @@ const supportedLangs = ['en', 'ru'];
 
 const translations = reactive({
   en: {
-    autoTranslated: "Auto-translated" ,
+    autoTranslated: "Auto-translated",
     subtitle: "Artist meme maker, and a bit of a programmer...",
     socialTitle: "All social media:",
     supportSubtitle: "Support me:",
     lastWorks: "Latest posts on Telegram",
     postTg: "Post in Telegram",
     toPost: "Go to post →",
-    openChannel: "Open channel →",
+    retry: "Retry",
+    openChannel: "Open channel",
+    loadError: "Failed to load posts",
     clickHint: "click on the image to view",
     modsTitle: "Mods and projects",
     modsSubtitle: "Short descriptions and links",
-    footer: "© 2026 hWacha — no rights for men",
+    footer: "© 2026 ishwacha — no rights for men",
     melonDesc: "Replaces the egg in the hands of Rennala with a melon.",
     watermelonDesc: "Replaces the egg in the hands of Rennala with a watermelon",
     frierenDesc: "Sliders settings for Frieren character from anime \"Frieren beyond journey's end\".",
@@ -40,11 +42,13 @@ const translations = reactive({
     lastWorks: "Последние посты в Telegram",
     postTg: "Пост в Telegram",
     toPost: "Перейти к посту →",
-    openChannel: "Oткрыть канал →",
+    retry: "Повторить",
+    loadError: "Не удалось загрузить посты",
+    openChannel: "Отрыть канал",
     clickHint: "тыкни на изображение для просмотра",
     modsTitle: "Моды и проекты",
     modsSubtitle: "Короткие описания и ссылки",
-    footer: "© 2026 hWacha — у мужлан нет прав",
+    footer: "© 2026 ishwacha — у мужлан нет прав",
     melonDesc: "Заменяет яйцо в руках Ренналы на сочную дыньку",
     watermelonDesc: "Заменяет яйцо в руках Ренналы на арбуз лооол",
     frierenDesc: "Настройки ползунков для персонажа Фрирен из аниме «Провожающая в последний путь Фрирен».",
@@ -182,7 +186,7 @@ provide('currentLang', currentLang);
         <h1 class="h5 mb-2">{{ t('socialTitle') }}</h1>
       </div>
       <div class="social-row justify-content-center">
-        <a class="social-btn btn-vk-depth" href="https://vk.com/ishwacha" aria-label="ВКонтакте">
+        <a class="social-btn btn-vk-depth" href="https://vk.ru/ishwacha" aria-label="ВКонтакте">
           <svg width="24" height="24" viewBox="5.9 9.7 13.5 7.7" fill="currentColor">
             <path
                 d="M12.6 17.4c-4.2 0-6.6-2.9-6.7-7.7h2.1c.1 3.5 1.6 5 2.8 5.3V9.7h2v3c1.2-.1 2.4-1.5 2.8-3h2c-.3 1.8-1.7 3.2-2.9 3.7 1.2.6 3 2 3.6 4h-2.2c-.5-1.5-1.8-2.7-3.3-2.9v2.9h-.2z"/>
@@ -330,14 +334,7 @@ provide('currentLang', currentLang);
     <section id="gallery">
       <div class="d-flex justify-content-between align-items-center">
         <h2 class="h5 mb-0">{{ t("lastWorks") }}</h2>
-        <a
-            href="https://t.me/ishwacha"
-            target="_blank"
-            rel="noopener"
-            class="text-secondary small text-decoration-none"
-        >
-          {{ t("openChannel") }}
-        </a>
+
       </div>
       <TelegramSlider/>
     </section>
@@ -479,6 +476,11 @@ body {
   font-size: .95rem;
   min-width: 130px;
   transition: transform .16s ease, box-shadow .16s ease;
+    cursor: pointer;
+user-select: none;
+  -webkit-user-select: none; /* Для Safari и старых Chrome */
+  -moz-user-select: none;    /* Для Firefox */
+  -ms-user-select: none;     /* Для старых Edge/IE */
 }
 
 .social-btn svg {
@@ -613,26 +615,6 @@ footer {
     font-size: 1rem;
   }
 
-=
-
-.card-glass {
-  font-size: 0.8rem;
-  padding: 0.75rem;
-}
-
-  .mod-card {
-    padding: 0.75rem;
-  }
-
-  .mod-card h3.h6 {
-    font-size: 1rem;
-  }
-
-  .mod-card .btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-  }
-
   footer {
     padding: 1.5rem 0.5rem;
   }
@@ -646,15 +628,6 @@ footer {
     margin-right: 0 !important;
   }
 
-  .modal-dialog {
-    margin: 0.5rem;
-  }
-
-  .btn-close-white {
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
-    padding: 0.5rem;
-  }
 }
 
 @media (min-width: 577px) and (max-width: 768px) {
@@ -666,8 +639,6 @@ footer {
     font-size: 0.85rem;
     padding: 0.4rem 0.7rem;
   }
-
-
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -675,14 +646,6 @@ footer {
     transform: none;
   }
 
-  .gallery-item {
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  .gallery-item:active {
-    opacity: 0.8;
-  }
 
   .btn-vk-depth:active,
   .btn-telegram:active,
@@ -708,7 +671,6 @@ footer {
 }
 
 
-
 /* ═══ Скелетон фона ═══ */
 .hero-cover-skeleton {
   position: absolute;
@@ -722,10 +684,10 @@ footer {
   z-index: -50;
   /* та же маска, чтобы шиммер таял к низу как фон */
   mask-image: linear-gradient(to bottom,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 1) 60%,
-    rgba(0, 0, 0, 0) 90%,
-    rgba(0, 0, 0, 0) 100%);
+  rgba(0, 0, 0, 1) 0%,
+  rgba(0, 0, 0, 1) 60%,
+  rgba(0, 0, 0, 0) 90%,
+  rgba(0, 0, 0, 0) 100%);
 }
 
 .hero-cover-skeleton::after {
@@ -733,12 +695,14 @@ footer {
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   animation: cover-shimmer 1.6s infinite;
 }
 
 @keyframes cover-shimmer {
-  100% { transform: translateX(100%); }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
 /* ═══ Фон: плавное проявление ═══ */
@@ -753,10 +717,10 @@ footer {
   background-position: center;
   border-radius: inherit;
   mask-image: linear-gradient(to bottom,
-    rgba(0, 0, 0, 1) 0%,
-    rgba(0, 0, 0, 1) 60%,
-    rgba(0, 0, 0, 0) 90%,
-    rgba(0, 0, 0, 0) 100%);
+  rgba(0, 0, 0, 1) 0%,
+  rgba(0, 0, 0, 1) 60%,
+  rgba(0, 0, 0, 0) 90%,
+  rgba(0, 0, 0, 0) 100%);
   z-index: -50;
   /* новое: */
   opacity: 0;
@@ -803,10 +767,9 @@ footer {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(20, 25, 35, 0.9);
+  background: rgba(20, 25, 35, 0.95);
   z-index: -200;
-  box-shadow: inset 0 0 15px rgba(235, 255, 255, 0.05),
-  inset 0 0 30px rgba(255, 255, 255, 0.02);
+
 }
 
 .contglass::before {
@@ -815,7 +778,7 @@ footer {
   inset: 0;
   z-index: -201;
   pointer-events: none;
-  background: linear-gradient(210deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+  background: linear-gradient(210deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
 }
 
 </style>

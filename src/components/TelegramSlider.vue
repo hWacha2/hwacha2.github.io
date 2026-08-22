@@ -15,10 +15,56 @@
       </div>
     </div>
     <div v-else-if="error" class="text-center py-4">
-      <p class="text-secondary mb-2">Не удалось загрузить посты автоматически</p>
-      <a href="https://t.me/ishwacha" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
-        Открыть канал →
-      </a>
+
+      <div class="tg-error-icon mb-2">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 204 140" aria-label="cloud error">
+          <defs>
+            <!-- Лёгкий градиент: сверху-слева светлее, к низу-праву насыщеннее -->
+            <linearGradient id="cloudGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#ff6b6b"/>
+              <stop offset="1" stop-color="#e03131"/>
+            </linearGradient>
+          </defs>
+
+          <!-- Залитое облако -->
+          <path
+              fill="url(#cloudGrad)"
+              d="M94.1 8.6a58 58 0 0 0-33.6 26.9l-3 6H49c-7.3 0-9.3.4-14.3 2.8A49 49 0 0 0 9.9 79.4a48 48 0 0 0 22.5 47.7c9.9 5.6 15.9 6.2 48.9 5 16.2-.6 38.8-1.1 50.3-1.1 33.2-.1 41.5-2 52-12.4 8-8 10.7-14.5 10.7-26.6a32 32 0 0 0-10.8-26.7c-5.6-5.5-7.2-6.5-13.8-8.4l-7.4-2.2-1.1-6.1a53 53 0 0 0-40-40.5 75 75 0 0 0-27.1.5Z"
+          />
+
+          <!-- Белый крестик с круглыми концами -->
+          <path
+              fill="none"
+              stroke="#fff"
+              stroke-width="10"
+              stroke-linecap="round"
+              d="M82 63l38 38m0-38-38 38"
+          />
+        </svg>
+      </div>
+      <p class="text-secondary mb-3">{{ t('loadError') || 'Не удалось загрузить посты' }}</p>
+
+      <div class="d-flex gap-2 justify-content-center flex-wrap">
+        <a class="social-btn btn-steam " @click="retryLoad">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               style="vertical-align: -2px; margin-right: 4px;">
+            <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/>
+            <path d="M21 3v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/>
+            <path d="M3 21v-5h5"/>
+          </svg>
+          {{ t('retry') || 'Повторить' }}
+        </a>
+        <a href="https://t.me/ishwacha" target="_blank" rel="noopener" class="social-btn btn-telegram">
+          <svg width="24" height="24" viewBox="1.16 5.79 44.14 36.58" fill="currentColor">
+            <path xmlns="http://www.w3.org/2000/svg"
+                  d="M41.4193 7.30899C41.4193 7.30899 45.3046 5.79399 44.9808 9.47328C44.8729 10.9883 43.9016 16.2908 43.1461 22.0262L40.5559 39.0159C40.5559 39.0159 40.3401 41.5048 38.3974 41.9377C36.4547 42.3705 33.5408 40.4227 33.0011 39.9898C32.5694 39.6652 24.9068 34.7955 22.2086 32.4148C21.4531 31.7655 20.5897 30.4669 22.3165 28.9519L33.6487 18.1305C34.9438 16.8319 36.2389 13.8019 30.8426 17.4812L15.7331 27.7616C15.7331 27.7616 14.0063 28.8437 10.7686 27.8698L3.75342 25.7055C3.75342 25.7055 1.16321 24.0823 5.58815 22.459C16.3807 17.3729 29.6555 12.1786 41.4193 7.30899Z"
+                  fill="#fff"/>
+          </svg>
+          {{ t('openChannel') }}
+
+        </a>
+      </div>
     </div>
 
     <!-- Слайдер -->
@@ -176,6 +222,7 @@ const PROXY_BASE = 'https://social-proxy.gbaranovskaa76.workers.dev/?url=';
 const POSTS_LIMIT = 10;
 
 async function fetchTelegram() {
+
   const targetUrl = `https://t.me/s/${CHANNEL}`;
   const urlsToTry = [
     targetUrl,
@@ -368,7 +415,11 @@ function formatDate(iso) {
   }
 }
 
-onMounted(async () => {
+// Функция загрузки — используется и при старте, и при повторе
+async function loadPosts() {
+  loading.value = true;
+  error.value = false;
+
   try {
     posts.value = await fetchTelegram();
 
@@ -378,7 +429,6 @@ onMounted(async () => {
       p.originalQuoted = p.quotedText || '';
     });
 
-    // 👇 Переводим сразу при загрузке, если язык не RU
     await applyTranslations();
 
     if (posts.value.length === 0) error.value = true;
@@ -388,7 +438,14 @@ onMounted(async () => {
   } finally {
     loading.value = false;
   }
-});
+}
+
+// Кнопка "Повторить"
+function retryLoad() {
+  loadPosts();
+}
+
+onMounted(() => loadPosts());
 </script>
 
 <style>
@@ -398,7 +455,9 @@ onMounted(async () => {
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 1rem;
+
 }
+
 
 /* ═══ Слайдер ═══ */
 .tg-slider {
@@ -424,6 +483,12 @@ onMounted(async () => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  transition: box-shadow .2s ease;
+
+}
+
+.tg-card:hover {
+  box-shadow: 0 14px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* ═══ Контейнер картинки (blur живёт только тут) ═══ */
@@ -479,6 +544,7 @@ onMounted(async () => {
 .tg-card:hover .tg-card-noimage {
   background: linear-gradient(135deg, rgba(34, 158, 217, 0.18), rgba(34, 158, 217, 0.08));
   border-color: rgba(34, 158, 217, 0.4);
+
 }
 
 .tg-noimage-icon {
@@ -662,5 +728,26 @@ onMounted(async () => {
   word-break: break-word;
   max-height: 120px;
   overflow: hidden;
+}
+
+.tg-error-icon svg {
+  width: 76px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  filter: drop-shadow(0 6px 18px rgba(224, 49, 49, 0.35));
+}
+
+.tg-error-icon {
+  animation: tg-error-float 2.5s ease-in-out infinite;
+}
+
+@keyframes tg-error-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 </style>
