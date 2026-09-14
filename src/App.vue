@@ -874,6 +874,9 @@ provide('currentLang', currentLang);
 /* ═══ ЯВНЫЙ ИМПОРТ ШРИФТА ═══ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
+* {
+  box-sizing: border-box;
+}
 :root {
   --bs-body-color: #e9eef8;
   --bs-heading-color: #e9eef8;
@@ -881,6 +884,11 @@ provide('currentLang', currentLang);
   --muted: rgba(200, 200, 200, 1);
   --card-bg: #0f1724;
   --glass: rgba(255, 255, 255, 0.04);
+}
+html {
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
