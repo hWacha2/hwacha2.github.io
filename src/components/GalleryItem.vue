@@ -1,5 +1,6 @@
 <script setup>
-import { defineProps, ref, onMounted } from 'vue'
+import { inject, defineProps, ref, onMounted } from 'vue'
+const openModal = inject('openGalleryModal')
 
 const props = defineProps({
   img: { type: String, required: true }
@@ -28,17 +29,23 @@ onMounted(() => {
 
   tempImg.src = props.img
 })
+
+const handleClick = () => {
+  // Просто вызываем функцию, не используя emit
+  if (openModal) {
+    openModal(props.img)
+  }
+}
 </script>
 
 <template>
   <div class="masonry-item">
     <div
       class="card-glass gallery-item p-2"
-      style="overflow: hidden"
-      data-bs-toggle="modal"
-      data-bs-target="#modalImage"
-      :data-img="img"
+      style="overflow: hidden; cursor: pointer;"
+       @click="handleClick"
       role="button"
+      aria-label="Открыть изображение"
     >
       <!-- ═══ СКЕЛЕТОН С АВТО-ПРОПОРЦИЯМИ ═══ -->
       <div v-if="isLoading" class="skeleton-wrapper" :style="{ aspectRatio: aspectRatio }">

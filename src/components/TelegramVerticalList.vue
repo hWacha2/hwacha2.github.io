@@ -1,5 +1,5 @@
 <template>
-  <section id="telegram-vertical">
+  <div id="telegram-vertical">
     <!-- ═══ СОСТОЯНИЕ ЗАГРУЗКИ (Вертикальные скелетоны) ═══ -->
     <div v-if="loading" class="tg-vertical-list d-flex flex-column gap-3 pb-3 pt-3 px-3">
       <div
@@ -171,7 +171,7 @@
         </div>
       </div>
     </div>
-  </section>
+  </div>
 </template>
 
 <script setup>
@@ -605,6 +605,7 @@ onMounted(() => loadPosts());
   justify-content: center;
   margin: 1rem;
   width: auto !important;
+
 }
 
 /* ═══ Скелетоны загрузки ═══ */

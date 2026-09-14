@@ -1,5 +1,5 @@
 <template>
-  <section id="telegram-gallery">
+  <div id="telegram-gallery">
 
 
     <div v-if="loading" class="tg-slider d-flex overflow-x-auto gap-3 pb-3 pt-3">
@@ -202,7 +202,8 @@
         </div>
       </div>
     </div>
-  </section>
+
+  </div>
 </template>
 
 <script setup>
