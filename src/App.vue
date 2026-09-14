@@ -5,7 +5,7 @@ import Star from './components/StarCanvas.vue';
 import TelegramSlider from './components/TelegramSlider.vue';
 import GalleryItem from './components/GalleryItem.vue';
 import TelegramVerticalList from './components/TelegramVerticalList.vue';
-import { Modal } from 'bootstrap';
+import {Modal} from 'bootstrap';
 
 const currentLang = ref('en');
 const supportedLangs = ['en', 'ru'];
@@ -451,19 +451,19 @@ provide('currentLang', currentLang);
       </section>
 
       <section id="mob-gallery" class="mobile-section">
-        <div class="contglass p-4 m-4">
+        <div class="contglass p-3 m-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h5 mb-0">{{ t('galleryTitle') }}</h2>
             <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle') }}</small>
           </div>
-          <GalleryItem img="arts/art4.png"></GalleryItem>
+
 
           <!-- Masonry галерея -->
           <div class="masonry-gallery">
             <GalleryItem img="arts/art1.png"></GalleryItem>
             <GalleryItem img="arts/art2.png"></GalleryItem>
             <GalleryItem img="arts/art3.png"></GalleryItem>
-            <GalleryItem img="arts/art5.png"></GalleryItem>
+            <GalleryItem img="arts/art4.png"></GalleryItem>
             <GalleryItem img="arts/art6.png"></GalleryItem>
             <GalleryItem img="arts/art7.png"></GalleryItem>
           </div>
@@ -1207,7 +1207,7 @@ footer {
   }
 
   .hero-cover-layout {
-    height: 240px !important;
+    height: 220px !important;
     padding: 1rem;
   }
 
@@ -1220,8 +1220,8 @@ footer {
 
   .avatar {
 
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
   }
 
   h1.h3 {
