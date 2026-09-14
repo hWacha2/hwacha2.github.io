@@ -5,7 +5,7 @@
       <div
           v-for="n in 4"
           :key="n"
-          class="tg-card card-glass p-2"
+          class="tg-card-v card-glass p-2"
           style="width: 100%;"
       >
         <div class="skeleton skeleton-img"></div>
@@ -70,14 +70,14 @@
       <article
           v-for="(post, idx) in posts"
           :key="idx"
-          class="tg-card card-glass gallery-item p-2"
+          class="tg-card-v card-glass gallery-item p-2"
           style="width: 100%; scroll-snap-align: start; overflow: hidden; cursor: pointer;"
           role="button"
           data-bs-toggle="modal"
           data-bs-target="#tgPostModal"
           @click="selectedPost = post"
       >
-        <div v-if="post.images.length > 0" class="tg-image-wrap position-relative">
+        <div v-if="post.images.length > 0" class="tg-image-wrap-v position-relative">
           <img :src="post.images[0]" class="gallery-img-blur" aria-hidden="true"/>
           <img
               :src="post.images[0]"
@@ -95,7 +95,7 @@
           </div>
         </div>
 
-        <div v-else class="tg-card-noimage">
+        <div v-else class="tg-card-noimage-v">
           <div class="tg-noimage-icon mb-2">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" opacity="0.6">
               <path
@@ -119,7 +119,7 @@
           href="https://t.me/ishwacha"
           target="_blank"
           rel="noopener"
-          class="tg-card tg-card-cta d-flex flex-column justify-content-center align-items-center text-center p-4"
+          class="tg-card-v tg-card-cta d-flex flex-column justify-content-center align-items-center text-center p-4"
           style="width: 100%; text-decoration: none;"
       >
         <div class="tg-cta-icon mb-3">
@@ -421,7 +421,7 @@ onMounted(() => loadPosts());
 }
 
 /* ═══ Карточка ═══ */
-.tg-card {
+.tg-card-v {
   flex-shrink: 0;
   min-height: 150px;
   height: auto;
@@ -430,13 +430,13 @@ onMounted(() => loadPosts());
   transition: box-shadow .2s ease, transform .2s ease;
 }
 
-.tg-card:hover {
+.tg-card-v:hover {
   box-shadow: 0 14px 20px rgba(0, 0, 0, 0.3);
   transform: translateY(-2px);
 }
 
 /* ═══ Контейнер картинки ═══ */
-.tg-image-wrap {
+.tg-image-wrap-v {
   flex: 1;
 
   border-radius: 8px;
@@ -471,7 +471,7 @@ onMounted(() => loadPosts());
 }
 
 /* ═══ Карточка без картинки ═══ */
-.tg-card-noimage {
+.tg-card-noimage-v {
   flex: 1;
   border-radius: 8px;
   padding: 1.2rem;
@@ -484,7 +484,7 @@ onMounted(() => loadPosts());
   max-height: 150px;
 }
 
-.tg-card:hover .tg-card-noimage {
+.tg-card-v:hover .tg-card-noimage-v {
   background: linear-gradient(135deg, rgba(34, 158, 217, 0.18), rgba(34, 158, 217, 0.08));
   border-color: rgba(34, 158, 217, 0.4);
 }
