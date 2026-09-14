@@ -1012,45 +1012,70 @@ footer {
   color: var(--muted);
 }
 
-/* ═══ МОБИЛЬНЫЙ СВАЙПЕР (Работает ТОЛЬКО когда v-if="isMobile" активен) ═══ */
-.mobile-swiper-wrapper {
-  height: 100dvh; /* dvh учитывает исчезающую адресную строку в мобильных браузерах */
-  width: 100vw;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  scroll-snap-type: y mandatory;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
+/* ═══ БЛОКИРОВКА СКРОЛЛА СТРАНИЦЫ (ТОЛЬКО МОБИЛЬНЫЕ) ═══ */
+@media (max-width: 768px) {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important; /* Явная высота для цепочки */
+    width: 100% !important;
+    overflow: hidden !important;
+    position: fixed !important; /* Блокирует скрытие адресной строки */
+    top: 0;
+    left: 0;
+    overscroll-behavior: none; /* Запрещает свайп "назад" браузера */
+  }
 
-  /* Убираем скроллбар для эстетики */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
+  /* ═══ МОБИЛЬНЫЙ СВАЙПЕР ═══ */
+  .mobile-swiper-wrapper {
+    /* Используем dvh, но с !important, чтобы перебить любые наследования */
+    height: 100dvh !important;
+    width: 100% !important;
 
-.mobile-swiper-wrapper::-webkit-scrollbar {
-  display: none;
-}
+    /* auto надежнее чем scroll для тач-устройств */
+    overflow-y: auto !important;
+    overflow-x: hidden;
 
-.mobile-section {
-  min-height: 100dvh;
-  width: 100%;
-  scroll-snap-align: start;
-  scroll-snap-stop: always; /* Заставляет останавливаться на каждой секции */
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch; /* КРИТИЧНО для iOS */
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* Центрирует контент, если его мало */
+    /* Разрешаем только вертикальный свайп для этого элемента */
+    touch-action: pan-y;
+    overscroll-behavior-y: contain; /* Скролл не выливается за пределы */
 
-  /* Сбрасываем десктопные стили */
-  margin: 0 !important;
-  border-radius: 0 !important;
+    /* Убираем скроллбар */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
 
-}
+  .mobile-swiper-wrapper::-webkit-scrollbar {
+    display: none;
+  }
 
-/* Если контента много (например, длинный список модов), разрешаем секции расти, но сохраняем привязку к верху */
-.mobile-section.contglass {
-  height: auto;
-  min-height: 100dvh;
+  .mobile-section {
+    min-height: 100dvh !important; /* Секция равна высоте обертки */
+    width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  /* Если контента много (например, длинный список модов), разрешаем секции расти */
+  .mobile-section.contglass {
+    height: auto !important;
+    min-height: 100dvh !important;
+  }
 }
 
 /* Точки навигации */
