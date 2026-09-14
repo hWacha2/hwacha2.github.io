@@ -850,7 +850,7 @@ provide('currentLang', currentLang);
 
           <!-- Только кнопка закрытия, прижатая к правому краю -->
           <div class="modal-header border-0 p-2">
-            <button type="button" class="btn-close btn-close-white ms-auto" data-bs-dismiss="modal"
+            <button type="button" class="btn-close btn-close-white ms-auto mb-2" data-bs-dismiss="modal"
                     aria-label="Закрыть"></button>
           </div>
 
@@ -871,6 +871,9 @@ provide('currentLang', currentLang);
 </template>
 
 <style>
+/* ═══ ЯВНЫЙ ИМПОРТ ШРИФТА ═══ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 :root {
   --bs-body-color: #e9eef8;
   --bs-heading-color: #e9eef8;
