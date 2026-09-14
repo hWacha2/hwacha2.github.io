@@ -1117,6 +1117,8 @@ footer {
     padding: 0;
     /* Мы намеренно НЕ добавляем сюда position: fixed,
        чтобы браузер мог перехватить жест pull-to-refresh */
+        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+
   }
 
   .app {
@@ -1124,6 +1126,8 @@ footer {
     height: 100dvh;
     position: relative;
     overflow: hidden;
+        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+
   }
 
   /* 2. Контейнер для свайпа */
@@ -1138,6 +1142,8 @@ footer {
     /* Скрытие скроллбара */
     scrollbar-width: none;
     -ms-overflow-style: none;
+        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+
   }
 
   .mobile-swiper-wrapper::-webkit-scrollbar {
@@ -1155,6 +1161,8 @@ footer {
     flex-direction: column;
     justify-content: center;
     position: relative;
+        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+
   }
 
   /* Если контента много (например, длинный список), разрешаем расти */
