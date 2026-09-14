@@ -1017,17 +1017,15 @@ footer {
   html, body {
     margin: 0 !important;
     padding: 0 !important;
-    height: 100% !important;
+    height: 100vh !important; /* Используем vh вместо 100% */
     width: 100% !important;
-    overflow: hidden !important;
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    overscroll-behavior: none; /* Оставляем — блокирует скрытие адресной строки */
+    overflow: hidden !important; /* Блокируем скролл страницы */
+    /* УБРАЛИ position: fixed — это разрешает pull-to-refresh */
+    overscroll-behavior: none; /* Блокируем свайп "назад" */
   }
 
   .mobile-swiper-wrapper {
-    height: 100dvh !important;
+    height: 100vh !important; /* Фиксированная высота */
     width: 100% !important;
     overflow-y: auto !important;
     overflow-x: hidden;
@@ -1036,10 +1034,8 @@ footer {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
 
-    /* ИЗМЕНЕНО: auto вместо contain — разрешает pull-to-refresh */
+    /* Разрешаем pull-to-refresh */
     overscroll-behavior-y: auto;
-
-    /* ИЗМЕНЕНО: убираем touch-action или используем manipulation */
     touch-action: manipulation;
 
     scrollbar-width: none;
@@ -1051,15 +1047,13 @@ footer {
   }
 
   .mobile-section {
-    min-height: 100dvh !important; /* Секция равна высоте обертки */
+    min-height: 100vh !important;
     width: 100%;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
-
     margin: 0 !important;
     border-radius: 0 !important;
     border-left: none;
@@ -1068,10 +1062,9 @@ footer {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Если контента много (например, длинный список модов), разрешаем секции расти */
   .mobile-section.contglass {
     height: auto !important;
-    min-height: 100dvh !important;
+    min-height: 100vh !important;
   }
 }
 
@@ -1163,7 +1156,7 @@ footer {
   .social-btn {
     width: 90%;
     justify-content: center;
-    padding: 0.5rem 0.6rem;
+    padding: 0.4rem 0.6rem;
     font-size: 1rem;
   }
 
