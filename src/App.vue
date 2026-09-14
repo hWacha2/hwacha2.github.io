@@ -1013,9 +1013,8 @@ footer {
 }
 
 /* ═══ БЛОКИРОВКА СКРОЛЛА СТРАНИЦЫ (ТОЛЬКО МОБИЛЬНЫЕ) ═══ */
-/* ===== АДАПТАЦИЯ ПОД ТЕЛЕФОНЫ (Проверенная структура) ===== */
 @media (max-width: 768px) {
-  /* 1. Базовый сброс БЕЗ position: fixed и БЕЗ overflow: hidden */
+  /* 1. Блокируем скролл самого body, но НЕ фиксируем его position */
   html, body {
     height: 100%;
     margin: 0;
@@ -1024,7 +1023,7 @@ footer {
        чтобы браузер мог перехватить жест pull-to-refresh */
   }
 
-  /* 2. Главный контейнер свайпера (аналог .feed) */
+  /* 2. Контейнер для свайпа */
   .mobile-swiper-wrapper {
     width: 100%;
     height: 100dvh; /* Dynamic Viewport Height (плавно адаптируется под адресную строку) */
@@ -1043,10 +1042,10 @@ footer {
     display: none;
   }
 
-  /* 3. Секции (аналог .card) */
+  /* 3. Секции */
   .mobile-section {
+    min-height: 100dvh !important; /* Каждая секция минимум в высоту экрана */
     width: 100%;
-    height: 100dvh; /* Каждая секция занимает ровно высоту видимой области */
     scroll-snap-align: start;
     scroll-snap-stop: always;
 
@@ -1054,17 +1053,18 @@ footer {
     flex-direction: column;
     justify-content: center;
 
-    margin: 0;
-    border-radius: 0;
-    border: none;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-left: none;
+    border-right: none;
+    border-top: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Если контента много (например, длинный список модов), разрешаем секции расти,
-     но scroll-snap-align: start гарантирует, что прокрутка начнется с её верха */
+  /* Если контента много (например, длинный список), разрешаем расти */
   .mobile-section.contglass {
-    height: auto;
-    min-height: 100dvh;
+    height: auto !important;
+    min-height: 100dvh !important;
   }
 }
 
