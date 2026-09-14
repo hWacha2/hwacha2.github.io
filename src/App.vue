@@ -877,6 +877,7 @@ provide('currentLang', currentLang);
 * {
   box-sizing: border-box;
 }
+
 :root {
   --bs-body-color: #e9eef8;
   --bs-heading-color: #e9eef8;
@@ -885,6 +886,7 @@ provide('currentLang', currentLang);
   --card-bg: #0f1724;
   --glass: rgba(255, 255, 255, 0.04);
 }
+
 html {
   font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -1115,10 +1117,11 @@ footer {
     height: 100%;
     margin: 0;
     padding: 0;
-    /* Мы намеренно НЕ добавляем сюда position: fixed,
-       чтобы браузер мог перехватить жест pull-to-refresh */
-        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  }
+  body
+  {
+        background: #000 !important;
   }
 
   .app {
@@ -1126,7 +1129,7 @@ footer {
     height: 100dvh;
     position: relative;
     overflow: hidden;
-        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 
   }
 
@@ -1142,7 +1145,7 @@ footer {
     /* Скрытие скроллбара */
     scrollbar-width: none;
     -ms-overflow-style: none;
-        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 
   }
 
@@ -1161,7 +1164,7 @@ footer {
     flex-direction: column;
     justify-content: center;
     position: relative;
-        font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 
   }
 
@@ -1416,7 +1419,7 @@ footer {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(20, 25, 35, 0.95);
+  background: rgba(20, 25, 35, 0.90);
   z-index: -200;
 
 }
