@@ -1,38 +1,33 @@
 <template>
-  <section id="telegram-gallery">
-
-
-    <div v-if="loading" class="tg-slider d-flex overflow-x-auto gap-3 pb-3 pt-3">
+  <section id="telegram-vertical">
+    <!-- ═══ СОСТОЯНИЕ ЗАГРУЗКИ (Вертикальные скелетоны) ═══ -->
+    <div v-if="loading" class="tg-vertical-list d-flex flex-column gap-3 pb-3 pt-3 px-3">
       <div
           v-for="n in 4"
           :key="n"
-          class="tg-card card-glass p-2 flex-shrink-0"
-          style="width: 320px;"
+          class="tg-card card-glass p-2"
+          style="width: 100%;"
       >
         <div class="skeleton skeleton-img"></div>
         <div class="skeleton skeleton-line mt-2" style="width: 80%;"></div>
         <div class="skeleton skeleton-line mt-2" style="width: 45%;"></div>
       </div>
     </div>
-    <div v-else-if="error" class="text-center py-4">
 
+    <!-- ═══ СОСТОЯНИЕ ОШИБКИ ═══ -->
+    <div v-else-if="error" class="text-center py-4" style="height: 90vh; display: flex; flex-direction: column; justify-content: center;">
       <div class="tg-error-icon mb-2">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 204 140" aria-label="cloud error">
           <defs>
-            <!-- Лёгкий градиент: сверху-слева светлее, к низу-праву насыщеннее -->
             <linearGradient id="cloudGrad" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stop-color="#ff6b6b"/>
               <stop offset="1" stop-color="#e03131"/>
             </linearGradient>
           </defs>
-
-          <!-- Залитое облако -->
           <path
               fill="url(#cloudGrad)"
               d="M94.1 8.6a58 58 0 0 0-33.6 26.9l-3 6H49c-7.3 0-9.3.4-14.3 2.8A49 49 0 0 0 9.9 79.4a48 48 0 0 0 22.5 47.7c9.9 5.6 15.9 6.2 48.9 5 16.2-.6 38.8-1.1 50.3-1.1 33.2-.1 41.5-2 52-12.4 8-8 10.7-14.5 10.7-26.6a32 32 0 0 0-10.8-26.7c-5.6-5.5-7.2-6.5-13.8-8.4l-7.4-2.2-1.1-6.1a53 53 0 0 0-40-40.5 75 75 0 0 0-27.1.5Z"
           />
-
-          <!-- Белый крестик с круглыми концами -->
           <path
               fill="none"
               stroke="#fff"
@@ -44,8 +39,8 @@
       </div>
       <p class="text-secondary mb-3">{{ t('loadError') || 'Не удалось загрузить посты' }}</p>
 
-      <div class="d-flex gap-2 justify-content-center flex-wrap">
-        <a class="social-btn btn-steam " @click="retryLoad">
+      <div class="d-flex gap-2 justify-content-center flex-wrap px-3">
+        <a class="social-btn btn-steam" @click="retryLoad">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                style="vertical-align: -2px; margin-right: 4px;">
             <path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/>
@@ -62,32 +57,28 @@
                   fill="#fff"/>
           </svg>
           {{ t('openChannel') }}
-
         </a>
       </div>
     </div>
 
-    <!-- Слайдер -->
+    <!-- ═══ ВЕРТИКАЛЬНЫЙ СПИСОК ПОСТОВ ═══ -->
     <div
         v-else
-        class="tg-slider d-flex overflow-x-auto gap-3 pb-3 pt-3"
-        style="scroll-snap-type: x mandatory;"
+        class="tg-vertical-list d-flex flex-column gap-3 pb-3 pt-3 pe-3 "
     >
       <!-- Карточки постов -->
       <article
           v-for="(post, idx) in posts"
           :key="idx"
-          class="tg-card card-glass gallery-item p-2 flex-shrink-0"
-          style="width: 320px; scroll-snap-align: start; overflow: hidden; cursor: pointer;"
+          class="tg-card card-glass gallery-item p-2"
+          style="width: 100%; scroll-snap-align: start; overflow: hidden; cursor: pointer;"
           role="button"
           data-bs-toggle="modal"
           data-bs-target="#tgPostModal"
           @click="selectedPost = post"
       >
         <div v-if="post.images.length > 0" class="tg-image-wrap position-relative">
-          <!-- Размытый тёмный фон (только внутри этого div) -->
           <img :src="post.images[0]" class="gallery-img-blur" aria-hidden="true"/>
-          <!-- Чёткая картинка поверх -->
           <img
               :src="post.images[0]"
               :alt="post.title"
@@ -95,7 +86,6 @@
               loading="lazy"
               @error="$event.target.style.display = 'none'"
           />
-          <!-- Бейдж "+N" для альбомов -->
           <div v-if="post.images.length > 1" class="tg-multi-badge">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="18" height="18" rx="2"/>
@@ -105,7 +95,6 @@
           </div>
         </div>
 
-        <!-- ═══ БЛОК БЕЗ КАРТИНКИ (текстовая карточка) ═══ -->
         <div v-else class="tg-card-noimage">
           <div class="tg-noimage-icon mb-2">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" opacity="0.6">
@@ -116,7 +105,6 @@
           <div class="tg-noimage-text">{{ post.fullText }}</div>
         </div>
 
-        <!-- ═══ БЛОК ТЕКСТА/ПОДПИСИ (отдельно от картинки, без blur) ═══ -->
         <div class="tg-card-footer mt-2">
           <strong v-if="post.images.length > 0" class="d-block small tg-card-title">{{ post.title }}</strong>
           <div class="d-flex justify-content-between align-items-center mt-1">
@@ -131,8 +119,8 @@
           href="https://t.me/ishwacha"
           target="_blank"
           rel="noopener"
-          class="tg-card tg-card-cta flex-shrink-0 d-flex flex-column justify-content-center align-items-center text-center p-4"
-          style="width: 260px; scroll-snap-align: start; text-decoration: none;"
+          class="tg-card tg-card-cta d-flex flex-column justify-content-center align-items-center text-center p-4"
+          style="width: 100%; text-decoration: none;"
       >
         <div class="tg-cta-icon mb-3">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
@@ -146,25 +134,16 @@
       </a>
     </div>
 
-    <!-- Модалка -->
-    <div
-        class="modal fade"
-        id="tgPostModal"
-        tabindex="-1"
-        aria-hidden="true"
-    >
-
+    <!-- Модалка (без изменений) -->
+    <div class="modal fade" id="tgPostModal" tabindex="-1" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content card-glass "
-             style="background: rgba(30, 30, 40, 0.95); border: 1px solid rgba(255,255,255,0.1);">
+        <div class="modal-content card-glass" style="background: rgba(30, 30, 40, 0.95); border: 1px solid rgba(255,255,255,0.1);">
           <div class="modal-header p-0 mb-3 border-0">
             <h5 class="modal-title text-white">{{ t("postTg") }}</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Закрыть"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Закрыть"></button>
           </div>
 
           <div class="modal-body" v-if="selectedPost">
-            <!-- Галерея картинок -->
             <div v-if="selectedPost.images.length > 0" class="mb-3">
               <img
                   v-for="(img, i) in selectedPost.images"
@@ -175,27 +154,17 @@
                   @error="$event.target.style.display = 'none'"
               />
             </div>
-            <!-- Цитата, если пост — ответ -->
             <div v-if="selectedPost.quotedText" class="tg-quote mb-3">
               {{ selectedPost.quotedText }}
             </div>
-
-            <!-- Полный текст с сохранением форматирования -->
             <div class="tg-modal-text text-white mb-2">
               {{ selectedPost.fullText }}
             </div>
-
             <small class="text-secondary d-block">{{ selectedPost.date }}</small>
           </div>
 
           <div class="modal-footer border-0 mt-0">
-            <a
-                v-if="selectedPost"
-                :href="selectedPost.link"
-                target="_blank"
-                rel="noopener"
-                class="social-btn btn-to-tg"
-            >
+            <a v-if="selectedPost" :href="selectedPost.link" target="_blank" rel="noopener" class="social-btn btn-to-tg">
               {{ t("toPost") }}
             </a>
           </div>
@@ -209,8 +178,7 @@
 import {ref, onMounted, inject, watch} from 'vue';
 
 const t = inject('t');
-const currentLang = inject('currentLang', ref('en')); // язык из App.vue
-
+const currentLang = inject('currentLang', ref('en'));
 
 const posts = ref([]);
 const loading = ref(true);
@@ -222,12 +190,8 @@ const PROXY_BASE = 'https://social-proxy.gbaranovskaa76.workers.dev/?url=';
 const POSTS_LIMIT = 10;
 
 async function fetchTelegram() {
-
   const targetUrl = `https://t.me/s/${CHANNEL}`;
-  const urlsToTry = [
-    targetUrl,
-    `${PROXY_BASE}${encodeURIComponent(targetUrl)}`,
-  ];
+  const urlsToTry = [targetUrl, `${PROXY_BASE}${encodeURIComponent(targetUrl)}`];
 
   let html = null;
   for (const url of urlsToTry) {
@@ -251,14 +215,9 @@ async function fetchTelegram() {
   messages.forEach(wrap => {
     const msg = wrap.querySelector('.tgme_widget_message');
     if (!msg) return;
-
-    // ── Пропускаем сервисные сообщения: у них нет счётчика просмотров ──
     if (!msg.querySelector('.tgme_widget_message_views')) return;
-    // страховка по классу
     if ((msg.getAttribute('class') || '').includes('service') || msg.querySelector('[class*="service"]')) return;
 
-    // ── Текст: берём ПОСЛЕДНИЙ .tgme_widget_message_text, не лежащий внутри цитаты ──
-    // (цитата ответа тоже имеет этот класс и идёт первой в DOM)
     const allTexts = Array.from(msg.querySelectorAll('.tgme_widget_message_text'));
     const textEl = allTexts.filter(el => !el.closest('[class*="reply"]')).pop() || allTexts.pop();
     if (!textEl) return;
@@ -266,7 +225,6 @@ async function fetchTelegram() {
     const fullText = (textEl.textContent || '').trim();
     if (!fullText) return;
 
-    // ── Цитата (если пост — ответ на другой) ──
     let quotedText = '';
     const replyWrap = msg.querySelector('[class*="reply"]');
     if (replyWrap) {
@@ -278,7 +236,6 @@ async function fetchTelegram() {
     const linkEl = msg.querySelector('a.tgme_widget_message_date');
     const link = linkEl?.href || `https://t.me/${CHANNEL}`;
 
-    // Все картинки
     const images = [];
     msg.querySelectorAll('.tgme_widget_message_photo_wrap').forEach(pw => {
       const style = pw.getAttribute('style') || '';
@@ -286,7 +243,6 @@ async function fetchTelegram() {
       if (match) images.push(match[1]);
     });
 
-    // Видео-превью если нет картинок
     if (images.length === 0) {
       const videoWrap = msg.querySelector('.tgme_widget_message_video_player');
       if (videoWrap) {
@@ -302,9 +258,9 @@ async function fetchTelegram() {
     parsed.push({
       title: fullText.substring(0, 60) + (fullText.length > 60 ? '...' : ''),
       fullText,
-      originalText: fullText,        // ← сразу сохраняем оригинал
+      originalText: fullText,
       quotedText,
-      originalQuoted: quotedText,    // ← и оригинал цитаты
+      originalQuoted: quotedText,
       link,
       images,
       date: formatDate(isoDate),
@@ -312,11 +268,8 @@ async function fetchTelegram() {
     });
   });
 
-  return parsed
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, POSTS_LIMIT);
+  return parsed.sort((a, b) => b.timestamp - a.timestamp).slice(0, POSTS_LIMIT);
 }
-
 
 function hashStr(s) {
   let h = 0;
@@ -325,7 +278,6 @@ function hashStr(s) {
 }
 
 async function fetchJsonVia(url) {
-  // Сначала через ваш воркер, потом напрямую
   const attempts = [`${PROXY_BASE}${encodeURIComponent(url)}`, url];
   for (const u of attempts) {
     try {
@@ -340,25 +292,19 @@ async function fetchJsonVia(url) {
 
 async function translateText(text, tl) {
   if (!text || text.length > 4000) return text;
-
-  // Кэш в localStorage — пост переводится один раз
   const key = `tgtr_${tl}_${hashStr(text)}`;
   try {
     const cached = localStorage.getItem(key);
     if (cached) return cached;
-  } catch {
-  }
+  } catch {}
 
   let result = null;
-
-  // 1) Google (бесплатно, без ключа)
   const gUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
   const gData = await fetchJsonVia(gUrl);
   if (gData && Array.isArray(gData[0])) {
     result = gData[0].map(s => s[0]).join('');
   }
 
-  // 2) Фолбэк MyMemory
   if (!result) {
     const mUrl = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ru|${tl}`;
     const mData = await fetchJsonVia(mUrl);
@@ -367,10 +313,7 @@ async function translateText(text, tl) {
   }
 
   if (result && result !== text) {
-    try {
-      localStorage.setItem(key, result);
-    } catch {
-    }
+    try { localStorage.setItem(key, result); } catch {}
     return result;
   }
   return text;
@@ -378,30 +321,22 @@ async function translateText(text, tl) {
 
 async function applyTranslations() {
   const lang = currentLang.value;
-
   for (const post of posts.value) {
-    // Страховка: если оригинала нет — считаем оригиналом текущий текст
     if (!post.originalText) post.originalText = post.fullText || '';
-
     if (lang === 'ru') {
       post.fullText = post.originalText;
       post.quotedText = post.originalQuoted || '';
       post.translated = false;
     } else {
       post.fullText = await translateText(post.originalText, lang);
-      if (post.originalQuoted) {
-        post.quotedText = await translateText(post.originalQuoted, lang);
-      }
+      if (post.originalQuoted) post.quotedText = await translateText(post.originalQuoted, lang);
       post.translated = post.fullText !== post.originalText;
     }
-
-    // Безопасное обновление заголовка
     const text = post.fullText || '';
     post.title = text.substring(0, 60) + (text.length > 60 ? '...' : '');
   }
 }
 
-// При переключении языка — переводим/возвращаем оригинал
 watch(currentLang, () => applyTranslations());
 
 function formatDate(iso) {
@@ -415,22 +350,16 @@ function formatDate(iso) {
   }
 }
 
-// Функция загрузки — используется и при старте, и при повторе
 async function loadPosts() {
   loading.value = true;
   error.value = false;
-
   try {
     posts.value = await fetchTelegram();
-
-    // Сохраняем оригиналы
     posts.value.forEach(p => {
       p.originalText = p.fullText;
       p.originalQuoted = p.quotedText || '';
     });
-
     await applyTranslations();
-
     if (posts.value.length === 0) error.value = true;
   } catch (e) {
     console.error('Telegram fetch error:', e);
@@ -440,7 +369,6 @@ async function loadPosts() {
   }
 }
 
-// Кнопка "Повторить"
 function retryLoad() {
   loadPosts();
 }
@@ -455,48 +383,62 @@ onMounted(() => loadPosts());
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
   padding: 1rem;
+}
+
+/* ═══ ВЕРТИКАЛЬНЫЙ КОНТЕЙНЕР (Главное изменение) ═══ */
+.tg-vertical-list {
+  height: 85vh; /* Фиксированная высота */
+  overflow-y: auto; /* Вертикальный скролл */
+  scroll-snap-type: y mandatory; /* Привязка по вертикали */
+  -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
 
 }
 
-
-/* ═══ Слайдер ═══ */
-
-
-.tg-slider {
-  height: 430px;
+/* Вертикальный скроллбар */
+.tg-vertical-list::-webkit-scrollbar {
+  width: 6px; /* Ширина вместо высоты */
 }
 
-.tg-slider::-webkit-scrollbar {
-  height: 6px;
-}
-
-.tg-slider::-webkit-scrollbar-track {
+.tg-vertical-list::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 3px;
 }
 
-.tg-slider::-webkit-scrollbar-thumb {
+.tg-vertical-list::-webkit-scrollbar-thumb {
   background: rgba(34, 158, 217, 0.35);
   border-radius: 3px;
 }
 
+.tg-vertical-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 158, 217, 0.55);
+}
+
+@supports (-moz-appearance: none) {
+  .tg-vertical-list {
+    scrollbar-color: rgba(34, 158, 217, 0.35) rgba(255, 255, 255, 0.03);
+    scrollbar-width: thin;
+  }
+}
+
 /* ═══ Карточка ═══ */
 .tg-card {
-  height: 100%;
+  flex-shrink: 0;
+  min-height: 150px;
+  height: auto;
   display: flex;
   flex-direction: column;
-  transition: box-shadow .2s ease;
-
+  transition: box-shadow .2s ease, transform .2s ease;
 }
 
 .tg-card:hover {
   box-shadow: 0 14px 20px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
 }
 
-/* ═══ Контейнер картинки (blur живёт только тут) ═══ */
+/* ═══ Контейнер картинки ═══ */
 .tg-image-wrap {
   flex: 1;
-  min-height: 0;
+
   border-radius: 8px;
   overflow: hidden;
   position: relative;
@@ -519,7 +461,6 @@ onMounted(() => loadPosts());
   width: 100%;
   height: 100%;
   object-fit: contain;
-
   z-index: 1;
   transition: transform .18s ease, filter .18s ease;
 }
@@ -532,7 +473,6 @@ onMounted(() => loadPosts());
 /* ═══ Карточка без картинки ═══ */
 .tg-card-noimage {
   flex: 1;
-  min-height: 0;
   border-radius: 8px;
   padding: 1.2rem;
   background: linear-gradient(135deg, rgba(34, 158, 217, 0.12), rgba(34, 158, 217, 0.04));
@@ -541,12 +481,12 @@ onMounted(() => loadPosts());
   flex-direction: column;
   overflow: hidden;
   transition: all .18s ease;
+  max-height: 150px;
 }
 
 .tg-card:hover .tg-card-noimage {
   background: linear-gradient(135deg, rgba(34, 158, 217, 0.18), rgba(34, 158, 217, 0.08));
   border-color: rgba(34, 158, 217, 0.4);
-
 }
 
 .tg-noimage-icon {
@@ -567,7 +507,6 @@ onMounted(() => loadPosts());
   flex: 1;
 }
 
-/* ═══ Подпись (вне blur-зоны) ═══ */
 .tg-card-footer {
   flex-shrink: 0;
 }
@@ -610,6 +549,7 @@ onMounted(() => loadPosts());
   border: 1px solid rgba(34, 158, 217, 0.3) !important;
   border-radius: 10px;
   transition: all .2s ease;
+  flex-shrink: 0; /* Чтобы не сжималась */
 }
 
 .tg-card-cta:hover {
@@ -622,37 +562,8 @@ onMounted(() => loadPosts());
   filter: drop-shadow(0 4px 12px rgba(34, 158, 217, 0.4));
 }
 
-/* Скроллбар слайдера */
-
-/* Chrome / Safari / Edge — webkit-стилизация */
-.tg-slider::-webkit-scrollbar {
-  height: 6px;
-}
-
-.tg-slider::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 3px;
-}
-
-.tg-slider::-webkit-scrollbar-thumb {
-  background: rgba(34, 158, 217, 0.35);
-  border-radius: 3px;
-}
-
-.tg-slider::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 158, 217, 0.55);
-}
-
-/* Firefox — стандартные свойства, только для него */
-@supports (-moz-appearance: none) {
-  .tg-slider {
-    scrollbar-color: rgba(34, 158, 217, 0.35) rgba(255, 255, 255, 0.03);
-    scrollbar-width: thin;
-  }
-}
-
+/* ═══ Модалка ═══ */
 .modal-content.card-glass {
-
   background: linear-gradient(210deg, rgba(10, 15, 20, 0.95), rgba(30, 30, 35, 0.90)) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 12px !important;
@@ -662,8 +573,6 @@ onMounted(() => loadPosts());
   background: linear-gradient(90deg, #101010, #0b0c0f);
 }
 
-
-/* Modal for gallery */
 .modal-content {
   background: rgba(10, 10, 15, 0.6) !important;
   border: none !important;
@@ -695,7 +604,6 @@ onMounted(() => loadPosts());
   align-items: center;
   justify-content: center;
   margin: 1rem;
-
   width: auto !important;
 }
 
@@ -723,8 +631,8 @@ onMounted(() => loadPosts());
 }
 
 .skeleton-img {
-  flex: 1;
-  min-height: 0;
+  height: 180px; /* Фиксированная высота для вертикального скелетона */
+  flex-shrink: 0;
 }
 
 .skeleton-line {
@@ -759,11 +667,7 @@ onMounted(() => loadPosts());
 }
 
 @keyframes tg-error-float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 </style>
