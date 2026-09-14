@@ -1017,15 +1017,14 @@ footer {
   html, body {
     margin: 0 !important;
     padding: 0 !important;
-    height: 100vh !important; /* Используем vh вместо 100% */
-    width: 100% !important;
-    overflow: hidden !important; /* Блокируем скролл страницы */
+    height: 100% !important; /* Используем vh вместо 100% */
+
+    box-sizing: border-box;
     /* УБРАЛИ position: fixed — это разрешает pull-to-refresh */
-    overscroll-behavior: none; /* Блокируем свайп "назад" */
   }
 
   .mobile-swiper-wrapper {
-    height: 100vh !important; /* Фиксированная высота */
+    height: 100dvh !important; /* Фиксированная высота */
     width: 100% !important;
     overflow-y: auto !important;
     overflow-x: hidden;
