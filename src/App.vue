@@ -1017,34 +1017,31 @@ footer {
   html, body {
     margin: 0 !important;
     padding: 0 !important;
-    height: 100% !important; /* Явная высота для цепочки */
+    height: 100% !important;
     width: 100% !important;
     overflow: hidden !important;
-    position: fixed !important; /* Блокирует скрытие адресной строки */
+    position: fixed !important;
     top: 0;
     left: 0;
-    overscroll-behavior: none; /* Запрещает свайп "назад" браузера */
+    overscroll-behavior: none; /* Оставляем — блокирует скрытие адресной строки */
   }
 
-  /* ═══ МОБИЛЬНЫЙ СВАЙПЕР ═══ */
   .mobile-swiper-wrapper {
-    /* Используем dvh, но с !important, чтобы перебить любые наследования */
     height: 100dvh !important;
     width: 100% !important;
-
-    /* auto надежнее чем scroll для тач-устройств */
     overflow-y: auto !important;
     overflow-x: hidden;
 
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; /* КРИТИЧНО для iOS */
+    -webkit-overflow-scrolling: touch;
 
-    /* Разрешаем только вертикальный свайп для этого элемента */
-    touch-action: pan-y;
-    overscroll-behavior-y: contain; /* Скролл не выливается за пределы */
+    /* ИЗМЕНЕНО: auto вместо contain — разрешает pull-to-refresh */
+    overscroll-behavior-y: auto;
 
-    /* Убираем скроллбар */
+    /* ИЗМЕНЕНО: убираем touch-action или используем manipulation */
+    touch-action: manipulation;
+
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
