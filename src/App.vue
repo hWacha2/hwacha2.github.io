@@ -1132,7 +1132,7 @@ footer {
   }
 
   .hero-cover-layout {
-    height: 270px !important;
+    height: 240px !important;
     padding: 1rem;
   }
 
@@ -1144,8 +1144,8 @@ footer {
   }
 
   .avatar {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
   }
 
   h1.h3 {

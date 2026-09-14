@@ -387,7 +387,7 @@ onMounted(() => loadPosts());
 
 /* ═══ ВЕРТИКАЛЬНЫЙ КОНТЕЙНЕР (Главное изменение) ═══ */
 .tg-vertical-list {
-  height: 80vh; /* Фиксированная высота */
+  height: 70vh; /* Фиксированная высота */
   overflow-y: auto; /* Вертикальный скролл */
   scroll-snap-type: y mandatory; /* Привязка по вертикали */
   -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
