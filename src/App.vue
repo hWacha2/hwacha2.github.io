@@ -1014,29 +1014,35 @@ footer {
 
 /* ═══ БЛОКИРОВКА СКРОЛЛА СТРАНИЦЫ (ТОЛЬКО МОБИЛЬНЫЕ) ═══ */
 @media (max-width: 768px) {
+  /* 1. Блокируем скролл самого body, но НЕ фиксируем его position */
   html, body {
     margin: 0 !important;
     padding: 0 !important;
-    height: 100% !important; /* Используем vh вместо 100% */
-
-    box-sizing: border-box;
-    /* УБРАЛИ position: fixed — это разрешает pull-to-refresh */
+    height: 100dvh !important; /* Dynamic Viewport Height (учитывает адресную строку) */
+    width: 100% !important;
+    overflow: hidden !important; /* Запрещаем скролл страницы */
+    /* ВАЖНО: НЕТ position: fixed! Это сохраняет pull-to-refresh */
+    overscroll-behavior: none; /* Запрещаем свайп "назад" между страницами */
   }
 
+  /* 2. Контейнер для свайпа */
   .mobile-swiper-wrapper {
-    height: 100dvh !important; /* Фиксированная высота */
+    height: 100dvh !important; /* Ровно высота видимой области */
     width: 100% !important;
-    overflow-y: auto !important;
+    overflow-y: auto !important; /* auto лучше, чем scroll, для iOS */
     overflow-x: hidden;
 
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch; /* Аппаратный скролл на iOS */
 
-    /* Разрешаем pull-to-refresh */
+    /* КЛЮЧЕВОЙ МОМЕНТ: auto разрешает pull-to-refresh, когда скролл в самом верху */
     overscroll-behavior-y: auto;
-    touch-action: manipulation;
 
+    /* Разрешаем только вертикальный свайп внутри этого блока */
+    touch-action: pan-y;
+
+    /* Скрываем скроллбар */
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -1045,14 +1051,17 @@ footer {
     display: none;
   }
 
+  /* 3. Секции */
   .mobile-section {
-    min-height: 100vh !important;
+    min-height: 100dvh !important; /* Каждая секция минимум в высоту экрана */
     width: 100%;
     scroll-snap-align: start;
     scroll-snap-stop: always;
+
     display: flex;
     flex-direction: column;
     justify-content: center;
+
     margin: 0 !important;
     border-radius: 0 !important;
     border-left: none;
@@ -1061,9 +1070,10 @@ footer {
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
+  /* Если контента много (например, длинный список), разрешаем расти */
   .mobile-section.contglass {
     height: auto !important;
-    min-height: 100vh !important;
+    min-height: 100dvh !important;
   }
 }
 
