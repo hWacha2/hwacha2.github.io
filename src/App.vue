@@ -1144,6 +1144,7 @@ footer {
   }
 
   .avatar {
+
     width: 100px;
     height: 100px;
   }

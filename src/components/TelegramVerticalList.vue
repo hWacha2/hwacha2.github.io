@@ -391,8 +391,8 @@ onMounted(() => loadPosts());
   overflow-y: auto; /* Вертикальный скролл */
   scroll-snap-type: y mandatory; /* Привязка по вертикали */
   -webkit-overflow-scrolling: touch; /* Плавный скролл на iOS */
-
 }
+
 
 /* Вертикальный скроллбар */
 .tg-vertical-list::-webkit-scrollbar {
