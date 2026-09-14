@@ -1013,36 +1013,28 @@ footer {
 }
 
 /* ═══ БЛОКИРОВКА СКРОЛЛА СТРАНИЦЫ (ТОЛЬКО МОБИЛЬНЫЕ) ═══ */
+/* ===== АДАПТАЦИЯ ПОД ТЕЛЕФОНЫ (Проверенная структура) ===== */
 @media (max-width: 768px) {
-  /* 1. Блокируем скролл самого body, но НЕ фиксируем его position */
+  /* 1. Базовый сброс БЕЗ position: fixed и БЕЗ overflow: hidden */
   html, body {
-    margin: 0 !important;
-    padding: 0 !important;
-    height: 100dvh !important; /* Dynamic Viewport Height (учитывает адресную строку) */
-    width: 100% !important;
-    overflow: hidden !important; /* Запрещаем скролл страницы */
-    /* ВАЖНО: НЕТ position: fixed! Это сохраняет pull-to-refresh */
-    overscroll-behavior: none; /* Запрещаем свайп "назад" между страницами */
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    /* Мы намеренно НЕ добавляем сюда position: fixed,
+       чтобы браузер мог перехватить жест pull-to-refresh */
   }
 
-  /* 2. Контейнер для свайпа */
+  /* 2. Главный контейнер свайпера (аналог .feed) */
   .mobile-swiper-wrapper {
-    height: 100dvh !important; /* Ровно высота видимой области */
-    width: 100% !important;
-    overflow-y: auto !important; /* auto лучше, чем scroll, для iOS */
-    overflow-x: hidden;
-
+    width: 100%;
+    height: 100dvh; /* Dynamic Viewport Height (плавно адаптируется под адресную строку) */
+    overflow-y: scroll;
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; /* Аппаратный скролл на iOS */
+    -webkit-overflow-scrolling: touch; /* Аппаратный скролл для iOS */
+    overscroll-behavior-y: auto; /* Ключевое: разрешает pull-to-refresh при скролле вверх */
 
-    /* КЛЮЧЕВОЙ МОМЕНТ: auto разрешает pull-to-refresh, когда скролл в самом верху */
-    overscroll-behavior-y: auto;
-
-    /* Разрешаем только вертикальный свайп внутри этого блока */
-    touch-action: pan-y;
-
-    /* Скрываем скроллбар */
+    /* Скрытие скроллбара */
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -1051,10 +1043,10 @@ footer {
     display: none;
   }
 
-  /* 3. Секции */
+  /* 3. Секции (аналог .card) */
   .mobile-section {
-    min-height: 100dvh !important; /* Каждая секция минимум в высоту экрана */
     width: 100%;
+    height: 100dvh; /* Каждая секция занимает ровно высоту видимой области */
     scroll-snap-align: start;
     scroll-snap-stop: always;
 
@@ -1062,18 +1054,17 @@ footer {
     flex-direction: column;
     justify-content: center;
 
-    margin: 0 !important;
-    border-radius: 0 !important;
-    border-left: none;
-    border-right: none;
-    border-top: none;
+    margin: 0;
+    border-radius: 0;
+    border: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  /* Если контента много (например, длинный список), разрешаем расти */
+  /* Если контента много (например, длинный список модов), разрешаем секции расти,
+     но scroll-snap-align: start гарантирует, что прокрутка начнется с её верха */
   .mobile-section.contglass {
-    height: auto !important;
-    min-height: 100dvh !important;
+    height: auto;
+    min-height: 100dvh;
   }
 }
 
