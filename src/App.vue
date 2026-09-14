@@ -220,6 +220,7 @@ provide('currentLang', currentLang);
 </script>
 
 <template>
+  <div class="app">
   <div class="containerAnim">
     <Star class="star-background"/>
   </div>
@@ -819,7 +820,7 @@ provide('currentLang', currentLang);
     <a href="#mob-mods" class="dot" data-target="mob-mods"></a>
   </nav>
 
-
+</div>
 </template>
 
 <style>
@@ -1022,6 +1023,13 @@ footer {
     /* Мы намеренно НЕ добавляем сюда position: fixed,
        чтобы браузер мог перехватить жест pull-to-refresh */
   }
+  .app
+  {
+    width: 100%;
+    height: 100dvh;
+    position: relative;
+    overflow: hidden;
+}
 
   /* 2. Контейнер для свайпа */
   .mobile-swiper-wrapper {
@@ -1031,7 +1039,6 @@ footer {
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch; /* Аппаратный скролл для iOS */
-    overscroll-behavior-y: auto; /* Ключевое: разрешает pull-to-refresh при скролле вверх */
 
     /* Скрытие скроллбара */
     scrollbar-width: none;
@@ -1044,7 +1051,7 @@ footer {
 
   /* 3. Секции */
   .mobile-section {
-    min-height: 100dvh !important; /* Каждая секция минимум в высоту экрана */
+    min-height: 100dvh; /* Каждая секция минимум в высоту экрана */
     width: 100%;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -1052,6 +1059,7 @@ footer {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    position: relative;
 
     margin: 0 !important;
     border-radius: 0 !important;
