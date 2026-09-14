@@ -892,7 +892,7 @@ html {
 }
 
 body {
-  background: linear-gradient(180deg, #151520 0%, #071a2b 100%);
+  background: #000000;
   color: #e9eef8;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   -webkit-font-smoothing: antialiased;
