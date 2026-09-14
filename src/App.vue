@@ -894,7 +894,7 @@ html {
 }
 
 body {
-  background: #000000;
+  background: #1b2735;
   color: #e9eef8;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   -webkit-font-smoothing: antialiased;
@@ -1121,7 +1121,7 @@ footer {
   }
   body
   {
-        background: #000 !important;
+        background: #1b2735 !important;
   }
 
   .app {
