@@ -484,7 +484,7 @@ provide('currentLang', currentLang);
       </section>
 
       <!-- секция с модами -->
-      <section id="mob-mods" class=" mobile-section ">
+      <section id="mob-mods" class=" mobile-section big-section">
         <div class="contglass p-4 m-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h5 mb-0">{{ t('modsTitle') }}</h2>
@@ -1157,7 +1157,7 @@ footer {
 
   /* 3. Секции */
   .mobile-section {
-    min-height: 100dvh; /* Каждая секция минимум в высоту экрана */
+    height: 100dvh; /* Каждая секция минимум в высоту экрана */
     width: 100%;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -1167,16 +1167,15 @@ footer {
     justify-content: center;
     position: relative;
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-
   }
 
-
-
-  /* Если контента много (например, длинный список), разрешаем расти */
-  .mobile-section.contglass {
-    height: auto !important;
+  .big-section
+  {
+    height: auto;
     min-height: 100dvh !important;
   }
+
+
 }
 
 /* Точки навигации */
