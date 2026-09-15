@@ -1124,6 +1124,8 @@ footer {
         background: #121821 !important;
   }
 
+
+
   .app {
     width: 100%;
     height: 100dvh;
@@ -1167,6 +1169,8 @@ footer {
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
 
   }
+
+
 
   /* Если контента много (например, длинный список), разрешаем расти */
   .mobile-section.contglass {
