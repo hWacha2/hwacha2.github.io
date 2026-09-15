@@ -1157,7 +1157,7 @@ footer {
 
   /* 3. Секции */
   .mobile-section {
-    height: 100dvh; /* Каждая секция минимум в высоту экрана */
+    height: 100dvh; /* Каждая секция занимает высоту экрана */
     width: 100%;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -1250,7 +1250,11 @@ footer {
   }
 
   h1.h3 {
-    font-size: 1.5rem;
+    font-size: 1rem;
+  }
+  h1.h5
+  {
+    font-size: 1.1rem;
   }
 
   .text-muted {
@@ -1267,7 +1271,7 @@ footer {
     width: 90%;
     justify-content: center;
     padding: 0.4rem 0.6rem;
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 
   footer {
