@@ -1,7 +1,10 @@
 <!-- src/components/StarCanvas.vue -->
 <template>
-    <canvas ref="canvas"></canvas>
 
+ <div class="containerAnim">
+    
+    <canvas ref="canvas" class="sparks"></canvas>
+  </div>
 </template>
 
 <script setup>
@@ -98,10 +101,11 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.container {
-  position: relative;
-  height: 100vh;
-  width: 100vw;
+.containerAnim {
+  position: fixed;      /* было absolute */
+  inset: 0;             /* top/right/bottom/left = 0 */
+  z-index: -9999;
+  pointer-events: none;
   background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
   overflow: hidden;
 }

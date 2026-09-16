@@ -395,10 +395,8 @@ provide('currentLang', currentLang);
 
 <template>
   <div class="app">
-    <div class="containerAnim">
-      <Star class="star-background"/>
-    </div>
 
+    <Star class="star-background"/>
 
     <!-- ультра вайбкод кнопка смены языка -->
     <button class="lang-switcher" @click="toggleLang"
@@ -1298,7 +1296,7 @@ footer {
   inset: 0;
   z-index: -201;
   pointer-events: none;
-  background: linear-gradient(210deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05));
+  background: linear-gradient(210deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.05));
 }
 
 </style>
