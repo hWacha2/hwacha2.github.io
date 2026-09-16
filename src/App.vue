@@ -282,7 +282,7 @@ provide('currentLang', currentLang);
                 </div>
               </div>
               <h1 class="h3 mb-2">ishwacha</h1>
-              <h1 class="h5 mb-2">{{ t('subtitle') }}</h1>
+              <p class=" mb-2">{{ t('subtitle') }}</p>
             </div>
           </div>
           <!-- кнопка с бусти -->
@@ -307,7 +307,7 @@ provide('currentLang', currentLang);
           <!-- говно -->
           <div>
             <div class="social-row justify-content-center">
-              <h1 class="h5 mb-2">{{ t('socialTitle') }}</h1>
+              <h1 class="h4 mb-2">{{ t('socialTitle') }}</h1>
             </div>
             <div class="social-row justify-content-center">
               <a class="social-btn btn-vk-depth" href="https://vk.ru/ishwacha" aria-label="ВКонтакте">
@@ -454,7 +454,7 @@ provide('currentLang', currentLang);
       <section id="mob-gallery" class="mobile-section">
         <div class="contglass p-3 m-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">{{ t('galleryTitle') }}</h2>
+            <h1 class="h3 mb-0">{{ t('galleryTitle') }}</h1>
             <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle') }}</small>
           </div>
 
@@ -476,7 +476,7 @@ provide('currentLang', currentLang);
       <section id="mob-tgslider" class=" mobile-section">
         <div class="contglass p-4 m-4">
           <div class="d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-3">{{ t("lastWorks") }}</h2>
+            <h1 class="h3 mb-3">{{ t("lastWorks") }}</h1>
 
           </div>
           <TelegramVerticalList/>
@@ -488,7 +488,7 @@ provide('currentLang', currentLang);
       <section id="mob-mods" class=" mobile-section big-section">
         <div class="contglass p-4 m-4 ">
           <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h5 mb-0">{{ t('modsTitle') }}</h2>
+            <h1 class="h3 mb-0">{{ t('modsTitle') }}</h1>
             <small class="text-secondary" style="text-align: right; display: block;">{{ t('modsSubtitle') }}</small>
           </div>
 
@@ -1248,7 +1248,7 @@ footer {
   }
   h1.h3
   {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
   h1.h4
   {
@@ -1257,6 +1257,10 @@ footer {
   h1.h5
   {
     font-size: 0.9rem;
+  }
+
+  p{
+     font-size: 0.9rem;
   }
 
 
