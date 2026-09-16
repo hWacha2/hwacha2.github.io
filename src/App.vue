@@ -1246,6 +1246,7 @@ footer {
     width: 80px;
     height: 80px;
   }
+
   h1.h3
   {
     font-size: 1.1rem;
