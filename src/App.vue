@@ -1036,6 +1036,7 @@ footer {
   .big-section {
     height: auto;
     min-height: 100dvh !important;
+
   }
 
 
@@ -1278,7 +1279,7 @@ footer {
   color: white;
   position: relative;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
 }
 
