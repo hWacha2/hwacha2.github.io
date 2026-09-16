@@ -88,6 +88,7 @@ function detectLanguage() {
 const avatarLoaded = ref(false);
 const avatarImg = ref(null);
 
+
 const coverLoaded = ref(false);
 
 function toggleLang() {
@@ -258,7 +259,7 @@ provide('currentLang', currentLang);
     <div v-if="isMobile" class="mobile-swiper-wrapper">
       <!-- секция с ссылками -->
       <section id="mob-links" class=" mobile-section ">
-        <div class="contglass p-4 m-4">
+        <div class="contglass p-4 mx-4 my-2">
 
 
           <div class="hero-cover-layout">
@@ -281,13 +282,13 @@ provide('currentLang', currentLang);
                 </div>
               </div>
               <h1 class="h3 mb-2">ishwacha</h1>
-              <p class="fw-weight-bold mb-2">{{ t('subtitle') }}</p>
+              <h1 class="h5 mb-2">{{ t('subtitle') }}</h1>
             </div>
           </div>
           <!-- кнопка с бусти -->
           <div>
             <div class="social-row justify-content-center">
-              <h1 class="h5 mb-2">{{ t('supportSubtitle') }}</h1>
+              <h1 class="h4 mb-2">{{ t('supportSubtitle') }}</h1>
             </div>
             <div class="social-row justify-content-center">
               <a class="social-btn btn-boosty" href="https://boosty.to/ishwacha" aria-label="Boosty">
@@ -485,7 +486,7 @@ provide('currentLang', currentLang);
 
       <!-- секция с модами -->
       <section id="mob-mods" class=" mobile-section big-section">
-        <div class="contglass p-4 m-4">
+        <div class="contglass p-4 m-4 ">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="h5 mb-0">{{ t('modsTitle') }}</h2>
             <small class="text-secondary" style="text-align: right; display: block;">{{ t('modsSubtitle') }}</small>
@@ -995,7 +996,7 @@ body {
 
 
 .lang-label {
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
 
@@ -1055,9 +1056,6 @@ body {
   background: linear-gradient(60deg, #EF7829, #F15A2C);
 }
 
-.btn-patreon {
-  background: linear-gradient(90deg, #0b0c0f, #0b0c0f);
-}
 
 .avatar {
   width: 140px;
@@ -1232,7 +1230,7 @@ footer {
   }
 
   .hero-cover-layout {
-    height: 220px !important;
+    height: 25dvh !important;
     padding: 1rem;
   }
 
@@ -1248,44 +1246,39 @@ footer {
     width: 80px;
     height: 80px;
   }
-
-  h1.h3 {
+  h1.h3
+  {
+    font-size: 1.25rem;
+  }
+  h1.h4
+  {
     font-size: 1rem;
   }
   h1.h5
   {
-    font-size: 1.1rem;
-  }
-
-  .text-muted {
     font-size: 0.9rem;
   }
 
+
+
   .social-row {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
     width: 100%;
   }
 
   .social-btn {
     width: 90%;
     justify-content: center;
-    padding: 0.4rem 0.6rem;
-    font-size: 0.9rem;
+    padding: 0.35rem 0.6rem;
   }
+
 
   footer {
     padding: 1.5rem 0.5rem;
   }
 
-  footer .d-flex {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
 
-  footer .me-3 {
-    margin-right: 0 !important;
-  }
 
 }
 
