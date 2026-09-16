@@ -262,7 +262,7 @@ provide('currentLang', currentLang);
         <div class="contglass p-4 mx-4 my-2">
 
 
-          <div class="hero-cover-layout">
+          <div class="hero-cover-layout mb-2">
             <!-- плейсхолдер пока фон грузится -->
             <div v-if="!coverLoaded" class="hero-cover-skeleton"></div>
             <!-- фон -->
