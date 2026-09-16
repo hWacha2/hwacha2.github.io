@@ -904,17 +904,14 @@ body {
 
 /* ═══ Masonry галерея ═══ */
 .masonry-gallery {
-  column-count: 2; /* 2 колонки на мобильных */
+  column-count: 2;
   column-gap: 1rem;
 }
-
-/* Адаптивность: больше колонок на больших экранах */
 @media (min-width: 576px) {
   .masonry-gallery {
     column-count: 3;
   }
 }
-
 @media (min-width: 768px) {
   .masonry-gallery {
     column-count: 4;
@@ -934,7 +931,7 @@ body {
   display: flex !important;
   justify-content: center;
   align-items: center;
-  min-height: 50vh; /* Минимальная высота, чтобы модалка не схлопывалась при загрузке */
+  min-height: 50vh;
 }
 
 .gallery-modal-img {
@@ -1122,8 +1119,6 @@ footer {
         background: #121821 !important;
   }
 
-
-
   .app {
     width: 100%;
     height: 100dvh;
@@ -1146,7 +1141,6 @@ footer {
     scrollbar-width: none;
     -ms-overflow-style: none;
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-
   }
 
   .mobile-swiper-wrapper::-webkit-scrollbar {
