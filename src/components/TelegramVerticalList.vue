@@ -800,13 +800,13 @@ onBeforeUnmount(() => {
    ═══════════════════════════════════════════════ */
 
 #telegram-vertical {
+  flex: 1 1 auto;
   position: relative;
   width: 100%;
 }
 
 .tg-chat {
   max-height: 72vh;
-
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -1592,9 +1592,11 @@ onBeforeUnmount(() => {
   box-shadow: 0 6px 18px rgba(34, 158, 217, 0.4);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .tg-chat {
-    max-height: 80vh;
+   max-height: none;      /* ← перебиваем 72vh */
+    flex: 1 1 auto;
+    min-height: 0;
     padding: 8px 4px 16px;
   }
 

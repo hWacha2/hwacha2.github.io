@@ -495,7 +495,7 @@ provide('currentLang', currentLang);
       </section>
 
       <section id="mob-gallery" class="mobile-section">
-        <div class="contglass p-3 m-4">
+        <div class="contglass fullsection  p-3 m-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="h3 mb-0">{{ t('galleryTitle') }}</h1>
             <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle') }}</small>
@@ -516,12 +516,12 @@ provide('currentLang', currentLang);
 
       <!-- секция с постами тг -->
       <section id="mob-tgslider" class=" mobile-section">
-        <div class="contglass p-4 m-4">
+        <div class="contglass fullsection p-4 m-4">
           <div class="d-flex justify-content-between align-items-center">
             <h1 class="h3 mb-3">{{ t("lastWorks") }}</h1>
-
           </div>
           <TelegramVerticalList/>
+
           <!--<hr class="border-1 border-secondary my-5"/>-->
         </div>
       </section>
@@ -588,7 +588,7 @@ provide('currentLang', currentLang);
             <p class="fw-weight-bold mb-2">{{ t('subtitle') }}</p>
           </div>
         </div>
-        <!-- кнопка с бусти -->
+        <!-- кнопки поддержки -->
         <div>
           <div class="social-row justify-content-center">
             <h1 class="h5 mb-2">{{ t('supportSubtitle') }}</h1>
@@ -1289,8 +1289,20 @@ footer {
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
 }
+.contglass.fullsection {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
 
-
+  /* Обёртка компонента — растягивается внутри .contglass */
+  .contglass.fullsection > *:last-child {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
 .contglass::after {
   content: "";
   position: absolute;
