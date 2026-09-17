@@ -37,6 +37,9 @@ const translations = reactive({
     watermelonDesc: "Replaces the egg in the hands of Rennala with a watermelon",
     frierenDesc: "Sliders settings for Frieren character from anime \"Frieren beyond journey's end\".",
     dieAloneDesc: "This mod adds the song \"Die Alone\" by Zetsubo Extreme 7★",
+    ctaTitle: "More posts on Telegram",
+    ctaDescription: "All news, art, and updates",
+    ctaFollow: "Follow →"
 
   },
   ru: {
@@ -60,7 +63,9 @@ const translations = reactive({
     watermelonDesc: "Заменяет яйцо в руках Ренналы на арбуз лооол",
     frierenDesc: "Настройки ползунков для персонажа Фрирен из аниме «Провожающая в последний путь Фрирен».",
     dieAloneDesc: "Этот мод добавляет песню «Die Alone» от Zetsubo Extreme 7★",
-
+    ctaTitle: "Больше постов в Telegram",
+    ctaDescription: "Все новости, арты и обновления",
+    ctaFollow: "Подписаться →"
   }
 
 });
@@ -531,18 +536,18 @@ provide('currentLang', currentLang);
 
           <div class="row g-3">
             <ModTile
-              v-for="mod in mods"
-              :key="mod.link"
-              :title="mod.title"
-              :img="mod.img"
-              :link="mod.link"
-              :game="mod.game"
-              :category="mod.category"
-              :uploaded="mod.uploaded"
-              :author="mod.author"
-              :author-avatar="mod.authorAvatar"
-              :description="mod.description[currentLang] || mod.description.en"
-          />
+                v-for="mod in mods"
+                :key="mod.link"
+                :title="mod.title"
+                :img="mod.img"
+                :link="mod.link"
+                :game="mod.game"
+                :category="mod.category"
+                :uploaded="mod.uploaded"
+                :author="mod.author"
+                :author-avatar="mod.authorAvatar"
+                :description="mod.description[currentLang] || mod.description.en"
+            />
           </div>
         </div>
         <footer>
@@ -652,10 +657,10 @@ provide('currentLang', currentLang);
       <section id="tgslider" class="contglass p-4 mt-4 mb-4">
 
         <div class="d-flex justify-content-between align-items-center">
-          <h2 class="h5 mb-0">{{ t("lastWorks") }}</h2>
+          <h2 class="h5 mb-3">{{ t("lastWorks") }}</h2>
 
         </div>
-        <TelegramSlider/>
+       <TelegramVerticalList/>
         <!--<hr class="border-1 border-secondary my-5"/>-->
 
       </section>
@@ -670,6 +675,7 @@ provide('currentLang', currentLang);
 
         <div class="row g-3">
           <ModTile
+
               v-for="mod in mods"
               :key="mod.link"
               :title="mod.title"
@@ -1034,8 +1040,11 @@ footer {
   .big-section {
     height: auto;
     min-height: 100dvh !important;
+    scroll-snap-align: start;
+    scroll-snap-stop: normal;
 
   }
+
 
 
 }
