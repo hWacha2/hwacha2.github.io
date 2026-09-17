@@ -367,7 +367,6 @@ async function fetchTelegram() {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const avatarImg = doc.querySelector('.tgme_page_photo img, .tgme_header img')
   const channelAvatarUrl = avatarImg?.getAttribute('src') || ''
-  console.log('[parse] channel avatar:', channelAvatarUrl)
   const messages = doc.querySelectorAll('.tgme_widget_message_wrap');
 
   const parsed = [];
@@ -378,7 +377,6 @@ async function fetchTelegram() {
 
     // ID сообщения (data-post)
     const postId = msg.getAttribute('data-post') || '';
-
     const allTexts = Array.from(msg.querySelectorAll('.tgme_widget_message_text'));
     const textEl = allTexts.filter(el => !el.closest('[class*="reply"]')).pop() || allTexts.pop();
     if (!textEl) return;

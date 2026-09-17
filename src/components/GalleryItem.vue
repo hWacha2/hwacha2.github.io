@@ -41,7 +41,7 @@ const handleClick = () => {
 <template>
   <div class="masonry-item">
     <div
-      class="card-glass gallery-item p-2"
+      class="card-glass gallery-item p-1"
       style="overflow: hidden; cursor: pointer;"
        @click="handleClick"
       role="button"
