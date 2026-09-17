@@ -1290,6 +1290,7 @@ footer {
   overflow: hidden;
 }
 
+
 .contglass::after {
   content: "";
   position: absolute;
