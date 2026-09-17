@@ -65,7 +65,14 @@
           <!-- Аватар канала -->
           <div class="tg-msg-avatar">
             <div class="tg-avatar-circle">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+              <img
+                  v-if="channelAvatar"
+                  :src="channelAvatar"
+                  alt="ishwacha"
+                  class="tg-avatar-img"
+                  @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
+              />
+              <svg v-else viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
                 <path
                     d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
               </svg>
@@ -152,12 +159,7 @@
               </svg>
             </div>
 
-            <!-- Хвостик у последнего сообщения -->
-            <div class="tg-msg-tail">
-              <svg width="8" height="13" viewBox="0 0 8 13" fill="currentColor">
-                <path d="M8 13V0c-.3 0-.6.1-.8.3L.3 7.2c-.4.4-.4 1 0 1.4L7.2 12.7c.2.2.5.3.8.3z"/>
-              </svg>
-            </div>
+
           </div>
         </div>
       </article>
@@ -171,9 +173,9 @@
                   d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
             </svg>
           </div>
-          <h3 class="h6 mb-1 text-white">{{t('ctaTitle') }}</h3>
-          <p class="small text-white-50 mb-2">{{t('ctaDescription') }}</p>
-          <span class="btn btn-sm btn-primary rounded-pill px-4">{{t('ctaFollow') }}</span>
+          <h3 class="h6 mb-1 text-white">{{ t('ctaTitle') }}</h3>
+          <p class="small text-white-50 mb-2">{{ t('ctaDescription') }}</p>
+          <span class="btn btn-sm btn-primary rounded-pill px-4">{{ t('ctaFollow') }}</span>
         </div>
       </a>
     </div>
@@ -233,7 +235,14 @@
           <div class="tg-modal-info">
             <div class="tg-modal-header">
               <div class="tg-avatar-circle tg-avatar-sm">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14">
+                <img
+                    v-if="channelAvatar"
+                    :src="channelAvatar"
+                    alt="ishwacha"
+                    class="tg-avatar-img"
+                    @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
+                />
+                <svg v-else viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
                   <path
                       d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
                 </svg>
@@ -244,7 +253,7 @@
               </div>
             </div>
 
-            <div v-if="modalPost.quotedText" class="tg-msg-reply mb-2" @click="scrollToQuoted(modalPost)">
+             <div v-if="modalPost.quotedText" class="tg-msg-reply mb-2" @click="scrollToQuoted(modalPost)">
               <div class="tg-reply-bar"></div>
               <div class="tg-reply-content">
                 <div class="tg-reply-title">quote</div>
@@ -277,6 +286,7 @@ const t = inject('t');
 const currentLang = inject('currentLang', ref('en'));
 
 const posts = ref([]);
+const channelAvatar = ref('')
 const loading = ref(true);
 const error = ref(false);
 
@@ -337,6 +347,7 @@ function isHiddenOverflow(count, idx) {
 async function fetchTelegram() {
   const targetUrl = `https://t.me/s/${CHANNEL}`;
   const urlsToTry = [targetUrl, `${PROXY_BASE}${encodeURIComponent(targetUrl)}`];
+  // Аватар канала (берём со страницы превью)
 
   let html = null;
   for (const url of urlsToTry) {
@@ -353,6 +364,9 @@ async function fetchTelegram() {
   if (!html) throw new Error('Не удалось получить HTML');
 
   const doc = new DOMParser().parseFromString(html, 'text/html');
+  const avatarImg = doc.querySelector('.tgme_page_photo img, .tgme_header img')
+  const channelAvatarUrl = avatarImg?.getAttribute('src') || ''
+  console.log('[parse] channel avatar:', channelAvatarUrl)
   const messages = doc.querySelectorAll('.tgme_widget_message_wrap');
 
   const parsed = [];
@@ -496,7 +510,12 @@ async function fetchTelegram() {
     });
   });
 
-  return parsed.sort((a, b) => b.timestamp - a.timestamp).slice(0, POSTS_LIMIT);
+
+  return {
+    posts: parsed.sort((a, b) => b.timestamp - a.timestamp).slice(0, POSTS_LIMIT),
+    channelAvatar: channelAvatarUrl
+  }
+
 }
 
 function truncate(str, max) {
@@ -742,7 +761,9 @@ async function loadPosts() {
   error.value = false;
   postRefs.value = [];
   try {
-    posts.value = await fetchTelegram();
+    const result = await fetchTelegram()
+    posts.value = result.posts
+    channelAvatar.value = result.channelAvatar
     posts.value.forEach(p => {
       p.originalText = p.fullText;
       p.originalQuoted = p.quotedText || '';
@@ -783,7 +804,8 @@ onBeforeUnmount(() => {
 }
 
 .tg-chat {
-  height: 72vh;
+  max-height: 72vh;
+
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
@@ -820,7 +842,6 @@ onBeforeUnmount(() => {
   display: flex;
   padding: 2px 4px;
   flex-shrink: 0;
-  /* Убран cursor: pointer — клик по телу больше ничего не открывает */
 }
 
 .tg-msg--incoming {
@@ -862,6 +883,16 @@ onBeforeUnmount(() => {
   justify-content: center;
   color: #fff;
   box-shadow: 0 2px 8px rgba(34, 158, 217, 0.3);
+  overflow: hidden; /* чтобы img не вылезал */
+
+}
+
+.tg-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .tg-avatar-sm {
@@ -911,21 +942,6 @@ onBeforeUnmount(() => {
   background: #23435f;
 }
 
-.tg-msg-tail {
-  position: absolute;
-  bottom: 0;
-  left: -7px;
-  color: #182533;
-  transition: color 0.15s ease;
-}
-
-.tg-msg-bubble:hover .tg-msg-tail {
-  color: #1c2c3d;
-}
-
-.tg-msg--highlight .tg-msg-tail {
-  color: #23435f;
-}
 
 .tg-msg-header {
   display: flex;
@@ -1408,7 +1424,6 @@ onBeforeUnmount(() => {
 
 .tg-modal-info {
   padding: 16px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
@@ -1578,7 +1593,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 480px) {
   .tg-chat {
-    height: 80vh;
+    max-height: 80vh;
     padding: 8px 4px 16px;
   }
 
