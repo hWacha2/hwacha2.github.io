@@ -495,7 +495,7 @@ provide('currentLang', currentLang);
       </section>
 
       <section id="mob-gallery" class="mobile-section">
-        <div class="contglass fullsection  p-3 m-4">
+        <div class="contglass  p-3 m-4">
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h1 class="h3 mb-0">{{ t('galleryTitle') }}</h1>
             <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle') }}</small>
