@@ -882,7 +882,7 @@ onBeforeUnmount(() => {
 
 </script>
 
-<style scoped>
+<style >
 /* ═══════════════════════════════════════════════
    TELEGRAM-STYLE VERTICAL CHAT
    ═══════════════════════════════════════════════ */
@@ -1725,7 +1725,7 @@ onBeforeUnmount(() => {
 }
 
 .skeleton-header {
-  width: 220px;
+  width: 150px;
   height: 14px;
   margin-bottom: 8px;
 }

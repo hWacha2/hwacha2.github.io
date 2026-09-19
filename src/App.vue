@@ -69,9 +69,9 @@ const translations = reactive({
 
 });
 const nickName = 'ishwacha'
+
 const coverUrl = 'cover.png'
 const avatarUrl = 'ava.png'
-
 const coverLoaded = ref(false)
 const avatarLoaded = ref(false)
 
