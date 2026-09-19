@@ -809,6 +809,7 @@ function scrollToQuoted(post) {
   if (modalOpen.value) {
     console.log('[scrollToQuoted] closing modal');
     closeModal();
+
   }
 
   if (chatContainer.value) {
