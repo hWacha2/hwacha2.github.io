@@ -182,8 +182,6 @@
     </div>
 
     <!-- ═══ МОДАЛКА (Telegram-style) ═══ -->
-    <!-- ═══ МОДАЛКА (Telegram-style) ═══ -->
-    <!-- ═══ МОДАЛКА (Telegram-style) ═══ -->
     <Transition name="modal-fade">
       <div v-if="modalOpen" class="tg-modal-overlay" :class="{ 'is-dragging': isDragging }" @click.self="closeModal">
         <div class="tg-modal-box" :style="{ transform: dragY > 0 ? `translateY(${dragY}px)` : '' }">
@@ -1504,6 +1502,9 @@ onBeforeUnmount(() => {
 /* ═══════════════════════════════════════════════
    АНИМАЦИЯ ОТКРЫТИЯ/ЗАКРЫТИЯ МОДАЛКИ + СВАЙП ВНИЗ
    ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════
+   АНИМАЦИЯ ОТКРЫТИЯ/ЗАКРЫТИЯ МОДАЛКИ
+   ═══════════════════════════════════════════════ */
 .tg-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1514,6 +1515,8 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: center;
   padding: 20px;
+  /* Плавное появление/исчезновение фона */
+  transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), background 0.35s ease;
 }
 
 .tg-modal-box {
@@ -1528,36 +1531,68 @@ onBeforeUnmount(() => {
   flex-direction: column;
   position: relative;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
-  /* Плавный возврат при отмене свайпа вниз */
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+  /* Плавное масштабирование и сдвиг при открытии/закрытии */
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Отключаем транзиции коробки во время свайпа вниз для мгновенного отклика */
+/* Отключаем транзиции во время свайпа для мгновенного отклика */
 .tg-modal-overlay.is-dragging .tg-modal-box {
   transition: none !important;
 }
 
-/* Классы для Vue Transition появления/исчезновения всей модалки */
-.modal-fade-enter-active .tg-modal-box,
-.modal-fade-leave-active .tg-modal-box {
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
-}
+/* ═══ Классы Vue Transition для модалки ═══ */
 
-.modal-fade-enter-from .tg-modal-box,
-.modal-fade-leave-to .tg-modal-box {
-  transform: scale(0.95) translateY(20px);
+/* Начальное состояние при появлении (модалка снизу, прозрачная) */
+.modal-fade-enter-from {
   opacity: 0;
 }
 
-.modal-fade-enter-to .tg-modal-box,
-.modal-fade-leave-from .tg-modal-box {
-  transform: scale(1) translateY(0);
+.modal-fade-enter-from .tg-modal-box {
+  transform: translateY(80px) scale(0.92);
+  opacity: 0;
+}
+
+/* Конечное состояние при появлении (модалка на месте, видимая) */
+.modal-fade-enter-to {
   opacity: 1;
 }
 
-.modal-fade-enter-from,
+.modal-fade-enter-to .tg-modal-box {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Начальное состояние при закрытии (модалка на месте, видимая) */
+.modal-fade-leave-from {
+  opacity: 1;
+}
+
+.modal-fade-leave-from .tg-modal-box {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* Конечное состояние при закрытии (модалка уезжает вниз и исчезает) */
 .modal-fade-leave-to {
   opacity: 0;
+}
+
+.modal-fade-leave-to .tg-modal-box {
+  transform: translateY(120px) scale(0.9);
+  opacity: 0;
+}
+
+/* Активные фазы анимации (длительность и easing) */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-fade-enter-active .tg-modal-box,
+.modal-fade-leave-active .tg-modal-box {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tg-modal-nav {
