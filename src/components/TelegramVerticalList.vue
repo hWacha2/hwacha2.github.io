@@ -1567,7 +1567,6 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   pointer-events: none;
-
 }
 
 .tg-nav-btn {
