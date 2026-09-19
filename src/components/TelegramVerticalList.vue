@@ -1616,7 +1616,6 @@ onBeforeUnmount(() => {
   color: #fff;
   cursor: pointer;
   display: flex;
-
   transition: background 0.15s, transform 0.15s;
 }
 
