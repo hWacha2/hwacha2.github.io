@@ -84,6 +84,7 @@ const artsMobile = [
   'arts/art7.png'
 ]
 
+
 const artsDesktop = [
   'arts/art1.png',
   'arts/art2.png',

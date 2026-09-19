@@ -1606,7 +1606,6 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-
 .tg-nav-btn {
   pointer-events: auto;
   width: 15%;
