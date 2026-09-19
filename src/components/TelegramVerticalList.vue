@@ -909,6 +909,7 @@ onBeforeUnmount(() => {
   scroll-behavior: smooth;
 }
 
+
 .tg-chat::-webkit-scrollbar {
   width: 6px;
 }
@@ -1604,6 +1605,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   pointer-events: none;
 }
+
 
 .tg-nav-btn {
   pointer-events: auto;
