@@ -182,101 +182,120 @@
     </div>
 
     <!-- ═══ МОДАЛКА (Telegram-style) ═══ -->
-    <div v-if="modalOpen" class="tg-modal-overlay" @click.self="closeModal">
-      <div class="tg-modal-box">
-        <button class="tg-modal-close" @click="closeModal" aria-label="Close">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-        </button>
+    <!-- ═══ МОДАЛКА (Telegram-style) ═══ -->
+    <!-- ═══ МОДАЛКА (Telegram-style) ═══ -->
+    <Transition name="modal-fade">
+      <div v-if="modalOpen" class="tg-modal-overlay" :class="{ 'is-dragging': isDragging }" @click.self="closeModal">
+        <div class="tg-modal-box" :style="{ transform: dragY > 0 ? `translateY(${dragY}px)` : '' }">
+          <button class="tg-modal-close" @click="closeModal" aria-label="Close">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18 6L6 18M6 6l12 12"/>
+            </svg>
+          </button>
 
-        <div v-if="modalPost" class="tg-modal-content">
-          <!-- Галерея медиа -->
-          <div class="tg-modal-media">
-            <template v-if="modalPost.media && modalPost.media.length > 0">
-              <div class="tg-modal-nav" v-if="flatMedia.length > 1 && currentMedia && currentMedia.type !== 'video'">
-                <button class="tg-nav-btn" @click="prevMedia" :disabled="flatIndex === 0">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M15 18l-6-6 6-6"/>
+          <div v-if="modalPost" class="tg-modal-content">
+            <!-- Вьюпорт галереи с обработчиками свайпов -->
+            <div
+              class="tg-modal-media-viewport"
+              :class="{ 'is-dragging': isDragging }"
+              @touchstart="onTouchStart"
+              @touchmove="onTouchMove"
+              @touchend="onTouchEnd"
+              @touchcancel="onTouchEnd"
+            >
+              <!-- Единый трек, который сдвигается как поезд -->
+              <div
+                class="tg-modal-media-track"
+                :style="{ transform: `translateX(calc(-100% * ${flatIndex} + ${dragX}px))` }"
+              >
+                <div
+                  v-for="(item, idx) in flatMedia"
+                  :key="item.media.src + '-' + idx"
+                  class="tg-modal-media-slide"
+                >
+                  <img
+                      v-if="item.media.type === 'image'"
+                      :src="item.media.src"
+                      :alt="item.post.title"
+                      class="tg-modal-img"
+                      loading="lazy"
+                      @error="$event.target.style.display='none'"
+                  />
+                  <video
+                      v-else-if="item.media.type === 'video'"
+                      :src="item.media.src"
+                      :poster="item.media.poster"
+                      controls
+                      autoplay
+                      playsinline
+                      class="tg-modal-video"
+                  ></video>
+                </div>
+              </div>
+
+              <!-- Кнопки навигации (скрыты на мобильных благодаря d-none d-md-flex) -->
+              <div class="tg-modal-nav d-none d-md-flex" v-if="flatMedia.length > 1">
+                <button class="tg-nav-btn left" @click.stop="prevMedia" :disabled="flatIndex === 0">
+                  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
                   </svg>
                 </button>
-                <button class="tg-nav-btn" @click="nextMedia" :disabled="flatIndex === flatMedia.length - 1">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M9 18l6-6-6-6"/>
+                <button class="tg-nav-btn right" @click.stop="nextMedia" :disabled="flatIndex === flatMedia.length - 1">
+                  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"/>
                   </svg>
                 </button>
               </div>
-
-              <template v-if="currentMedia">
-                <img
-                    v-if="currentMedia.type === 'image'"
-                    :src="currentMedia.src"
-                    :alt="modalPost.title"
-                    class="tg-modal-img"
-                    @error="$event.target.style.display='none'"
-                />
-                <video
-                    v-else-if="currentMedia.type === 'video'"
-                    :src="currentMedia.src"
-                    :poster="currentMedia.poster"
-                    controls
-                    autoplay
-                    playsinline
-                    class="tg-modal-video"
-                ></video>
-              </template>
 
               <div v-if="flatMedia.length > 1" class="tg-modal-counter">
                 {{ flatIndex + 1 }} / {{ flatMedia.length }}
               </div>
-            </template>
-          </div>
-
-          <!-- Инфо о посте -->
-          <div class="tg-modal-info">
-            <div class="tg-modal-header">
-              <div class="tg-avatar-circle tg-avatar-sm">
-                <img
-                    v-if="channelAvatar"
-                    :src="channelAvatar"
-                    alt="ishwacha"
-                    class="tg-avatar-img"
-                    @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
-                />
-                <svg v-else viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <path
-                      d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
-                </svg>
-              </div>
-              <div>
-                <div class="fw-bold text-white">ishwacha</div>
-                <div class="tg-modal-date small text-secondary">{{ modalPost.date }}</div>
-              </div>
             </div>
 
-             <div v-if="modalPost.quotedText" class="tg-msg-reply mb-2" @click="scrollToQuoted(modalPost)">
-              <div class="tg-reply-bar"></div>
-              <div class="tg-reply-content">
-                <div class="tg-reply-title">quote</div>
-                <div class="tg-reply-text">{{ modalPost.quotedText }}</div>
+            <!-- Инфо о посте -->
+            <div class="tg-modal-info">
+              <div class="tg-modal-header">
+                <div class="tg-avatar-circle tg-avatar-sm">
+                  <img
+                      v-if="channelAvatar"
+                      :src="channelAvatar"
+                      alt="ishwacha"
+                      class="tg-avatar-img"
+                      @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
+                  />
+                  <svg v-else viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                    <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="fw-bold text-white">ishwacha</div>
+                  <div class="tg-modal-date small text-secondary">{{ modalPost.date }}</div>
+                </div>
               </div>
-            </div>
 
-            <div class="tg-modal-text" v-html="linkify(modalPost.fullText)"></div>
+              <div v-if="modalPost.quotedText" class="tg-msg-reply mb-2" @click="scrollToQuoted(modalPost)">
+                <div class="tg-reply-bar"></div>
+                <div class="tg-reply-content">
+                  <div class="tg-reply-title">quote</div>
+                  <div class="tg-reply-text">{{ modalPost.quotedText }}</div>
+                </div>
+              </div>
 
-            <div class="tg-modal-footer">
-              <a :href="modalPost.link" target="_blank" rel="noopener" class="social-btn btn-to-tg">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
-                  <path
-                      d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
-                </svg>
-                {{ t("toPost") || 'Открыть в Telegram' }}
-              </a>
+              <div class="tg-modal-text" v-html="linkify(modalPost.fullText)"></div>
+
+              <div class="tg-modal-footer">
+                <a :href="modalPost.link" target="_blank" rel="noopener" class="social-btn btn-to-tg">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
+                    <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
+                  </svg>
+                  {{ t("toPost") || 'Открыть в Telegram' }}
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Transition>
   </div>
 </template>
 
@@ -323,6 +342,88 @@ const CHANNEL = 'ishwacha';
 const PROXY_BASE = 'https://social-proxy.gbaranovskaa76.workers.dev/?url=';
 const POSTS_LIMIT = 10;
 
+// ═══ Состояние перетаскивания (drag-and-drop) ═══
+const isDragging = ref(false);
+const dragX = ref(0);
+const dragY = ref(0);
+let startX = 0;
+let startY = 0;
+let isVertical = false;
+
+function onTouchStart(e) {
+  startX = e.touches[0].clientX;
+  startY = e.touches[0].clientY;
+  isDragging.value = true;
+  dragX.value = 0;
+  dragY.value = 0;
+  isVertical = false;
+}
+
+function onTouchMove(e) {
+  if (!isDragging.value) return;
+
+  const currentX = e.touches[0].clientX;
+  const currentY = e.touches[0].clientY;
+  const diffX = currentX - startX;
+  const diffY = currentY - startY;
+
+  if (Math.abs(diffX) > Math.abs(diffY)) {
+    // Горизонтальный свайп (перелистывание)
+    isVertical = false;
+    dragX.value = diffX;
+    e.preventDefault(); // Блокируем скролл страницы только при горизонтальном движении
+  } else {
+    // Вертикальный свайп (закрытие модалки)
+    isVertical = true;
+    if (diffY > 0) {
+      dragY.value = diffY;
+      e.preventDefault(); // Блокируем скролл страницы при свайпе вниз для закрытия
+    }
+  }
+}
+
+function onTouchEnd(e) {
+  if (!isDragging.value) return;
+  isDragging.value = false;
+
+  const thresholdX = 50;
+  const thresholdY = 80;
+
+  if (!isVertical) {
+    if (dragX.value < -thresholdX && flatIndex.value < flatMedia.value.length - 1) {
+      flatIndex.value++; // Свайп влево -> следующий
+    } else if (dragX.value > thresholdX && flatIndex.value > 0) {
+      flatIndex.value--; // Свайп вправо -> предыдущий
+    }
+    dragX.value = 0; // Сброс для плавного "доезжания" на место
+  } else {
+    if (dragY.value > thresholdY) {
+      closeModal(); // Свайп вниз достаточно сильный -> закрываем
+    } else {
+      dragY.value = 0; // Возврат модалки на место
+    }
+    dragX.value = 0;
+  }
+}
+
+// ═══ Навигация для кнопок на ПК ═══
+function nextMedia() {
+  if (flatIndex.value < flatMedia.value.length - 1) {
+    flatIndex.value++;
+  }
+}
+
+function prevMedia() {
+  if (flatIndex.value > 0) {
+    flatIndex.value--;
+  }
+}
+watch(flatIndex, (newIdx) => {
+  const entry = flatMedia.value[newIdx];
+  if (entry && entry.post) {
+    modalPost.value = entry.post;
+  }
+});
 // ═══ Telegram-style media-grid классы ═══
 function mediaGridClass(count) {
   if (count <= 0) return '';
@@ -419,7 +520,6 @@ async function fetchTelegram() {
       }
       if (match) {
         quotedPostId = match[1];
-        console.log('[parse] found quotedPostId =', quotedPostId, 'from href =', href);
       }
 
       // 2) Извлекаем автора
@@ -667,19 +767,6 @@ function closeModal() {
   document.body.style.overflow = '';
 }
 
-function nextMedia() {
-  if (flatIndex.value < flatMedia.value.length - 1) {
-    flatIndex.value++;
-    modalPost.value = flatMedia.value[flatIndex.value].post;
-  }
-}
-
-function prevMedia() {
-  if (flatIndex.value > 0) {
-    flatIndex.value--;
-    modalPost.value = flatMedia.value[flatIndex.value].post;
-  }
-}
 
 // ═══ Скролл к цитируемому сообщению с подсветкой ═══
 function scrollToQuoted(post) {
@@ -790,6 +877,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeydown);
   if (highlightTimer) clearTimeout(highlightTimer);
 });
+
 </script>
 
 <style>
@@ -1340,7 +1428,6 @@ onBeforeUnmount(() => {
 
 .tg-modal-content {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
   height: 100%;
   overflow: hidden;
 }
@@ -1353,24 +1440,121 @@ onBeforeUnmount(() => {
   }
 }
 
-.tg-modal-media {
+/* ═══════════════════════════════════════════════
+   КАРУСЕЛЬ ("ПОЕЗД") МЕДИА
+   ═══════════════════════════════════════════════ */
+.tg-modal-media-viewport {
   position: relative;
   background: #0e1621;
+  width: 100%;
+  min-height: 300px;
+  max-height: 70vh;
+  overflow: hidden;
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 300px;
+}
+
+.tg-modal-media-track {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  /* Плавное "доезжание" до позиции при изменении flatIndex или сбросе dragX */
+  transition: transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: transform;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Во время перетаскивания отключаем транзиции для мгновенного отклика на палец */
+.tg-modal-media-viewport.is-dragging .tg-modal-media-track {
+  transition: none !important;
+}
+
+.tg-modal-media-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+
+  justify-content: center;
   overflow: hidden;
 }
 
 .tg-modal-img,
 .tg-modal-video {
   max-width: 100%;
-  max-height: 70vh;
+  max-height: 100%;
   width: auto;
   height: auto;
   object-fit: contain;
   display: block;
+  -webkit-user-drag: none; /* Запрет нативного перетаскивания картинки браузером */
+  user-select: none;
+}
+
+.tg-modal-video {
+  pointer-events: auto; /* Видео должно реагировать на клики для play/pause */
+}
+
+/* ═══════════════════════════════════════════════
+   АНИМАЦИЯ ОТКРЫТИЯ/ЗАКРЫТИЯ МОДАЛКИ + СВАЙП ВНИЗ
+   ═══════════════════════════════════════════════ */
+.tg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 10, 15, 0.88);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.tg-modal-box {
+  background: #17212b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 820px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  /* Плавный возврат при отмене свайпа вниз */
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+}
+
+/* Отключаем транзиции коробки во время свайпа вниз для мгновенного отклика */
+.tg-modal-overlay.is-dragging .tg-modal-box {
+  transition: none !important;
+}
+
+/* Классы для Vue Transition появления/исчезновения всей модалки */
+.modal-fade-enter-active .tg-modal-box,
+.modal-fade-leave-active .tg-modal-box {
+  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+}
+
+.modal-fade-enter-from .tg-modal-box,
+.modal-fade-leave-to .tg-modal-box {
+  transform: scale(0.95) translateY(20px);
+  opacity: 0;
+}
+
+.modal-fade-enter-to .tg-modal-box,
+.modal-fade-leave-from .tg-modal-box {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
 }
 
 .tg-modal-nav {
@@ -1380,31 +1564,43 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: space-between;
   pointer-events: none;
-  padding: 0 8px;
+
 }
 
 .tg-nav-btn {
   pointer-events: auto;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+  width: 15%;
+  height: 100%;
   border: none;
-  background: rgba(0, 0, 0, 0.55);
+  outline: none;
+  opacity: 0;
   color: #fff;
   cursor: pointer;
   display: flex;
-  align-items: center;
-  justify-content: center;
+
   transition: background 0.15s, transform 0.15s;
 }
 
+.tg-nav-btn.left {
+
+  align-items: center;
+  justify-content: left;
+  background: linear-gradient(90deg, rgba(0, 0, 10, 0.55), transparent);
+}
+
+.tg-nav-btn.right {
+  align-items: center;
+  justify-content: right;
+  background: linear-gradient(270deg, rgba(0, 0, 10, 0.55), transparent);
+}
+
 .tg-nav-btn:hover:not(:disabled) {
-  background: rgba(34, 158, 217, 0.8);
-  transform: scale(1.05);
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .tg-nav-btn:disabled {
-  opacity: 0.3;
+  opacity: 0;
   cursor: not-allowed;
 }
 
@@ -1491,7 +1687,7 @@ onBeforeUnmount(() => {
 }
 
 .skeleton-header {
-  width: 110px;
+  width: 220px;
   height: 14px;
   margin-bottom: 8px;
 }
@@ -1592,7 +1788,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 576px) {
   .tg-chat {
-   max-height: none;      /* ← перебиваем 72vh */
+    max-height: none; /* ← перебиваем 72vh */
     flex: 1 1 auto;
     min-height: 0;
     padding: 8px 4px 16px;

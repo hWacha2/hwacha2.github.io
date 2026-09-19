@@ -2,7 +2,6 @@
 import {ref, onMounted, onUnmounted, reactive, provide, nextTick} from "vue";
 import ModTile from './components/ModTile.vue';
 import Star from './components/StarCanvas.vue';
-import TelegramSlider from './components/TelegramSlider.vue';
 import GalleryItem from './components/GalleryItem.vue';
 import TelegramVerticalList from './components/TelegramVerticalList.vue';
 import {Modal} from 'bootstrap';
@@ -556,11 +555,9 @@ provide('currentLang', currentLang);
           </div>
         </footer>
       </section>
-
-
     </div>
 
-    <!-- пк версия -->
+    <!-- пк версия ======================================================================================= -->
     <main v-else class="container p-4 desktop-layout">
       <!-- секция с ссылками -->
       <section id="links" class="contglass p-4 mt-4 mb-4">
