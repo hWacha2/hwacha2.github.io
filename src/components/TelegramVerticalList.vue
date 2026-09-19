@@ -382,27 +382,30 @@ function onTouchMove(e) {
   }
 }
 
-function onTouchEnd(e) {
-  if (!isDragging.value) return;
-  isDragging.value = false;
+function onTouchEnd() {
+  if (!isDragging.value) return
+  isDragging.value = false
 
-  const thresholdX = 50;
-  const thresholdY = 80;
+  const thresholdX = 50
+  const thresholdY = 80
 
   if (!isVertical) {
+    // ─── Горизонтальный свайп ───
     if (dragX.value < -thresholdX && flatIndex.value < flatMedia.value.length - 1) {
-      flatIndex.value++; // Свайп влево -> следующий
+      flatIndex.value++
     } else if (dragX.value > thresholdX && flatIndex.value > 0) {
-      flatIndex.value--; // Свайп вправо -> предыдущий
+      flatIndex.value--
     }
-    dragX.value = 0; // Сброс для плавного "доезжания" на место
+    dragX.value = 0
+    dragY.value = 0     // ⚠️ на всякий случай, если что-то накопилось
   } else {
+    // ─── Вертикальный свайп ───
     if (dragY.value > thresholdY) {
-      closeModal(); // Свайп вниз достаточно сильный -> закрываем
-    } else {
-      dragY.value = 0; // Возврат модалки на место
+      closeModal()
     }
-    dragX.value = 0;
+    // ⚠️ сбрасываем dragY ВСЕГДА — и после closeModal, и после возврата
+    dragY.value = 0
+    dragX.value = 0
   }
 }
 
