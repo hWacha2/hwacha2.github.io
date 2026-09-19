@@ -883,7 +883,7 @@ onBeforeUnmount(() => {
 
 </script>
 
-<style>
+<style scoped>
 /* ═══════════════════════════════════════════════
    TELEGRAM-STYLE VERTICAL CHAT
    ═══════════════════════════════════════════════ */

@@ -715,7 +715,7 @@ provide('currentLang', currentLang);
         aria-hidden="true"
     >
       <!-- modal-xl делает окно максимально широким на больших экранах -->
-      <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-dialog modal-dialog-centered modal-fullscreen">
         <div class="modal-content card-glass"
              style="background: rgba(10, 10, 15, 0.95); border: 1px solid rgba(255,255,255,0.1);">
 
@@ -792,6 +792,8 @@ body {
 
 /* ═══ Модалка галереи ═══ */
 #galleryModal .modal-content {
+  padding: 10px;
+
   background: rgba(10, 10, 15, 0.95) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 16px !important;
@@ -814,7 +816,6 @@ body {
   object-fit: contain; /* Сохраняет пропорции, не обрезая картинку */
   border-radius: 8px;
   display: block;
-  /* Плавное появление */
   animation: modal-img-fade-in 0.3s ease-out;
 }
 
