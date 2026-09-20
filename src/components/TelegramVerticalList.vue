@@ -83,8 +83,14 @@
           <div class="tg-msg-body">
             <!-- Заголовок канала -->
             <div class="tg-msg-header">
-              <a href="https://t.me/ishwacha" target="_blank" rel="noopener" class="tg-channel-name" @click.stop>
-                ishwacha
+              <a
+                  :href="post.authorLink || `https://t.me/${CHANNEL}`"
+                  target="_blank"
+                  rel="noopener"
+                  class="tg-channel-name"
+                  @click.stop
+              >
+                {{ post.authorName || CHANNEL }}
               </a>
               <span v-if="post.translated" class="tg-translated-badge">auto</span>
             </div>
@@ -166,7 +172,13 @@
       </article>
 
       <!-- CTA-сообщение -->
-      <a href="https://t.me/ishwacha" target="_blank" rel="noopener" class="tg-msg tg-msg--system" @click.stop>
+      <a
+          :href="`https://t.me/${CHANNEL}`"
+          target="_blank"
+          rel="noopener"
+          class="tg-msg tg-msg--system"
+          @click.stop
+      >
         <div class="tg-system-card">
           <div class="tg-cta-icon mb-2">
             <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
@@ -194,22 +206,22 @@
           <div v-if="modalPost" class="tg-modal-content">
             <!-- Вьюпорт галереи с обработчиками свайпов -->
             <div
-              class="tg-modal-media-viewport"
-              :class="{ 'is-dragging': isDragging }"
-              @touchstart="onTouchStart"
-              @touchmove="onTouchMove"
-              @touchend="onTouchEnd"
-              @touchcancel="onTouchEnd"
+                class="tg-modal-media-viewport"
+                :class="{ 'is-dragging': isDragging }"
+                @touchstart="onTouchStart"
+                @touchmove="onTouchMove"
+                @touchend="onTouchEnd"
+                @touchcancel="onTouchEnd"
             >
               <!-- Единый трек, который сдвигается как поезд -->
               <div
-                class="tg-modal-media-track"
-                :style="{ transform: `translateX(calc(-100% * ${flatIndex} + ${dragX}px))` }"
+                  class="tg-modal-media-track"
+                  :style="{ transform: `translateX(calc(-100% * ${flatIndex} + ${dragX}px))` }"
               >
                 <div
-                  v-for="(item, idx) in flatMedia"
-                  :key="item.media.src + '-' + idx"
-                  class="tg-modal-media-slide"
+                    v-for="(item, idx) in flatMedia"
+                    :key="item.media.src + '-' + idx"
+                    class="tg-modal-media-slide"
                 >
                   <img
                       v-if="item.media.type === 'image'"
@@ -234,12 +246,14 @@
               <!-- Кнопки навигации (скрыты на мобильных благодаря d-none d-md-flex) -->
               <div class="tg-modal-nav d-none d-md-flex" v-if="flatMedia.length > 1">
                 <button class="tg-nav-btn left" @click.stop="prevMedia" :disabled="flatIndex === 0">
-                  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 18 9 12 15 6"/>
                   </svg>
                 </button>
                 <button class="tg-nav-btn right" @click.stop="nextMedia" :disabled="flatIndex === flatMedia.length - 1">
-                  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="9 18 15 12 9 6"/>
                   </svg>
                 </button>
@@ -257,16 +271,17 @@
                   <img
                       v-if="channelAvatar"
                       :src="channelAvatar"
-                      alt="ishwacha"
+                      alt="channelAvatar"
                       class="tg-avatar-img"
                       @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
                   />
                   <svg v-else viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                    <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
+                    <path
+                        d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
                   </svg>
                 </div>
                 <div>
-                  <div class="fw-bold text-white">ishwacha</div>
+                  <div class="fw-bold text-white">{{ modalPost.authorName || CHANNEL }}</div>
                   <div class="tg-modal-date small text-secondary">{{ modalPost.date }}</div>
                 </div>
               </div>
@@ -284,7 +299,8 @@
               <div class="tg-modal-footer">
                 <a :href="modalPost.link" target="_blank" rel="noopener" class="social-btn btn-to-tg">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 6px;">
-                    <path d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
+                    <path
+                        d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
                   </svg>
                   {{ t("toPost") || 'Открыть в Telegram' }}
                 </a>
@@ -302,7 +318,9 @@ import {ref, onMounted, onBeforeUnmount, inject, watch, computed} from 'vue';
 
 const t = inject('t');
 const currentLang = inject('currentLang', ref('en'));
-
+const CHANNEL = 'ishwacha';
+const PROXY_BASE = 'https://social-proxy.gbaranovskaa76.workers.dev/?url=';
+const POSTS_LIMIT = 10;
 const posts = ref([]);
 const channelAvatar = ref('')
 const loading = ref(true);
@@ -336,9 +354,6 @@ const currentMedia = computed(() => {
   return entry ? entry.media : null;
 });
 
-const CHANNEL = 'ishwacha';
-const PROXY_BASE = 'https://social-proxy.gbaranovskaa76.workers.dev/?url=';
-const POSTS_LIMIT = 10;
 
 // ═══ Состояние перетаскивания (drag-and-drop) ═══
 const isDragging = ref(false);
@@ -419,12 +434,14 @@ function prevMedia() {
     flatIndex.value--;
   }
 }
+
 watch(flatIndex, (newIdx) => {
   const entry = flatMedia.value[newIdx];
   if (entry && entry.post) {
     modalPost.value = entry.post;
   }
 });
+
 // ═══ Telegram-style media-grid классы ═══
 function mediaGridClass(count) {
   if (count <= 0) return '';
@@ -476,6 +493,18 @@ async function fetchTelegram() {
     const msg = wrap.querySelector('.tgme_widget_message');
     if (!msg) return;
     if ((msg.getAttribute('class') || '').includes('service')) return;
+
+    const authorEl = msg.querySelector('.tgme_widget_message_author') ||
+                     msg.querySelector('.tgme_widget_message_forwarded_from .tgme_widget_message_author') ||
+                     doc.querySelector('.tgme_page_title a');
+
+    const authorName = authorEl?.textContent?.trim() || CHANNEL;
+
+    let authorHref = authorEl?.href || `https://t.me/${CHANNEL}`;
+    // Если ссылка относительная (например, "/iwaer_shitpost"), делаем её абсолютной
+    if (authorHref.startsWith('/')) {
+      authorHref = `https://t.me${authorHref}`;
+    }
 
     // ID сообщения (data-post)
     const postId = msg.getAttribute('data-post') || '';
@@ -551,7 +580,7 @@ async function fetchTelegram() {
     }
 
     const linkEl = msg.querySelector('a.tgme_widget_message_date');
-    const link = linkEl?.href || `https://t.me/${CHANNEL}`;
+    const link = linkEl?.href || `https://t.me/${CHANNELLINK}`;
 
     const viewsEl = msg.querySelector('.tgme_widget_message_views');
     const views = viewsEl?.textContent?.trim() || '';
@@ -594,6 +623,8 @@ async function fetchTelegram() {
 
     parsed.push({
       id: postId,
+      authorName: authorName,       // <--- ДОБАВЛЕНО
+      authorLink: authorHref,       // <--- ДОБАВЛЕНО
       title: fullText.substring(0, 60) + (fullText.length > 60 ? '...' : ''),
       fullText,
       originalText: fullText,
@@ -791,7 +822,7 @@ function scrollToQuoted(post) {
         posts.value.map(p => p.id)
     );
     // Fallback: открываем цитируемый пост напрямую в Telegram
-    window.open(`https://t.me/${CHANNEL}/${post.quotedPostId}`, '_blank', 'noopener');
+    window.open(`https://t.me/${CHANNELLINK}/${post.quotedPostId}`, '_blank', 'noopener');
     return;
   }
 
@@ -882,7 +913,7 @@ onBeforeUnmount(() => {
 
 </script>
 
-<style >
+<style scoped>
 /* ═══════════════════════════════════════════════
    TELEGRAM-STYLE VERTICAL CHAT
    ═══════════════════════════════════════════════ */
@@ -908,7 +939,6 @@ onBeforeUnmount(() => {
   gap: 2px;
   scroll-behavior: smooth;
 }
-
 
 .tg-chat::-webkit-scrollbar {
   width: 6px;
@@ -1535,7 +1565,7 @@ onBeforeUnmount(() => {
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   /* Плавное масштабирование и сдвиг при открытии/закрытии */
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Отключаем транзиции во время свайпа для мгновенного отклика */
@@ -1594,7 +1624,7 @@ onBeforeUnmount(() => {
 .modal-fade-enter-active .tg-modal-box,
 .modal-fade-leave-active .tg-modal-box {
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
-              opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tg-modal-nav {
@@ -1616,6 +1646,7 @@ onBeforeUnmount(() => {
   color: #fff;
   cursor: pointer;
   display: flex;
+
   transition: background 0.15s, transform 0.15s;
 }
 
@@ -1725,7 +1756,7 @@ onBeforeUnmount(() => {
 }
 
 .skeleton-header {
-  width: 150px;
+  width: 220px;
   height: 14px;
   margin-bottom: 8px;
 }
