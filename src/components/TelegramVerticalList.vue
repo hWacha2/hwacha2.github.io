@@ -120,28 +120,71 @@
                   class="tg-media-item"
                   @click.stop="openMedia(post, mIdx)"
               >
+                <!-- 1. 🎥 Обычное видео (или ссылка содержит .mp4) -->
+                <video
+                    v-if="item.type === 'video' || (item.src && item.src.includes('.mp4'))"
+                    :src="item.src"
+                    :poster="item.poster || item.src"
+                    class="tg-media-img"
+                    preload="metadata"
+                    muted
+                    playsinline
+                ></video>
+
+                <div
+                    v-else-if="item.type === 'video_stub'"
+                    class="tg-media-stub"
+                >
+                  <img :src="item.poster" class="tg-media-img" loading="lazy"/>
+                  <div class="tg-play-overlay">
+                    <div class="tg-play-circle">
+                      <!-- Иконка Telegram -->
+                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 30 30">
+                        <path
+                            d="m20 4v2h2l.0010534-1.97483793c.7298783.05096843 1.0959232.17857229 1.4642152.37553699.4888888.26146063.8725717.6451435 1.1340323 1.13403238l.0922854.18482021c.2018093.43861897.3084137.9561578.3084137 2.12627615v14.3083444c0 1.3372781-.1392384 1.8222075-.4006991 2.3110964-.2614606.4888888-.6451435.8725717-1.1340323 1.1340323-.368292.1969647-.7343369.3245686-1.4642152.375537l-.0010534-1.9748379h-2v2h-10v-2h-2l-.00008693 1.9749054c-.73052165-.0509233-1.09672713-.1785528-1.46518163-.3756045-.48888888-.2614606-.87257175-.6451435-1.13403238-1.1340323l-.09228534-.1848203c-.18739436-.407289-.29269878-.8826263-.30678617-1.8853159l-.00162755-14.5493046c0-1.33727811.13923842-1.82220747.40069906-2.31109636.26146063-.48888888.6451435-.87257175 1.13403238-1.13403238.3684545-.19705162.73465998-.32468117 1.46518163-.37560443l.00008693 1.97490537h2v-2zm-10 16h-2v2h2zm12 0h-2v2h2zm-12-4h-2v2h2zm12 0h-2v2h2zm-12-4h-2v2h2zm12 0h-2v2h2zm-12-4h-2v2h2zm12 0h-2v2h2z"
+                            fill="#fff"
+                            fill-rule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. 📺 Iframe (YouTube, Vimeo, Telegram embed) -->
+                <iframe
+                    v-else-if="item.type === 'iframe'"
+                    :src="item.src"
+                    class="tg-media-iframe"
+                    frameborder="0"
+                    allow="autoplay; fullscreen"
+                ></iframe>
+
+                <!-- 4. 🖼 Обычная картинка (FALLBACK: должен быть самым последним!) -->
                 <img
+                    v-else
                     :src="item.poster || item.src"
                     :alt="post.title"
                     class="tg-media-img"
                     loading="lazy"
                     @error="$event.target.style.display='none'"
                 />
-                <!-- Оверлей play для видео -->
-                <div v-if="item.type === 'video'" class="tg-play-overlay">
+
+                <!-- ▶️ Оверлей play (только для реальных видео и iframe, у stub своя иконка внутри) -->
+                <div v-if="item.type === 'video' || item.type === 'iframe' || (item.src && item.src.includes('.mp4'))"
+                     class="tg-play-overlay">
                   <div class="tg-play-circle">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff">
                       <path d="M8 5v14l11-7z"/>
                     </svg>
                   </div>
                 </div>
-                <!-- Счётчик "+N" если не все медиа помещаются -->
+
+                <!-- Счётчик "+N" -->
                 <div v-if="isHiddenOverflow(post.media.length, mIdx)" class="tg-media-more">
                   +{{ post.media.length - visibleMediaCount(post.media.length) }}
                 </div>
               </div>
             </div>
-
             <!-- Текст сообщения -->
             <div v-if="post.fullText" class="tg-msg-text" :class="{ 'has-media': post.media && post.media.length > 0 }">
               <span v-html="linkify(post.fullText)"></span>
@@ -223,7 +266,9 @@
                     :key="item.media.src + '-' + idx"
                     class="tg-modal-media-slide"
                 >
+
                   <img
+
                       v-if="item.media.type === 'image'"
                       :src="item.media.src"
                       :alt="item.post.title"
@@ -231,15 +276,39 @@
                       loading="lazy"
                       @error="$event.target.style.display='none'"
                   />
+                  <!-- 🎥 Видео -->
                   <video
                       v-else-if="item.media.type === 'video'"
+                      :ref="el => { if (idx === flatIndex) activeVideoRef = el }"
                       :src="item.media.src"
                       :poster="item.media.poster"
                       controls
-                      autoplay
+                      muted
                       playsinline
+                      preload="auto"
                       class="tg-modal-video"
-                  ></video>
+                  />
+
+                  <!-- хуета -->
+
+                  <div
+                      v-else-if="item.media.type === 'video_stub'"
+                      class="tg-modal-stub"
+                  >
+                    <img :src="item.media.poster" class="tg-modal-stub-bg"/>
+                    <div class="tg-modal-stub-content">
+
+                      <h3 class="tg-modal-stub-title">{{ t('modalVideobig') }}</h3>
+                      <a
+                          :href="item.media.link"
+                          target="_blank"
+                          rel="noopener"
+                          class="tg-modal-stub-btn"
+                      >
+                        {{ t('modalVideobigSee') }}
+                      </a>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -310,11 +379,12 @@
         </div>
       </div>
     </Transition>
+
   </div>
 </template>
 
 <script setup>
-import {ref, onMounted, onBeforeUnmount, inject, watch, computed} from 'vue';
+import {ref, onMounted, onBeforeUnmount, inject, watch, computed, nextTick} from 'vue';
 
 const t = inject('t');
 const currentLang = inject('currentLang', ref('en'));
@@ -329,6 +399,7 @@ const error = ref(false);
 const modalOpen = ref(false);
 const modalPost = ref(null);      // пост, медиа из которого открыто
 const flatIndex = ref(0);         // индекс в плоском списке всех медиа
+const activeVideoRef = ref(null)
 
 const postRefs = ref([]); // было: ref({})
 // refs article-элементов
@@ -435,12 +506,30 @@ function prevMedia() {
   }
 }
 
-watch(flatIndex, (newIdx) => {
-  const entry = flatMedia.value[newIdx];
-  if (entry && entry.post) {
-    modalPost.value = entry.post;
+watch(flatIndex, async (newIdx) => {
+  const entry = flatMedia.value[newIdx]
+  if (entry && entry.post) modalPost.value = entry.post
+
+  await nextTick()
+
+  // Пауза всех, кроме активного
+  document.querySelectorAll('.tg-modal-video').forEach(v => {
+    if (v !== activeVideoRef.value) {
+      v.pause()
+    }
+  })
+
+  // Запуск активного
+  const v = activeVideoRef.value
+  if (v) {
+    v.muted = true
+    try {
+      await v.play()
+    } catch (e) {
+      console.log('Autoplay blocked:', e.message)
+    }
   }
-});
+})
 
 // ═══ Telegram-style media-grid классы ═══
 function mediaGridClass(count) {
@@ -450,17 +539,22 @@ function mediaGridClass(count) {
   if (count === 3) return 'tg-grid-3';
   if (count === 4) return 'tg-grid-4';
   if (count === 5) return 'tg-grid-5';
+  if (count === 6) return 'tg-grid-6';
+  if (count === 7) return 'tg-grid-7';
+  if (count === 8) return 'tg-grid-8';
+  if (count === 9) return 'tg-grid-9';
   return 'tg-grid-many';
 }
 
 function visibleMediaCount(count) {
-  if (count <= 5) return count;
-  return 9;
+  // Показываем все до 9, а на 10-м месте показываем "+N", если их больше 9
+  // (или можно показывать все 10, тогда верни просто count)
+  return count > 9 ? 9 : count;
 }
 
 function isHiddenOverflow(count, idx) {
-  if (count <= 5) return false;
-  return idx === 8 && count > 9;
+  // Показываем оверлей "+N" только на 9-м элементе (индекс 8), если всего элементов > 9
+  return count > 9 && idx === 8;
 }
 
 // ═══ Парсинг постов ═══
@@ -495,8 +589,8 @@ async function fetchTelegram() {
     if ((msg.getAttribute('class') || '').includes('service')) return;
 
     const authorEl = msg.querySelector('.tgme_widget_message_author') ||
-                     msg.querySelector('.tgme_widget_message_forwarded_from .tgme_widget_message_author') ||
-                     doc.querySelector('.tgme_page_title a');
+        msg.querySelector('.tgme_widget_message_forwarded_from .tgme_widget_message_author') ||
+        doc.querySelector('.tgme_page_title a');
 
     const authorName = authorEl?.textContent?.trim() || CHANNEL;
 
@@ -586,8 +680,10 @@ async function fetchTelegram() {
     const views = viewsEl?.textContent?.trim() || '';
 
     // === СБОР МЕДИА ===
+    // === СБОР МЕДИА (Обновленная логика для видео) ===
     const media = [];
 
+    // 1. Обычные фото
     msg.querySelectorAll('.tgme_widget_message_photo_wrap').forEach(pw => {
       const style = pw.getAttribute('style') || '';
       const match = style.match(/url\(['"]?([^'")]+)['"]?\)/);
@@ -596,24 +692,76 @@ async function fetchTelegram() {
       }
     });
 
+    // 2. Видео (приоритетная проверка по наличию реальной ссылки)
     msg.querySelectorAll('.tgme_widget_message_video_player').forEach(vw => {
-      const style = vw.getAttribute('style') || '';
+      const videoEl = vw.querySelector('video');
+
+      // ШАГ 1: Пытаемся найти реальную ссылку на видеофайл
+      let src = videoEl?.getAttribute('data-src') ||
+          videoEl?.querySelector('source')?.getAttribute('src') ||
+          videoEl?.getAttribute('src') || '';
+
+      // Делаем ссылку абсолютной, если она относительная (начинается с /)
+      if (src && src.startsWith('/')) {
+        src = `https://t.me${src}`;
+      }
+
+      // ШАГ 2: Извлекаем визуальные данные (они есть у всех видео)
+      const thumbEl = vw.querySelector('.tgme_widget_message_video_thumb');
+      const style = thumbEl?.getAttribute('style') || '';
       const posterMatch = style.match(/url\(['"]?([^'")]+)['"]?\)/);
       const poster = posterMatch ? posterMatch[1] : '';
-      const videoEl = vw.querySelector('video source');
-      const src = videoEl?.src || videoEl?.getAttribute('src') || '';
-      media.push({type: 'video', src, poster, isRound: false});
+
+      const duration = vw.querySelector('.message_video_duration')?.textContent?.trim() || '';
+      const link = vw.getAttribute('href') || `https://t.me/${CHANNEL}`;
+
+      // ШАГ 3: Логика определения типа медиа
+      if (src && !src.startsWith('blob:') && src.length > 10) {
+        // ✅ ЕСТЬ ВАЛИДНАЯ ССЫЛКА: Это обычное воспроизводимое видео
+        media.push({
+          type: 'video',
+          src,
+          poster,
+          duration,
+          isRound: false
+        });
+      } else if (vw.classList.contains('not_supported') || vw.querySelector('.message_media_not_supported')) {
+        media.push({
+          type: 'video_stub',
+          poster,
+          duration,
+          link,
+          isRound: false
+        });
+      } else {
+        // ⚠️ FALLBACK: Видео есть в DOM, но ссылки нет (редкий случай, пробуем embed)
+        const embedUrl = link.includes('?') ? link + '&embed=1' : link + '?embed=1';
+        media.push({
+          type: 'iframe',
+          src: embedUrl,
+          poster,
+          duration
+        });
+      }
     });
 
+    // 3. Круглые видео (сторис) - аналогичная логика
     msg.querySelectorAll('.tgme_widget_message_round_video').forEach(rv => {
-      const poster = rv.querySelector('img')?.src || '';
-      const video = rv.querySelector('video source')?.src || '';
-      media.push({type: 'video', src: video, poster, isRound: true});
+      const videoEl = rv.querySelector('video');
+      const poster = videoEl?.getAttribute('poster') || rv.querySelector('img')?.src || '';
+      let src = videoEl?.getAttribute('data-src') || videoEl?.getAttribute('src') || '';
+
+      if (src && src.startsWith('/')) src = `https://t.me${src}`;
+
+      if (src && !src.startsWith('blob:')) {
+        media.push({type: 'video', src, poster, isRound: true});
+      }
     });
 
+    // 4. Внешние iframe (YouTube, Vimeo и т.д.)
     msg.querySelectorAll('iframe').forEach(iframe => {
       const src = iframe.src || iframe.getAttribute('src') || '';
-      if (src && (src.includes('youtube') || src.includes('youtu.be') || src.includes('vimeo'))) {
+      if (src && (src.includes('youtube') || src.includes('youtu.be') || src.includes('vimeo') || src.includes('embed=1'))) {
         media.push({type: 'iframe', src, poster: ''});
       }
     });
@@ -1201,6 +1349,117 @@ onBeforeUnmount(() => {
   margin-left: 2px;
 }
 
+/* ═══ ЗАГЛУШКА В СЕТКЕ ПОСТОВ ═══ */
+.tg-media-stub {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  background: #0e1621;
+}
+
+.tg-media-stub .tg-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.6) blur(1px); /* Затемняем и размываем превью */
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.tg-media-stub:hover .tg-media-img {
+  filter: brightness(0.8) blur(0px);
+  transform: scale(1.05);
+}
+
+.tg-stub-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  pointer-events: none;
+}
+
+
+.tg-stub-duration {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ═══ ЗАГЛУШКА В МОДАЛКЕ ═══ */
+.tg-modal-stub {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0e1621;
+  overflow: hidden;
+}
+
+.tg-modal-stub-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.3) blur(4px);
+}
+
+.tg-modal-stub-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px;
+  max-width: 400px;
+}
+
+
+.tg-modal-stub-title {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+
+.tg-modal-stub-btn {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  transition: all .2s ease;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px 9px;
+  margin-top: 12px;
+}
+
+.tg-modal-stub-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(34, 158, 217, 0.1);
+}
+
 /* ═══════════════════════════════════════════════
    MEDIA GRID
    ═══════════════════════════════════════════════ */
@@ -1221,6 +1480,14 @@ onBeforeUnmount(() => {
   background: #0e1621;
 }
 
+.tg-media-item video.tg-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none; /* Клики проходят сквозь видео к родителю .tg-media-item */
+  background: #0e1621; /* Темный фон пока грузится метаданные */
+}
+
 .tg-media-img {
   width: 100%;
   height: 100%;
@@ -1233,16 +1500,33 @@ onBeforeUnmount(() => {
   filter: brightness(1.05);
 }
 
+/* ═══════════════════════════════════════════════
+   TELEGRAM MEDIA GRIDS (1 to 10 items)
+   ═══════════════════════════════════════════════ */
+.tg-media-grid {
+  display: grid;
+  gap: 2px;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 4px;
+  max-width: 100%;
+  width: 100%;
+  grid-auto-flow: dense; /* Заполняет дырки в сетке автоматически */
+}
+
+/* 1 элемент: Полная ширина, адаптивная высота */
 .tg-grid-1 {
   grid-template-columns: 1fr;
-  grid-template-rows: minmax(180px, 280px);
+  grid-template-rows: minmax(200px, 300px);
 }
 
+/* 2 элемента: 50/50 */
 .tg-grid-2 {
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: 180px;
+  grid-template-rows: 200px;
 }
 
+/* 3 элемента: 1 большое слева, 2 маленьких справа */
 .tg-grid-3 {
   grid-template-columns: 2fr 1fr;
   grid-template-rows: 1fr 1fr;
@@ -1254,53 +1538,71 @@ onBeforeUnmount(() => {
   grid-row: 1 / 3;
 }
 
-.tg-grid-3 .tg-media-item:nth-child(2) {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.tg-grid-3 .tg-media-item:nth-child(3) {
-  grid-column: 2;
-  grid-row: 2;
-}
-
+/* 4 элемента: Ровная сетка 2x2 */
 .tg-grid-4 {
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   height: 240px;
 }
 
+/* 5 элементов: 1 большое слева, 4 маленьких справа (2x2) */
 .tg-grid-5 {
   grid-template-columns: 2fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   height: 260px;
 }
 
 .tg-grid-5 .tg-media-item:nth-child(1) {
+  grid-column: 1;
+  grid-row: 1 / 3;
+}
+
+/* 6 элементов: Ровная сетка 3x2 */
+.tg-grid-6 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr 1fr;
+  height: 240px;
+}
+
+.tg-grid-7 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1.4fr 1fr 1fr;
+  height: 300px;
+}
+
+/* Большое — на всю ширину верхнего ряда */
+.tg-grid-7 .tg-media-item:nth-child(1) {
+  grid-column: 1 / 4;
+  grid-row: 1;
+}
+
+/* 8 элементов: Ровная сетка 4x2 */
+.tg-grid-8 {
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: 1fr 1fr;
+  height: 240px;
+}
+
+/* 9 элементов: Ровная сетка 3x3 */
+.tg-grid-9 {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  height: 280px;
+}
+
+/* 10 элементов: 1 большое сверху-слева (2x2), остальные 9 заполняют пространство */
+.tg-grid-10 {
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: repeat(4, 1fr);
+  height: 320px;
+}
+
+.tg-grid-10 .tg-media-item:nth-child(1) {
   grid-column: 1 / 3;
   grid-row: 1 / 3;
 }
 
-.tg-grid-5 .tg-media-item:nth-child(2) {
-  grid-column: 3;
-  grid-row: 1;
-}
-
-.tg-grid-5 .tg-media-item:nth-child(3) {
-  grid-column: 3;
-  grid-row: 2;
-}
-
-.tg-grid-5 .tg-media-item:nth-child(4) {
-  grid-column: 1;
-  grid-row: 3;
-}
-
-.tg-grid-5 .tg-media-item:nth-child(5) {
-  grid-column: 2 / 4;
-  grid-row: 3;
-}
-
+/* Fallback для >10 (на всякий случай) */
 .tg-grid-many {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
@@ -1326,7 +1628,7 @@ onBeforeUnmount(() => {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: rgba(34, 158, 217, 0.9);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1534,9 +1836,7 @@ onBeforeUnmount(() => {
 /* ═══════════════════════════════════════════════
    АНИМАЦИЯ ОТКРЫТИЯ/ЗАКРЫТИЯ МОДАЛКИ + СВАЙП ВНИЗ
    ═══════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════
-   АНИМАЦИЯ ОТКРЫТИЯ/ЗАКРЫТИЯ МОДАЛКИ
-   ═══════════════════════════════════════════════ */
+
 .tg-modal-overlay {
   position: fixed;
   inset: 0;
@@ -1857,7 +2157,7 @@ onBeforeUnmount(() => {
 
 @media (max-width: 576px) {
   .tg-chat {
-    max-height: none; /* ← перебиваем 72vh */
+    max-height: none;
     flex: 1 1 auto;
     min-height: 0;
     padding: 8px 4px 16px;
@@ -1872,12 +2172,38 @@ onBeforeUnmount(() => {
     height: 32px;
   }
 
-  .tg-grid-1 {
-    grid-template-rows: minmax(160px, 240px);
+  .tg-play-circle {
+    width: 48px;
+    height: 48px;
   }
 
-  .tg-grid-2, .tg-grid-3, .tg-grid-4, .tg-grid-5, .tg-grid-many {
-    height: 200px;
+  /* Адаптивные высоты для мобильных */
+  .tg-grid-1 {
+    grid-template-rows: minmax(180px, 240px);
+  }
+
+  /* 2-4 элемента: компактная высота */
+  .tg-grid-2, .tg-grid-3, .tg-grid-4, .tg-grid-6, .tg-grid-8 {
+    height: 200px !important;
+  }
+
+  /* 5-7 элементов: чуть выше, чтобы не было слишком мелко */
+  .tg-grid-5, .tg-grid-7 {
+    height: 220px !important;
+  }
+
+  /* 9-10 элементов: на мобильном лучше сделать 2 колонки вместо 3, чтобы картинки были крупнее */
+  .tg-grid-9, .tg-grid-10, .tg-grid-many {
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: repeat(auto-fill, minmax(100px, 1fr)) !important;
+    height: auto !important;
+    max-height: 400px; /* Ограничиваем общую высоту */
+  }
+
+  /* Если на мобильном в сетке 10 элементов первый был 2x2, сбрасываем это для 2-колоночного вида */
+  .tg-grid-10 .tg-media-item:nth-child(1) {
+    grid-column: 1 / 3 !important;
+    grid-row: 1 / 2 !important;
   }
 }
 </style>

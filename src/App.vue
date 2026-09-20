@@ -38,7 +38,9 @@ const translations = reactive({
     dieAloneDesc: "This mod adds the song \"Die Alone\" by Zetsubo Extreme 7★",
     ctaTitle: "More posts on Telegram",
     ctaDescription: "All news, art, and updates",
-    ctaFollow: "Follow →"
+    ctaFollow: "Follow →",
+    modalVideobig: "Media is too big",
+    modalVideobigSee: "Watch in Telegram"
 
   },
   ru: {
@@ -64,7 +66,9 @@ const translations = reactive({
     dieAloneDesc: "Этот мод добавляет песню «Die Alone» от Zetsubo Extreme 7★",
     ctaTitle: "Больше постов в Telegram",
     ctaDescription: "Все новости, арты и обновления",
-    ctaFollow: "Подписаться →"
+    ctaFollow: "Подписаться →",
+    modalVideobig: "Медиа такооое большое",
+    modalVideobigSee: "Смотреть в Telegram"
   }
 
 });
@@ -657,7 +661,7 @@ provide('currentLang', currentLang);
           <h2 class="h5 mb-3">{{ t("lastWorks") }}</h2>
 
         </div>
-       <TelegramVerticalList/>
+        <TelegramVerticalList/>
         <!--<hr class="border-1 border-secondary my-5"/>-->
 
       </section>
@@ -1044,7 +1048,6 @@ footer {
   }
 
 
-
 }
 
 /* Точки навигации */
@@ -1287,20 +1290,22 @@ footer {
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
 }
-.contglass.fullsection {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
 
-  /* Обёртка компонента — растягивается внутри .contglass */
-  .contglass.fullsection > *:last-child {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
+.contglass.fullsection {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Обёртка компонента — растягивается внутри .contglass */
+.contglass.fullsection > *:last-child {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 .contglass::after {
   content: "";
   position: absolute;
