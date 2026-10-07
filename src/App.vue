@@ -432,7 +432,7 @@ provide('currentLang', currentLang);
                  :class="{ 'is-loaded': coverLoaded } "></div>
             <!-- аватар -->
             <div class="hero-content-overlay">
-              <div class="mt-2 mb-2">
+              <div class="mt-1 mb-1">
                 <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded }">
                   <img
                       :src="avatarUrl"
@@ -1117,8 +1117,8 @@ footer {
 
   .avatar {
 
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
   }
 
   h1.h3 {

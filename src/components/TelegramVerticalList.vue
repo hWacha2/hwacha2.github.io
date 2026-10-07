@@ -103,7 +103,7 @@
             >
               <div class="tg-reply-bar"></div>
               <div class="tg-reply-content">
-                <div class="tg-reply-title">quote</div>
+                <div class="tg-reply-title">{{ truncate(post.quotedName, 80) }}</div>
                 <div class="tg-reply-text">{{ truncate(post.quotedText, 80) }}</div>
               </div>
             </div>
@@ -390,7 +390,7 @@ const t = inject('t');
 const currentLang = inject('currentLang', ref('en'));
 const CHANNEL = 'ishwacha';
 const PROXY_BASE = 'https://social-proxy.gbaranovskaa76.workers.dev/?url=';
-const POSTS_LIMIT = 10;
+const POSTS_LIMIT = 20;
 const posts = ref([]);
 const channelAvatar = ref('')
 const loading = ref(true);
@@ -561,7 +561,6 @@ function isHiddenOverflow(count, idx) {
 async function fetchTelegram() {
   const targetUrl = `https://t.me/s/${CHANNEL}`;
   const urlsToTry = [targetUrl, `${PROXY_BASE}${encodeURIComponent(targetUrl)}`];
-  // Аватар канала (берём со страницы превью)
 
   let html = null;
   for (const url of urlsToTry) {
@@ -578,12 +577,26 @@ async function fetchTelegram() {
   if (!html) throw new Error('Не удалось получить HTML');
 
   const doc = new DOMParser().parseFromString(html, 'text/html');
-  const avatarImg = doc.querySelector('.tgme_page_photo img, .tgme_header img')
-  const channelAvatarUrl = avatarImg?.getAttribute('src') || ''
-  const messages = doc.querySelectorAll('.tgme_widget_message_wrap');
+  const avatarImg = doc.querySelector('.tgme_page_photo img, .tgme_header img');
+  const channelAvatarUrl = avatarImg?.getAttribute('src') || '';
+
+  const messageWraps = Array.from(doc.querySelectorAll('.tgme_widget_message_wrap'));
+
+  // 🟢 ШАГ 1: Карта всех ID, которые физически есть в HTML (даже если мы их потом пропустим)
+  const domMap = new Map();
+  messageWraps.forEach(wrap => {
+    const msg = wrap.querySelector('.tgme_widget_message');
+    if (!msg) return;
+    const match = msg.getAttribute('data-post')?.match(/\/(\d+)$/);
+    if (match) {
+      domMap.set(parseInt(match[1], 10), wrap);
+    }
+  });
 
   const parsed = [];
-  messages.forEach(wrap => {
+
+  // 🟢 ШАГ 2: Основной парсинг
+  messageWraps.forEach(wrap => {
     const msg = wrap.querySelector('.tgme_widget_message');
     if (!msg) return;
     if ((msg.getAttribute('class') || '').includes('service')) return;
@@ -593,21 +606,17 @@ async function fetchTelegram() {
         doc.querySelector('.tgme_page_title a');
 
     const authorName = authorEl?.textContent?.trim() || CHANNEL;
-
     let authorHref = authorEl?.href || `https://t.me/${CHANNEL}`;
-    // Если ссылка относительная (например, "/iwaer_shitpost"), делаем её абсолютной
-    if (authorHref.startsWith('/')) {
-      authorHref = `https://t.me${authorHref}`;
-    }
+    if (authorHref.startsWith('/')) authorHref = `https://t.me${authorHref}`;
 
-    // ID сообщения (data-post)
     const postId = msg.getAttribute('data-post') || '';
+    const currentPostId = postId.match(/\/(\d+)$/) ? postId.match(/\/(\d+)$/)[1] : postId;
+
     const allTexts = Array.from(msg.querySelectorAll('.tgme_widget_message_text'));
     const textEl = allTexts.filter(el => !el.closest('[class*="reply"]')).pop() || allTexts.pop();
-    if (!textEl) return;
 
-    // ⚠️ ВАЖНО: используем innerHTML + замену <br>/<br /> на \n,
-    // т.к. textContent теряет переносы строк (отсюда "идеяХорнет" без переноса)
+    if (!textEl) return; // Пропускаем "фантомные" медиа-блоки, оставляем только главные посты
+
     let fullText = '';
     if (textEl.innerHTML) {
       fullText = textEl.innerHTML
@@ -627,33 +636,78 @@ async function fetchTelegram() {
     if (!fullText) return;
 
     // Цитата (reply)
-    // Цитата (reply)
     let quotedText = '';
     let quotedPostId = '';
+    let quotedName = '';
 
-// В Telegram preview API reply — это САМА ссылка <a class="tgme_widget_message_reply">
     const replyLink = msg.querySelector('a.tgme_widget_message_reply, .tgme_widget_message_reply');
     if (replyLink) {
-      // 1) Извлекаем ID цитируемого поста из href
       const href = replyLink.getAttribute('href') || '';
-      // Ищем число перед ?, # или концом строки
       let match = href.match(/\/(\d+)(?=[?#/]|$)/);
-      if (!match) {
-        // Fallback: любое последнее число
-        match = href.match(/(\d+)[^\d]*$/);
-      }
+      if (!match) match = href.match(/(\d+)[^\d]*$/);
+
       if (match) {
-        quotedPostId = match[1];
+        let extractedPostId = parseInt(match[1], 10);
+
+        if (!isNaN(extractedPostId)) {
+          let finalQuotedPostId = extractedPostId;
+          const targetWrap = domMap.get(extractedPostId);
+
+          if (targetWrap) {
+            // Вариант А: Пост есть в DOM, шагаем назад по соседям (на случай, если Telegram всё же их разделил)
+            let currentWrap = targetWrap;
+            let currentId = extractedPostId;
+
+            while (true) {
+              const prevWrap = currentWrap.previousElementSibling;
+              if (!prevWrap) break;
+              const prevMsg = prevWrap.querySelector('.tgme_widget_message');
+              if (!prevMsg) break;
+              const prevMatch = prevMsg.getAttribute('data-post')?.match(/\/(\d+)$/);
+              if (!prevMatch) break;
+
+              const prevId = parseInt(prevMatch[1], 10);
+              if (currentId - prevId === 1) {
+                currentWrap = prevWrap;
+                currentId = prevId;
+              } else {
+                break;
+              }
+            }
+            finalQuotedPostId = currentId;
+            if (finalQuotedPostId !== extractedPostId) {
+              console.log(`[TG] ✅ Альбом (DOM): ссылка #${extractedPostId} скорректирована на #${finalQuotedPostId}`);
+            }
+          } else {
+            // 🟢 Вариант Б: Поста НЕТ в DOM (фантомный ID медиа внутри альбома).
+            // Ищем главный пост этого альбома математически.
+            console.log(`[TG] ⚠️ Пост #${extractedPostId} отсутствует в HTML. Ищем главный пост альбома...`);
+
+            // Берем все ID, которые есть на странице, сортируем по убыванию
+            const existingIds = Array.from(domMap.keys()).sort((a, b) => b - a);
+
+            // Находим первый ID, который строго меньше целевого
+            const closestLowerId = existingIds.find(id => id < extractedPostId);
+
+            // Если разница небольшая (<= 10), считаем, что это часть одного альбома
+            if (closestLowerId && (extractedPostId - closestLowerId) <= 10) {
+              finalQuotedPostId = closestLowerId;
+              console.log(`[TG] ✅ Альбом (Математика): #${extractedPostId} принадлежит главному посту #${finalQuotedPostId}`);
+            } else {
+              console.log(`[TG] ℹ️ Пост #${extractedPostId} отсутствует на странице и не похож на часть текущего альбома.`);
+            }
+          }
+
+          quotedPostId = String(finalQuotedPostId);
+        } else {
+          quotedPostId = match[1];
+        }
       }
 
-      // 2) Извлекаем автора
-      const authorEl = replyLink.querySelector(
-          '.tgme_widget_message_author, [class*="author"]'
-      );
-      const name = authorEl?.textContent?.trim() || '';
+      const replyAuthorEl = replyLink.querySelector('.tgme_widget_message_author, [class*="author"]');
+      quotedName = replyAuthorEl?.textContent?.trim() || '';
 
-      // 3) Извлекаем текст цитаты через innerHTML (сохраняем <br> как \n)
-      const quoteEl = replyLink.querySelector('.tgme_widget_message_text');
+      const quoteEl = replyLink.querySelector('.tgme_widget_message_text, .tgme_widget_message_reply-text');
       let quote = '';
       if (quoteEl && quoteEl.innerHTML) {
         quote = quoteEl.innerHTML
@@ -666,99 +720,60 @@ async function fetchTelegram() {
             .replace(/&quot;/g, '"')
             .replace(/&#39;/g, "'")
             .trim();
-      } else {
-        quote = (quoteEl?.textContent || '').trim();
+      } else if (quoteEl) {
+        quote = (quoteEl.textContent || '').trim();
       }
 
-      quotedText = [name, quote].filter(Boolean).join('\n');
+      // Фоллбэк для цитат на медиа без текста (будет написано "Photo" или "3 Photos")
+      if (!quote) {
+        let rawText = (replyLink.textContent || '').trim();
+        if (quotedName && rawText.toLowerCase().includes(quotedName.toLowerCase())) {
+          rawText = rawText.replace(new RegExp(quotedName, 'i'), '').trim();
+        }
+        quote = rawText.replace(/\s+/g, ' ').trim() || 'Сообщение';
+      }
+      quotedText = [quote].filter(Boolean).join('\n');
     }
 
     const linkEl = msg.querySelector('a.tgme_widget_message_date');
-    const link = linkEl?.href || `https://t.me/${CHANNELLINK}`;
-
+    const link = linkEl?.href || `https://t.me/${CHANNEL}`; // <-- ИСПРАВЛЕНО: было CHANNELLINK
     const viewsEl = msg.querySelector('.tgme_widget_message_views');
     const views = viewsEl?.textContent?.trim() || '';
 
-    // === СБОР МЕДИА ===
-    // === СБОР МЕДИА (Обновленная логика для видео) ===
     const media = [];
-
-    // 1. Обычные фото
     msg.querySelectorAll('.tgme_widget_message_photo_wrap').forEach(pw => {
       const style = pw.getAttribute('style') || '';
-      const match = style.match(/url\(['"]?([^'")]+)['"]?\)/);
-      if (match) {
-        media.push({type: 'image', src: match[1], poster: match[1]});
-      }
+      const m = style.match(/url\(['"]?([^'")]+)['"]?\)/);
+      if (m) media.push({type: 'image', src: m[1], poster: m[1]});
     });
 
-    // 2. Видео (приоритетная проверка по наличию реальной ссылки)
     msg.querySelectorAll('.tgme_widget_message_video_player').forEach(vw => {
       const videoEl = vw.querySelector('video');
-
-      // ШАГ 1: Пытаемся найти реальную ссылку на видеофайл
-      let src = videoEl?.getAttribute('data-src') ||
-          videoEl?.querySelector('source')?.getAttribute('src') ||
-          videoEl?.getAttribute('src') || '';
-
-      // Делаем ссылку абсолютной, если она относительная (начинается с /)
-      if (src && src.startsWith('/')) {
-        src = `https://t.me${src}`;
-      }
-
-      // ШАГ 2: Извлекаем визуальные данные (они есть у всех видео)
+      let src = videoEl?.getAttribute('data-src') || videoEl?.querySelector('source')?.getAttribute('src') || videoEl?.getAttribute('src') || '';
+      if (src && src.startsWith('/')) src = `https://t.me${src}`;
       const thumbEl = vw.querySelector('.tgme_widget_message_video_thumb');
-      const style = thumbEl?.getAttribute('style') || '';
-      const posterMatch = style.match(/url\(['"]?([^'")]+)['"]?\)/);
+      const posterMatch = (thumbEl?.getAttribute('style') || '').match(/url\(['"]?([^'")]+)['"]?\)/);
       const poster = posterMatch ? posterMatch[1] : '';
-
       const duration = vw.querySelector('.message_video_duration')?.textContent?.trim() || '';
-      const link = vw.getAttribute('href') || `https://t.me/${CHANNEL}`;
+      const vidLink = vw.getAttribute('href') || `https://t.me/${CHANNEL}`;
 
-      // ШАГ 3: Логика определения типа медиа
       if (src && !src.startsWith('blob:') && src.length > 10) {
-        // ✅ ЕСТЬ ВАЛИДНАЯ ССЫЛКА: Это обычное воспроизводимое видео
-        media.push({
-          type: 'video',
-          src,
-          poster,
-          duration,
-          isRound: false
-        });
+        media.push({ type: 'video', src, poster, duration, isRound: false });
       } else if (vw.classList.contains('not_supported') || vw.querySelector('.message_media_not_supported')) {
-        media.push({
-          type: 'video_stub',
-          poster,
-          duration,
-          link,
-          isRound: false
-        });
+        media.push({ type: 'video_stub', poster, duration, link: vidLink, isRound: false });
       } else {
-        // ⚠️ FALLBACK: Видео есть в DOM, но ссылки нет (редкий случай, пробуем embed)
-        const embedUrl = link.includes('?') ? link + '&embed=1' : link + '?embed=1';
-        media.push({
-          type: 'iframe',
-          src: embedUrl,
-          poster,
-          duration
-        });
+        media.push({ type: 'iframe', src: vidLink.includes('?') ? vidLink + '&embed=1' : vidLink + '?embed=1', poster, duration });
       }
     });
 
-    // 3. Круглые видео (сторис) - аналогичная логика
     msg.querySelectorAll('.tgme_widget_message_round_video').forEach(rv => {
       const videoEl = rv.querySelector('video');
       const poster = videoEl?.getAttribute('poster') || rv.querySelector('img')?.src || '';
       let src = videoEl?.getAttribute('data-src') || videoEl?.getAttribute('src') || '';
-
       if (src && src.startsWith('/')) src = `https://t.me${src}`;
-
-      if (src && !src.startsWith('blob:')) {
-        media.push({type: 'video', src, poster, isRound: true});
-      }
+      if (src && !src.startsWith('blob:')) media.push({type: 'video', src, poster, isRound: true});
     });
 
-    // 4. Внешние iframe (YouTube, Vimeo и т.д.)
     msg.querySelectorAll('iframe').forEach(iframe => {
       const src = iframe.src || iframe.getAttribute('src') || '';
       if (src && (src.includes('youtube') || src.includes('youtu.be') || src.includes('vimeo') || src.includes('embed=1'))) {
@@ -771,32 +786,31 @@ async function fetchTelegram() {
 
     parsed.push({
       id: postId,
-      authorName: authorName,       // <--- ДОБАВЛЕНО
-      authorLink: authorHref,       // <--- ДОБАВЛЕНО
+      authorName,
+      authorLink: authorHref,
       title: fullText.substring(0, 60) + (fullText.length > 60 ? '...' : ''),
       fullText,
       originalText: fullText,
       quotedText,
+      quotedName,
       originalQuoted: quotedText,
-      quotedPostId, // для скролла к цитируемому сообщению
+      quotedPostId,
       link,
       media,
       images: media.filter(m => m.type === 'image').map(m => m.src),
       views,
-      time: formatTime(isoDate),
-      date: formatDate(isoDate),
+      time: typeof formatTime === 'function' ? formatTime(isoDate) : isoDate,
+      date: typeof formatDate === 'function' ? formatDate(isoDate) : isoDate,
       timestamp: isoDate ? new Date(isoDate).getTime() : 0,
     });
   });
 
-
+  console.log(`[TG] 🏁 Парсинг завершен. Постов с текстом: ${parsed.length}`);
   return {
-    posts: parsed.sort((a, b) => b.timestamp - a.timestamp).slice(0, POSTS_LIMIT),
+    posts: parsed.sort((a, b) => b.timestamp - a.timestamp).slice(0, typeof POSTS_LIMIT !== 'undefined' ? POSTS_LIMIT : 20),
     channelAvatar: channelAvatarUrl
-  }
-
+  };
 }
-
 function truncate(str, max) {
   if (!str) return '';
   return str.length > max ? str.substring(0, max) + '...' : str;
@@ -970,7 +984,7 @@ function scrollToQuoted(post) {
         posts.value.map(p => p.id)
     );
     // Fallback: открываем цитируемый пост напрямую в Telegram
-    window.open(`https://t.me/${CHANNELLINK}/${post.quotedPostId}`, '_blank', 'noopener');
+    window.open(`https://t.me/${CHANNEL}/${post.quotedPostId}`, '_blank');
     return;
   }
 
