@@ -103,7 +103,7 @@
             >
               <div class="tg-reply-bar"></div>
               <div class="tg-reply-content">
-                <div class="tg-reply-title">{{ truncate(post.quotedName, 80) }}</div>
+                <div class="tg-reply-title">{{ post.quotedName }}</div>
                 <div class="tg-reply-text">{{ truncate(post.quotedText, 80) }}</div>
               </div>
             </div>
@@ -358,8 +358,8 @@
               <div v-if="modalPost.quotedText" class="tg-msg-reply mb-2" @click="scrollToQuoted(modalPost)">
                 <div class="tg-reply-bar"></div>
                 <div class="tg-reply-content">
-                  <div class="tg-reply-title">quote</div>
-                  <div class="tg-reply-text">{{ modalPost.quotedText }}</div>
+                  <div class="tg-reply-title">{{ modalPost.quotedName }}</div>
+                <div class="tg-reply-text">{{ truncate(modalPost.quotedText, 80) }}</div>
                 </div>
               </div>
 
