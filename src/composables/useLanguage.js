@@ -108,7 +108,8 @@ const translations = reactive({
 
         commCompleted: "Completed works",
 
-
+        devTitle:"Under development",
+        devSubtitle:"I will finish everything here soon. Please check back later!"
     },
     ru: {
         autoTranslated: "Переведено автоматически",
@@ -218,7 +219,8 @@ const translations = reactive({
 
 
 
-
+        devTitle:"Раздел в разработке",
+        devSubtitle:"Я скоро всё здесь доделаю. Загляните позже!"
     }
 
 });

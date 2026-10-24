@@ -299,8 +299,7 @@ function preload(url, flag) {
 
 <template>
 
-  <div class="app">
-
+<div>
     <!-- мобильная -->
     <div v-if="isMobile" class="mobile-swiper-wrapper">
       <!-- секция с ссылками -->
@@ -599,9 +598,9 @@ function preload(url, flag) {
       <a href="#mob-tgslider" class="dot" data-target="mob-tgslider"></a>
       <a href="#mob-mods" class="dot" data-target="mob-mods"></a>
     </nav>
+</div>
 
 
-  </div>
 </template>
 <!-- src/views/Home.vue -->
 <style scoped>

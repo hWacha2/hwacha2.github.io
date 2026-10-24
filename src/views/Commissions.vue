@@ -1,5 +1,7 @@
 <template>
+<div>
   <div class="page-scroller">
+    <UnderConstructionOverlay v-model="showOverlay" />
     <div class="container commissions-page">
 
       <!-- ═══ ШАПКА ═══ -->
@@ -172,6 +174,9 @@
       </div> <!-- Конец comm-content-wrapper -->
     </div>
   </div>
+
+
+</div>
 </template>
 
 <script setup>
@@ -182,6 +187,10 @@ const nickName = 'ishwacha';
 const avatarUrl = 'ava.webp';
 const avatarLoaded = ref(false);
 const contactLink = 'https://t.me/ishwacha';
+import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue'
+const showOverlay = ref(true)
+
+
 const isOpen = ref(false); // Переключайте на true, если заказы открыты
 
 const openGalleryModal = inject('openGalleryModal');
@@ -658,7 +667,6 @@ const completedWorks = ref([
 
   }
 
-  /* min-height: 140px убран — aspect-ratio сам считает высоту */
 }
 
 
