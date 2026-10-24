@@ -51,7 +51,7 @@ const translations = reactive({
         addonDetail: "Extra detailing",
 
         pricePortraitName: "Portraits",
-        pricePortraitDesc: "Chest-up portrait focused on the face and the character's personality. Great for avatars and personal portraits.",
+        pricePortraitDesc: "Chest-up portrait focused on the face and the character's personality. Great for avatars.",
 
         priceHalfName: "Half Body",
         priceHalfDesc: "Waist-up or thigh-up figure: the pose and gesture are visible, with more room for costume and details.",
@@ -59,9 +59,20 @@ const translations = reactive({
         priceFullName: "Full Body",
         priceFullDesc: "Full-body character: pose, composition and surroundings.",
 
-        commTermsOfService: "Terms of Service",
-        commRulesTitle: "Terms and conditions",
+        commWillWont:"Will / Won't Draw",
+        commLoveDraw: "What I draw",
+        commLove1: "",
+        commLove2: "",
+        commLove3: "",
+        commLove4: "",
+        commDontDraw: "What I don't draw",
+        commDont1: "",
+        commDont2: "",
+        commDont3: "",
+        commDont4: "",
 
+
+        commTermsOfService: "Terms of Service",
         tosPaymentTitle: "Payment and pricing",
         tosPayment1: "A 50% prepayment of the final price is required before I start. The rest is paid after you approve the final version and before you receive the files without a watermark.",
         tosPayment2: "The final price is the base price plus the add-ons you choose. It is fixed once the brief is agreed and only changes if the brief changes.",
@@ -89,27 +100,11 @@ const translations = reactive({
         tosCancel2: "If you cancel after work has started, the prepayment is not refunded, as it covers the time already spent.",
         tosCancel3: "I may decline a commission at any stage if the subject falls outside what I draw or if the communication becomes unacceptable. In that case the prepayment is refunded in proportion to the work not done.",
 
-        tosOrderTitle: "Placing an order",
-        tosOrder1: "Orders are placed via Telegram. Your request is accepted once the brief is agreed and the prepayment is received.",
-        tosOrder2: "Send references and wishes before we start. If you have none, I will suggest options at the sketch stage.",
-        tosOrder3: "I draw in my own style: I follow your references but never copy another artist's style or characters without the author's permission.",
-        tosOrder4: "I usually reply within 1–2 days. If I stay silent longer, feel free to ping me.",
-
-        commLoveDraw: "What I draw",
-        commLove1: "",
-        commLove2: "",
-        commLove3: "",
-        commLove4: "",
-        commDontDraw: "What I don't draw",
-        commDont1: "",
-        commDont2: "",
-        commDont3: "",
-        commDont4: "",
 
         commCompleted: "Completed works",
 
-        devTitle:"Under development",
-        devSubtitle:"I will finish everything here soon. Please check back later!"
+        devTitle: "Under development",
+        devSubtitle: "I will finish everything here soon. Please check back later!"
     },
     ru: {
         autoTranslated: "Переведено автоматически",
@@ -159,7 +154,7 @@ const translations = reactive({
         addonDetail: "Дополнительная детализация",
 
         pricePortraitName: "Портрет",
-        pricePortraitDesc: "Погрудное изображение с акцентом на лицо и характер персонажа. Хорошо подходит для аватарок и личных портретов.",
+        pricePortraitDesc: "Изображение по грудь с акцентом на лицо и характер персонажа. Хорошо подходит для аватарок.",
 
         priceHalfName: "Полурост",
         priceHalfDesc: "Фигура по пояс или ляшки: видны поза и жест, больше пространства для костюма и деталей.",
@@ -167,8 +162,20 @@ const translations = reactive({
         priceFullName: "Полнорост",
         priceFullDesc: "Персонаж в полный рост: поза, композиция и окружение.",
 
-        commTermsOfService: "Условия использования",
-        commRulesTitle: "Правила и условия",
+        commWillWont:"Что рисую / Что не рисую ",
+        commLoveDraw: "Что рисую",
+        commLove1: "Фан-арт",
+        commLove2: "Оригинальные персонажи",
+        commLove3: "NSFW, но без секса",
+        commLove4: "Хоть почти все арты у меня по Silksong - я могу рисовать не только по нему",
+
+        commDontDraw: "Что НЕ рисую",
+        commDont1: "Меха",
+        commDont2: "Портреты по фото",
+        commDont3: "Американские фурри, пони",
+        commDont4: "Gore / Guro",
+
+        commTermsOfService: "Правила и условия",
 
         tosPaymentTitle: "Оплата и стоимость",
         tosPayment1: "Перед началом работы вносится предоплата 50% от итоговой стоимости. Остаток оплачивается после утверждения финального варианта и до передачи файлов без водяного знака.",
@@ -197,30 +204,13 @@ const translations = reactive({
         tosCancel2: "Отмена по инициативе заказчика после начала работы — предоплата не возвращается, так как покрывает уже затраченное время.",
         tosCancel3: "Я могу отказаться от заказа на любом этапе, если тема выходит за рамки того, что я рисую, или если общение выходит за рамки допустимого. В этом случае предоплата возвращается пропорционально невыполненной части.",
 
-        tosOrderTitle: "Как оформить заказ",
-        tosOrder1: "Заказ оформляется в Telegram. Заявка считается принятой после согласования ТЗ и получения предоплаты.",
-        tosOrder2: "Референсы и пожелания присылайте до начала работы. Если их нет, я предложу варианты на этапе скетча.",
-        tosOrder3: "Я рисую в своём стиле: ориентируюсь на референсы, но не копирую чужой стиль и чужих персонажей без разрешения автора.",
-        tosOrder4: "Отвечаю обычно в течение 1–2 дней. Если я молчу дольше — напомните о себе.",
 
-        commLoveDraw: "Что рисую",
-        commLove1: "Фан-арт",
-        commLove2: "Оригинальные персонажи",
-        commLove3: "NSFW, но без секса",
-        commLove4: "Хоть почти все арты у меня по Silksong - я могу рисовать не только по нему",
-
-        commDontDraw: "Что НЕ рисую",
-        commDont1: "Меха",
-        commDont2: "Портреты по фото",
-        commDont3: "Американские фурри, пони",
-        commDont4: "Gore / Guro",
 
         commCompleted: "Выполненные заказы",
 
 
-
-        devTitle:"Раздел в разработке",
-        devSubtitle:"Я скоро всё здесь доделаю. Загляните позже!"
+        devTitle: "Раздел в разработке",
+        devSubtitle: "Я скоро всё здесь доделаю. Загляните позже!"
     }
 
 });

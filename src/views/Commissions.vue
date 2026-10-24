@@ -1,128 +1,123 @@
 <template>
-<div>
-  <div class="page-scroller">
-    <UnderConstructionOverlay v-model="showOverlay" />
-    <div class="container commissions-page">
+  <div>
+    <div class="page-scroller">
+      <UnderConstructionOverlay v-model="showOverlay"/>
+      <div class="container commissions-page">
 
-      <!-- ═══ ШАПКА ═══ -->
-      <header class="comm-header contglass">
-        <div class="comm-status-badge" :class="isOpen ? 'status-open' : 'status-closed'">
-          <span class="status-dot"></span>
-          {{ isOpen ? t('commStatusOpen') : t('commStatusClosed') }}
-        </div>
-        <div class="ava-container">
-          <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded} ">
-            <img :src="avatarUrl" alt="avatar" class="avatar" width="120" height="120" decoding="async"
-                 @load="avatarLoaded = true" @error="avatarLoaded = true"/>
+        <!-- ═══ ШАПКА ═══ -->
+        <header class="comm-header contglass">
+          <div class="comm-status-badge" :class="isOpen ? 'status-open' : 'status-closed'">
+            <span class="status-dot"></span>
+            {{ isOpen ? t('commStatusOpen') : t('commStatusClosed') }}
           </div>
-        </div>
-        <h1 class="h3 mb-2">{{ nickName }}</h1>
-        <h1 class="comm-title">{{ t('commTitle') }}</h1>
-        <p class="comm-subtitle">{{ t('commSubtitle') }}</p>
+          <div class="ava-container">
+            <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded} ">
+              <img :src="avatarUrl" alt="avatar" class="avatar" width="120" height="120" decoding="async"
+                   @load="avatarLoaded = true" @error="avatarLoaded = true"/>
+            </div>
+          </div>
+          <h1 class="h3 mb-2">{{ nickName }}</h1>
+          <h1 class="comm-title">{{ t('commTitle') }}</h1>
+          <p class="comm-subtitle">{{ t('commSubtitle') }}</p>
 
-        <a :href="contactLink" target="_blank" rel="noopener" class="social-btn btn-telegram comm-cta-btn">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-            <path
-                d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
-          </svg>
-          {{ t('commContactBtn') }}
-        </a>
-        <hr class="border-1 border-secondary my-3 "/>
-        <p class="comm-price-update-date">{{ t('commPriceUpdateDate') }}</p>
-      </header>
+          <a :href="contactLink" target="_blank" rel="noopener" class="social-btn btn-telegram comm-cta-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                  d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
+            </svg>
+            {{ t('commContactBtn') }}
+          </a>
+          <hr class="border-1 border-secondary my-3 "/>
+          <p class="comm-price-update-date">{{ t('commPriceUpdateDate') }}</p>
+        </header>
 
-      <!-- ═══ ОБЕРТКА ДЛЯ ПРОКРУЧИВАЕМОГО КОНТЕНТА ═══ -->
-      <div class="comm-content-wrapper contglass p-3">
+        <!-- ═══ ОБЕРТКА ДЛЯ ПРОКРУЧИВАЕМОГО КОНТЕНТА ═══ -->
+        <div class="comm-content-wrapper contglass p-3">
 
-        <!-- ═══ ЦЕНЫ И ФОРМАТЫ (Стиль Jaykart: Категория -> Примеры -> Цена) ═══ -->
-        <section class="comm-section">
-          <h2 class="comm-section-title">{{ t('commPricing') }}</h2>
-          <div class="comm-pricing-categories">
-            <template v-for="(cat, idx) in pricingCategories" :key="idx">
-              <div class="comm-price-category-card">
-                <h3 class="comm-category-title">{{ cat.title }}</h3>
+          <!-- ═══ ЦЕНЫ И ФОРМАТЫ (Стиль Jaykart: Категория -> Примеры -> Цена) ═══ -->
+          <section class="comm-section">
+            <h2 class="comm-section-title">{{ t('commPricing') }}</h2>
+            <div class="comm-pricing-categories">
+              <template v-for="(cat, idx) in pricingCategories" :key="idx">
+                <div class="comm-price-category-card">
+                  <h3 class="comm-category-title">{{ cat.title }}</h3>
 
-                <div class="comm-category-examples">
-                  <div
-                      v-for="(imgObj, i) in cat.examples"
-                      :key="i"
-                      class="gallery-item"
-                  >
-                    <a href="#" class="thumbnail" @click.prevent="handleClick(imgObj.full)">
+                  <div class="comm-category-examples">
+                    <div
+                        v-for="(imgObj, i) in cat.examples"
+                        :key="i"
+                        class="gallery-item"
+                    >
+                      <a href="#" class="thumbnail" @click.prevent="handleClick(imgObj.full)">
             <span class="frame">
-              <img :src="imgObj.thumb" :alt="cat.title" loading="lazy" decoding="async"/>
+              <img :src="imgObj.thumb" :alt="cat.title" loading="lazy" decoding="async" width="300" height="400"/>
             </span>
-                    </a>
+                      </a>
+                    </div>
+                  </div>
+
+                  <p class="comm-category-desc">{{ cat.description }}</p>
+
+                  <div class="comm-price-line">
+                    <span class="comm-price-label">{{ cat.baseLabel }}</span>
+                    <span class="comm-price-value">– ${{ cat.basePrice }}</span>
+                  </div>
+
+                  <div v-if="cat.addons.length" class="comm-addons">
+                    <div class="comm-addons-title">{{ t('priceAddonsTitle') }}</div>
+                    <ul class="comm-addons-list">
+                      <li v-for="addon in cat.addons" :key="addon.label" class="comm-addon-row">
+                        <span class="comm-addon-name">{{ addon.label }}</span>
+                        <span class="comm-addon-price">+${{ addon.price }}</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
 
-                <p class="comm-category-desc">{{ cat.description }}</p>
-
-                <div class="comm-price-line">
-                  <span class="comm-price-label">{{ cat.baseLabel }}</span>
-                  <span class="comm-price-value">— ${{ cat.basePrice }}</span>
-                </div>
-
-                <div v-if="cat.addons.length" class="comm-addons">
-                  <div class="comm-addons-title">{{ t('priceAddonsTitle') }}</div>
-                  <ul class="comm-addons-list">
-                    <li v-for="addon in cat.addons" :key="addon.label" class="comm-addon-row">
-                      <span class="comm-addon-name">{{ addon.label }}</span>
-                      <span class="comm-addon-price">+${{ addon.price }}</span>
-                    </li>
-                  </ul>
-                </div>
+                <!-- разделитель после каждой категории, кроме последней -->
+                <hr
+                    v-if="idx < pricingCategories.length - 1"
+                    class="border-1 border-secondary my-3"
+                />
+              </template>
+            </div>
+          </section>
+          <section class="comm-section">
+            <h2 class="comm-section-title">{{ t('commWillWont') }}</h2>
+            <div class="comm-grid-2">
+              <div class="comm-card comm-card--do">
+                <h3 class="comm-card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4fae4e" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  {{ t('commLoveDraw') }}
+                </h3>
+                <ul class="comm-list">
+                  <li v-for="(item, i) in loveDraw" :key="i">{{ item }}</li>
+                </ul>
               </div>
-
-              <!-- разделитель после каждой категории, кроме последней -->
-              <hr
-                  v-if="idx < pricingCategories.length - 1"
-                  class="border-1 border-secondary my-3"
-              />
-            </template>
-          </div>
-        </section>
-
-        <!-- ═══ ЧТО Я РИСУЮ / НЕ РИСУЮ + ПРАВИЛА ═══ -->
-        <section class="comm-section">
-          <h2 class="comm-section-title">{{ t('commTermsOfService') }}</h2>
-
-          <div class="comm-grid-2">
-            <div class="comm-card comm-card--do">
-              <h3 class="comm-card-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4fae4e" stroke-width="2">
-                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                  <polyline points="22 4 12 14.01 9 11.01"/>
-                </svg>
-                {{ t('commLoveDraw') }}
-              </h3>
-              <ul class="comm-list">
-                <li v-for="(item, i) in loveDraw" :key="i">{{ item }}</li>
-              </ul>
+              <div class="comm-card comm-card--dont">
+                <h3 class="comm-card-title">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e03131" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                  </svg>
+                  {{ t('commDontDraw') }}
+                </h3>
+                <ul class="comm-list">
+                  <li v-for="(item, i) in dontDraw" :key="i">{{ item }}</li>
+                </ul>
+              </div>
             </div>
-            <div class="comm-card comm-card--dont">
-              <h3 class="comm-card-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e03131" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"/>
-                  <line x1="15" y1="9" x2="9" y2="15"/>
-                  <line x1="9" y1="9" x2="15" y2="15"/>
-                </svg>
-                {{ t('commDontDraw') }}
-              </h3>
-              <ul class="comm-list">
-                <li v-for="(item, i) in dontDraw" :key="i">{{ item }}</li>
-              </ul>
-            </div>
-          </div>
 
-          <!-- НОВЫЙ БЛОК: ПРАВИЛА -->
-          <div class="comm-rules-card">
-            <h3 class="comm-rules-title">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-              </svg>
-              {{ t('commRulesTitle') }}
-            </h3>
+          </section>
+
+          <!-- ═══ ЧТО Я РИСУЮ / НЕ РИСУЮ + ПРАВИЛА ═══ -->
+          <section class="comm-section">
+            <h2 class="comm-section-title">{{ t('commTermsOfService') }}</h2>
+
             <div class="comm-tos">
               <section
                   v-for="(section, i) in tosSections"
@@ -135,54 +130,55 @@
                 </ul>
               </section>
             </div>
-          </div>
-        </section>
+          </section>
 
 
-        <!-- ═══ КАК ЗАКАЗАТЬ ═══ -->
-        <section class="comm-section comm-how-to">
-          <h2 class="comm-section-title">{{ t('commHowTo') }}</h2>
-          <ol class="comm-steps">
-            <li>{{ t('commStep1') }}</li>
-            <li>{{ t('commStep2') }}</li>
-            <li>{{ t('commStep3') }}</li>
-            <li>{{ t('commStep4') }}</li>
-          </ol>
-          <a :href="contactLink" target="_blank" rel="noopener"
-             class="social-btn btn-telegram comm-cta-btn comm-cta-btn--large">
-            {{ t('commContactBtn') }}
-          </a>
-        </section>
+          <!-- ═══ КАК ЗАКАЗАТЬ ═══ -->
+          <section class="comm-section comm-how-to">
+            <h2 class="comm-section-title">{{ t('commHowTo') }}</h2>
+            <ol class="comm-steps">
+              <li>{{ t('commStep1') }}</li>
+              <li>{{ t('commStep2') }}</li>
+              <li>{{ t('commStep3') }}</li>
+              <li>{{ t('commStep4') }}</li>
+            </ol>
+            <a :href="contactLink" target="_blank" rel="noopener"
+               class="social-btn btn-telegram comm-cta-btn comm-cta-btn--large">
+              {{ t('commContactBtn') }}
+            </a>
+          </section>
 
-        <!-- ═══ ВЫПОЛНЕННЫЕ КОМИШКИ ═══ -->
-        <section class="comm-section">
-          <h2 class="comm-section-title">{{ t('commCompleted') }}</h2>
-          <div class="comm-completed-grid">
-            <div v-for="(work, idx) in completedWorks" :key="idx" class="comm-work-card">
-              <div class="comm-work-img-wrapper">
-                <img :src="work.thumb" :alt="work.client" @click="handleClick(work.full)" style="cursor: pointer;"
-                     loading="lazy" decoding="async"/>
-              </div>
-              <div class="comm-work-info">
-                <a class="comm-work-client" :href="work.clientUrl" target="_blank" rel="noopener">@{{ work.client }}</a>
-                <div class="comm-work-desc">{{ work.desc }}</div>
+          <!-- ═══ ВЫПОЛНЕННЫЕ КОМИШКИ ═══ -->
+          <section class="comm-section">
+            <h2 class="comm-section-title">{{ t('commCompleted') }}</h2>
+            <div class="comm-completed-grid">
+              <div v-for="(work, idx) in completedWorks" :key="idx" class="comm-work-card">
+                <div class="comm-work-img-wrapper">
+                  <img :src="work.thumb" :alt="work.client" @click="handleClick(work.full)" style="cursor: pointer;"
+                       loading="lazy" decoding="async" width="600" height="600"/>
+                </div>
+                <div class="comm-work-info">
+                  <a class="comm-work-client" :href="work.clientUrl" target="_blank" rel="noopener" >@{{
+                      work.client
+                    }}</a>
+                  <div class="comm-work-desc">{{ work.desc }}</div>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-      </div> <!-- Конец comm-content-wrapper -->
+        </div> <!-- Конец comm-content-wrapper -->
 
-    </div>
-    <footer>
-      <div class="container">
-        <div class="small text">{{ t('footer') }}</div>
       </div>
-    </footer>
+      <footer>
+        <div class="container">
+          <div class="small text">{{ t('footer') }}</div>
+        </div>
+      </footer>
+    </div>
+
+
   </div>
-
-
-</div>
 </template>
 
 <script setup>
@@ -194,6 +190,7 @@ const avatarUrl = 'ava.webp';
 const avatarLoaded = ref(false);
 const contactLink = 'https://t.me/ishwacha';
 import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue'
+
 const showOverlay = ref(true)
 
 
@@ -323,10 +320,7 @@ const TOS_STRUCTURE = [
     title: 'tosCancelTitle',
     items: ['tosCancel1', 'tosCancel2', 'tosCancel3']
   },
-  {
-    title: 'tosOrderTitle',
-    items: ['tosOrder1', 'tosOrder2', 'tosOrder3', 'tosOrder4']
-  }
+
 ];
 
 const tosSections = computed(() => TOS_STRUCTURE.map(section => ({
@@ -436,6 +430,7 @@ const completedWorks = ref([
 .comm-section {
   margin-bottom: 48px;
 }
+
 
 .comm-section-title {
   font-size: 28px;
@@ -751,12 +746,16 @@ const completedWorks = ref([
 @media (max-width: 480px) {
 
   .comm-section-title {
-    font-size: 22px;
+    font-size: 24px;
 
   }
-  .comm-category-title
-  {
+
+  .comm-category-title {
     font-size: 22px;
+  }
+
+  .comm-price-label {
+    font-size: 20px;
   }
 
   .comm-price-line {
@@ -884,6 +883,10 @@ const completedWorks = ref([
 
 /* ═══ АДАПТИВНОСТЬ: БОКОВАЯ ПАНЕЛЬ НА ПК ═══ */
 @media (min-width: 992px) {
+  .comm-section {
+    margin-bottom: 0;
+  }
+
   .commissions-page {
     display: grid;
     /* Левая колонка 320px для шапки, правая занимает всё остальное место */

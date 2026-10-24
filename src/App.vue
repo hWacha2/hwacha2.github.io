@@ -15,7 +15,11 @@ const isMobile = inject('isMobile')
 
 //модалка для любой картинки
 const currentImage = ref('');
-
+const isModalOpen = ref(false)
+const closeGalleryModal = () => {
+  isModalOpen.value = false
+  setTimeout(() => { if (!isModalOpen.value) currentImage.value = '' }, 300)
+}
 const openGalleryModal = async (imgSrc) => {
   currentImage.value = imgSrc
 
@@ -57,7 +61,11 @@ provide('openGalleryModal', openGalleryModal)
       </transition>
     </RouterView>
 
-    <GalleryModal :currentImage="currentImage"/>
+     <GalleryModal
+      :is-open="isModalOpen"
+      :current-image="currentImage"
+      @close="closeGalleryModal"
+    />
 
 
   </div>

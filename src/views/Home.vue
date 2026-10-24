@@ -292,6 +292,25 @@ function preload(url, flag) {
   if (img.complete && img.naturalWidth > 0) flag.value = true
 }
 
+let preloadLink = null
+
+onMounted(() => {
+  // Создаем тег preload только когда мы на главной
+  preloadLink = document.createElement('link')
+  preloadLink.rel = 'preload'
+  preloadLink.as = 'image'
+  preloadLink.href = '/cover.webp'
+  preloadLink.fetchPriority = 'high'
+  document.head.appendChild(preloadLink)
+})
+
+onUnmounted(() => {
+  // Убираем его при переходе на другие страницы, чтобы не было мусора
+  if (preloadLink) {
+    document.head.removeChild(preloadLink)
+    preloadLink = null
+  }
+})
 
 </script>
 

@@ -2093,6 +2093,7 @@ onBeforeUnmount(() => {
   padding: 24px;
 }
 
+
 .tg-error-icon svg {
   width: 72px;
   height: auto;
@@ -2173,6 +2174,10 @@ onBeforeUnmount(() => {
 
   .tg-msg-bubble {
     max-width: 92%;
+  }
+  .tg-error-state
+  {
+    height: 100%;
   }
 
   .tg-avatar-circle {
