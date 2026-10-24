@@ -3,6 +3,7 @@ import {ref, onMounted, onUnmounted, nextTick, watch, inject} from "vue";
 import ModTile from '../components/ModTile.vue';
 import GalleryItem from '../components/GalleryItem.vue';
 import TelegramVerticalList from '../components/TelegramVerticalList.vue';
+
 const currentLang = inject('currentLang')
 const t = inject('t');
 const isMobile = inject('isMobile') // <-- Получаем глобальное значение
@@ -292,14 +293,11 @@ function preload(url, flag) {
 }
 
 
-
-
-
 </script>
 
 <template>
 
-<div>
+  <div>
     <!-- мобильная -->
     <div v-if="isMobile" class="mobile-swiper-wrapper">
       <!-- секция с ссылками -->
@@ -451,141 +449,145 @@ function preload(url, flag) {
     <!-- пк версия ======================================================================================= -->
     <main v-else class="container p-4 desktop-layout">
       <div class="page-scroller">
-      <!-- секция с ссылками -->
-      <section id="links" class="contglass p-4 mt-4 mb-4">
+        <!-- секция с ссылками -->
+        <section id="links" class="contglass p-4 mt-4 mb-4">
 
-        <div class="hero-cover-layout">
-          <!-- плейсхолдер пока фон грузится -->
-          <div v-if="!coverLoaded" class="hero-cover-skeleton"></div>
-          <!-- фон -->
-          <div class="hero-cover-bg" :style="{ backgroundImage: `url(${coverUrl})` }"
-               :class="{ 'is-loaded': coverLoaded } "></div>
-          <!-- аватар -->
-          <div class="hero-content-overlay">
-            <div class="mt-2 mb-2">
-              <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded }">
-                <img
-                    :src="avatarUrl"
-                    alt="avatar"
-                    class="avatar"
-                    width="120"
-                    height="120"
-                    decoding="async"
-                    @load="avatarLoaded = true"
-                    @error="avatarLoaded = true"
-                />
+          <div class="hero-cover-layout">
+            <!-- плейсхолдер пока фон грузится -->
+            <div v-if="!coverLoaded" class="hero-cover-skeleton"></div>
+            <!-- фон -->
+            <div class="hero-cover-bg" :style="{ backgroundImage: `url(${coverUrl})` }"
+                 :class="{ 'is-loaded': coverLoaded } "></div>
+            <!-- аватар -->
+            <div class="hero-content-overlay">
+              <div class="mt-2 mb-2">
+                <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded }">
+                  <img
+                      :src="avatarUrl"
+                      alt="avatar"
+                      class="avatar"
+                      width="120"
+                      height="120"
+                      decoding="async"
+                      @load="avatarLoaded = true"
+                      @error="avatarLoaded = true"
+                  />
+                </div>
               </div>
+              <h1 class="h3 mb-2">{{ nickName }}</h1>
+              <p class="fw-weight-bold mb-2">{{ t('subtitle') }}</p>
             </div>
-            <h1 class="h3 mb-2">{{ nickName }}</h1>
-            <p class="fw-weight-bold mb-2">{{ t('subtitle') }}</p>
           </div>
-        </div>
-        <!-- кнопки поддержки -->
-        <div>
-          <div class="social-row justify-content-center">
-            <h1 class="h5 mb-2">{{ t('supportSubtitle') }}</h1>
+          <!-- кнопки поддержки -->
+          <div>
+            <div class="social-row justify-content-center">
+              <h1 class="h5 mb-2">{{ t('supportSubtitle') }}</h1>
+            </div>
+            <div class="social-row justify-content-center">
+              <a
+                  v-for="s in support"
+                  :key="s.href"
+                  class="social-btn"
+                  :class="s.btnClass"
+                  :href="s.href"
+                  :aria-label="s.label"
+                  target="_blank"
+                  rel="noopener noreferrer"
+              >
+                <svg :fill="s.fill" :width="s.svgwidth" :height="s.svgheight" :viewBox="s.viewBox"
+                     xmlns="http://www.w3.org/2000/svg" v-html="s.svg"/>
+                {{ s.label }}
+              </a>
+
+            </div>
           </div>
-          <div class="social-row justify-content-center">
-            <a
-                v-for="s in support"
-                :key="s.href"
-                class="social-btn"
-                :class="s.btnClass"
-                :href="s.href"
-                :aria-label="s.label"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-              <svg :fill="s.fill" :width="s.svgwidth" :height="s.svgheight" :viewBox="s.viewBox"
-                   xmlns="http://www.w3.org/2000/svg" v-html="s.svg"/>
-              {{ s.label }}
-            </a>
+          <!-- черточка чтобы разделить это говно -->
+          <hr class="border-1 border-secondary my-3 "/>
+          <!-- говно -->
+          <div>
+            <div class="social-row justify-content-center">
+              <h1 class="h5 mb-2">{{ t('socialTitle') }}</h1>
+            </div>
+            <div class="social-row justify-content-center">
+              <a
+                  v-for="s in socials"
+                  :key="s.href"
+                  class="social-btn"
+                  :class="s.btnClass"
+                  :href="s.href"
+                  :aria-label="s.label"
+                  target="_blank"
+                  rel="noopener noreferrer"
+              >
+                <svg :fill="s.fill" :width="s.svgwidth" :height="s.svgheight" :viewBox="s.viewBox"
+                     xmlns="http://www.w3.org/2000/svg" v-html="s.svg"/>
+                {{ s.label }}
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <section id="gallery" class="contglass p-4 mt-4 mb-4 ">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">{{ t('galleryTitle') }}</h2>
+            <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle') }}</small>
+          </div>
+
+          <!-- Masonry галерея -->
+          <div class="masonry-gallery">
+            <GalleryItem
+                v-for="art in artsDesktop"
+                :key="art.full"
+                :thumb="art.thumb"
+                :full="art.full"
+            />
+          </div>
+        </section>
+
+        <!-- секция с постами тг -->
+        <section id="tgslider" class="contglass p-4 mt-4 mb-4">
+
+          <div class="d-flex justify-content-between align-items-center">
+            <h2 class="h5 mb-3">{{ t("lastWorks") }}</h2>
 
           </div>
-        </div>
-        <!-- черточка чтобы разделить это говно -->
-        <hr class="border-1 border-secondary my-3 "/>
-        <!-- говно -->
-        <div>
-          <div class="social-row justify-content-center">
-            <h1 class="h5 mb-2">{{ t('socialTitle') }}</h1>
+          <TelegramVerticalList/>
+          <!--<hr class="border-1 border-secondary my-5"/>-->
+
+        </section>
+
+        <!-- секция с модами -->
+        <section id="mods" class="contglass p-4 mt-4 ">
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">{{ t('modsTitle') }}</h2>
+            <small class="text-secondary" style="text-align: right; display: block;">{{ t('modsSubtitle') }}</small>
           </div>
-          <div class="social-row justify-content-center">
-            <a
-                v-for="s in socials"
-                :key="s.href"
-                class="social-btn"
-                :class="s.btnClass"
-                :href="s.href"
-                :aria-label="s.label"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-              <svg :fill="s.fill" :width="s.svgwidth" :height="s.svgheight" :viewBox="s.viewBox"
-                   xmlns="http://www.w3.org/2000/svg" v-html="s.svg"/>
-              {{ s.label }}
-            </a>
+
+          <div class="row g-3">
+            <ModTile
+
+                v-for="mod in mods"
+                :key="mod.link"
+                :title="mod.title"
+                :img="mod.img"
+                :link="mod.link"
+                :game="mod.game"
+                :category="mod.category"
+                :uploaded="mod.uploaded"
+                :author="mod.author"
+                :author-avatar="mod.authorAvatar"
+                :description="mod.description[currentLang] || mod.description.en"
+            />
           </div>
-        </div>
-      </section>
 
-      <section id="gallery" class="contglass p-4 mt-4 mb-4 ">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="h5 mb-0">{{ t('galleryTitle') }}</h2>
-          <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle') }}</small>
-        </div>
-
-        <!-- Masonry галерея -->
-        <div class="masonry-gallery">
-          <GalleryItem
-              v-for="art in artsDesktop"
-              :key="art.full"
-              :thumb="art.thumb"
-              :full="art.full"
-          />
-        </div>
-      </section>
-
-      <!-- секция с постами тг -->
-      <section id="tgslider" class="contglass p-4 mt-4 mb-4">
-
-        <div class="d-flex justify-content-between align-items-center">
-          <h2 class="h5 mb-3">{{ t("lastWorks") }}</h2>
-
-        </div>
-        <TelegramVerticalList/>
-        <!--<hr class="border-1 border-secondary my-5"/>-->
-
-      </section>
-
-      <!-- секция с модами -->
-      <section id="mods" class="contglass p-4 mt-4 ">
-
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <h2 class="h5 mb-0">{{ t('modsTitle') }}</h2>
-          <small class="text-secondary" style="text-align: right; display: block;">{{ t('modsSubtitle') }}</small>
-        </div>
-
-        <div class="row g-3">
-          <ModTile
-
-              v-for="mod in mods"
-              :key="mod.link"
-              :title="mod.title"
-              :img="mod.img"
-              :link="mod.link"
-              :game="mod.game"
-              :category="mod.category"
-              :uploaded="mod.uploaded"
-              :author="mod.author"
-              :author-avatar="mod.authorAvatar"
-              :description="mod.description[currentLang] || mod.description.en"
-          />
-        </div>
-
-      </section>
+        </section>
       </div>
-
+      <footer>
+      <div class="container">
+        <div class="small text">{{ t('footer') }}</div>
+      </div>
+    </footer>
     </main>
 
     <!-- ═══ ТОЧКИ НАВИГАЦИИ (Только для мобильной версии) ═══ -->
@@ -598,7 +600,7 @@ function preload(url, flag) {
       <a href="#mob-tgslider" class="dot" data-target="mob-tgslider"></a>
       <a href="#mob-mods" class="dot" data-target="mob-mods"></a>
     </nav>
-</div>
+  </div>
 
 
 </template>
@@ -720,12 +722,6 @@ function preload(url, flag) {
   }
 }
 
-/* ═══ Футер ═══ */
-footer {
-  padding: 2rem 1rem;
-  text-align: center;
-  color: var(--muted);
-}
 
 /* ═══ Hero Cover ═══ */
 .hero-cover-layout {

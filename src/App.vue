@@ -230,4 +230,11 @@ body {
     -ms-overflow-style: none;
   }
 }
+
+/* ═══ Футер ═══ */
+footer {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--muted);
+}
 </style>

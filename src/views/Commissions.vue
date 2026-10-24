@@ -172,7 +172,13 @@
         </section>
 
       </div> <!-- Конец comm-content-wrapper -->
+
     </div>
+    <footer>
+      <div class="container">
+        <div class="small text">{{ t('footer') }}</div>
+      </div>
+    </footer>
   </div>
 
 
@@ -344,7 +350,7 @@ const completedWorks = ref([
 /* ═══ ОСНОВНОЙ КОНТЕЙНЕР ═══ */
 .commissions-page {
   margin: 0 auto;
-  padding: 24px 16px 60px;
+  padding: 20px 12px 20px;
   color: #fff;
   font-family: inherit;
 }
@@ -353,7 +359,6 @@ const completedWorks = ref([
 .comm-header {
   text-align: center;
   align-items: center;
-
   margin-bottom: 40px;
   padding: 32px 20px;
 }
