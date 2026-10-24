@@ -1,5 +1,5 @@
 <script setup>
-import { RouterView } from 'vue-router'
+import {RouterView} from 'vue-router'
 import {inject, provide, ref} from 'vue'
 import Star from './components/StarCanvas.vue'
 import NavigationMenu from './components/NavigationMenu.vue'
@@ -7,6 +7,7 @@ import GalleryModal from './components/GalleryModal.vue'
 
 //Это для языка
 const currentLang = inject('currentLang')
+const t = inject('t');
 const toggleLang = inject('toggleLang')
 
 //Смена оформления для моб устройств
@@ -22,7 +23,7 @@ const openGalleryModal = async (imgSrc) => {
   if (!modalEl) return
 
   // Bootstrap нужен только здесь, поэтому грузим его отдельным чанком при первом клике
-  const { Modal } = await import('bootstrap')
+  const {Modal} = await import('bootstrap')
 
   setTimeout(() => {
     Modal.getOrCreateInstance(modalEl).show()
@@ -42,20 +43,21 @@ provide('openGalleryModal', openGalleryModal)
             :class="{ 'is-mobile': isMobile }"
             :title="currentLang === 'en' ? 'Switch to Russian' : 'Переключить на English'">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-        <path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7.02 7.02 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49a7 7 0 0 0 .656 2.5zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.02 7.02 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/>
+        <path
+            d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7.02 7.02 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49a7 7 0 0 0 .656 2.5zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.02 7.02 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/>
       </svg>
       <span class="lang-label">{{ currentLang.toUpperCase() }}</span>
     </button>
-    <NavigationMenu />
+    <NavigationMenu/>
 
     <!-- Сюда Vue Router будет подставлять Home.vue или Commissions.vue -->
     <RouterView v-slot="{ Component, route }">
       <transition name="fade" mode="out-in">
-        <component :is="Component" :key="route.path" />
+        <component :is="Component" :key="route.path"/>
       </transition>
     </RouterView>
 
-           <GalleryModal :currentImage="currentImage" />
+    <GalleryModal :currentImage="currentImage"/>
 
 
   </div>
@@ -105,6 +107,7 @@ body {
 .fade-leave-active {
   transition: opacity 0.3s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
@@ -150,11 +153,11 @@ body {
 }
 
 .lang-switcher.is-mobile {
-    top: 0.5rem;
-    left: 0.5rem;
-    padding: 0.35rem 0.6rem;
-    font-size: 0.75rem;
-  }
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.75rem;
+}
 
 
 /* ═══ Стеклянные контейнеры ═══ */
@@ -222,6 +225,7 @@ body {
   .page-scroller::-webkit-scrollbar {
     display: none;
   }
+
   .page-scroller {
     scrollbar-width: none;
     -ms-overflow-style: none;

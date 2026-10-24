@@ -23,10 +23,10 @@
             <path
                 d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
           </svg>
-          {{ t('commContactBtn')  }}
+          {{ t('commContactBtn') }}
         </a>
         <hr class="border-1 border-secondary my-3 "/>
-        <p class="comm-price-update-date">{{ t('commPriceUpdateDate')  }}</p>
+        <p class="comm-price-update-date">{{ t('commPriceUpdateDate') }}</p>
       </header>
 
       <!-- ═══ ОБЕРТКА ДЛЯ ПРОКРУЧИВАЕМОГО КОНТЕНТА ═══ -->
@@ -92,7 +92,7 @@
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                   <polyline points="22 4 12 14.01 9 11.01"/>
                 </svg>
-                {{ t('commLoveDraw')  }}
+                {{ t('commLoveDraw') }}
               </h3>
               <ul class="comm-list">
                 <li v-for="(item, i) in loveDraw" :key="i">{{ item }}</li>
@@ -105,7 +105,7 @@
                   <line x1="15" y1="9" x2="9" y2="15"/>
                   <line x1="9" y1="9" x2="15" y2="15"/>
                 </svg>
-                {{ t('commDontDraw')  }}
+                {{ t('commDontDraw') }}
               </h3>
               <ul class="comm-list">
                 <li v-for="(item, i) in dontDraw" :key="i">{{ item }}</li>
@@ -139,16 +139,16 @@
 
         <!-- ═══ КАК ЗАКАЗАТЬ ═══ -->
         <section class="comm-section comm-how-to">
-          <h2 class="comm-section-title">{{ t('commHowTo')  }}</h2>
+          <h2 class="comm-section-title">{{ t('commHowTo') }}</h2>
           <ol class="comm-steps">
-            <li>{{ t('commStep1')  }}</li>
-            <li>{{ t('commStep2')  }}</li>
-            <li>{{ t('commStep3')  }}</li>
-            <li>{{ t('commStep4')  }}</li>
+            <li>{{ t('commStep1') }}</li>
+            <li>{{ t('commStep2') }}</li>
+            <li>{{ t('commStep3') }}</li>
+            <li>{{ t('commStep4') }}</li>
           </ol>
           <a :href="contactLink" target="_blank" rel="noopener"
              class="social-btn btn-telegram comm-cta-btn comm-cta-btn--large">
-            {{ t('commContactBtn')  }}
+            {{ t('commContactBtn') }}
           </a>
         </section>
 
@@ -193,8 +193,12 @@ const handleClick = (imgSrc) => {
 }
 
 // ═══ Превью и полные версии работ ═══
-const thumbModules = import.meta.glob('/public/commgallery/**/thumbs/*.webp', { eager: true, query: '?url', import: 'default' });
-const fullModules = import.meta.glob('/public/commgallery/*/*.webp', { eager: true, query: '?url', import: 'default' });
+const thumbModules = import.meta.glob('/public/commgallery/**/thumbs/*.webp', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+});
+const fullModules = import.meta.glob('/public/commgallery/*/*.webp', {eager: true, query: '?url', import: 'default'});
 
 const matchFullImage = (thumbPath) => {
   const expectedFullPath = thumbPath.replace('/thumbs/', '/');
@@ -236,26 +240,26 @@ const PRICING = {
   portrait: {
     base: '00',
     addons: [
-      { key: 'addonBg', price: '00' },
-     
-      { key: 'addonDetail', price: '00' }
+      {key: 'addonBg', price: '00'},
+
+      {key: 'addonDetail', price: '00'}
     ]
   },
   halfbody: {
     base: '00',
     addons: [
-      { key: 'addonBg', price: '00' },
-      { key: 'addonExtraChar', price: '00' },
-      { key: 'addonPose', price: '00' }
+      {key: 'addonBg', price: '00'},
+      {key: 'addonExtraChar', price: '00'},
+      {key: 'addonPose', price: '00'}
     ]
   },
   fullbody: {
     base: '00',
     addons: [
-      { key: 'addonBg', price: '00' },
-      { key: 'addonExtraChar', price: '00' },
-      { key: 'addonProp', price: '00' },
-      { key: 'addonDetail', price: '00' }
+      {key: 'addonBg', price: '00'},
+      {key: 'addonExtraChar', price: '00'},
+      {key: 'addonProp', price: '00'},
+      {key: 'addonDetail', price: '00'}
     ]
   }
 };
@@ -420,7 +424,7 @@ const completedWorks = ref([
 }
 
 .comm-section-title {
-  font-size: 22px;
+  font-size: 28px;
   font-weight: 700;
   margin-bottom: 20px;
   padding-bottom: 10px;
@@ -733,6 +737,14 @@ const completedWorks = ref([
 /* Адаптация для мобильных */
 @media (max-width: 480px) {
 
+  .comm-section-title {
+    font-size: 22px;
+
+  }
+  .comm-category-title
+  {
+    font-size: 22px;
+  }
 
   .comm-price-line {
     font-size: 22px;
@@ -741,22 +753,6 @@ const completedWorks = ref([
   .comm-addon-row {
     font-size: 13px;
   }
-}
-
-/* ═══ ГАЛЕРЕЯ ═══ */
-.comm-gallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.comm-gallery-item {
-  position: relative;
-  border-radius: 10px;
-  overflow: hidden;
-  aspect-ratio: 1 / 1;
-  cursor: pointer;
-  background: #0e1621;
 }
 
 .comm-gallery-item img {
@@ -770,20 +766,6 @@ const completedWorks = ref([
   transform: scale(1.05);
 }
 
-.comm-gallery-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, transparent 60%);
-  display: flex;
-  align-items: flex-end;
-  padding: 12px;
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-
-.comm-gallery-item:hover .comm-gallery-overlay {
-  opacity: 1;
-}
 
 .comm-gallery-overlay span {
   color: #fff;
@@ -962,6 +944,7 @@ const completedWorks = ref([
   justify-content: center;
   align-items: center;
   display: flex;
+
 }
 
 .avatar {
@@ -974,10 +957,13 @@ const completedWorks = ref([
 }
 
 .avatar-holder {
+  position: relative;
+  display: inline-block;
   width: min-content;
   overflow: hidden;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.07);
+
 }
 
 .avatar-holder .avatar {

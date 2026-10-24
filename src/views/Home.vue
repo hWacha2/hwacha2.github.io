@@ -586,11 +586,7 @@ function preload(url, flag) {
 
       </section>
       </div>
-      <footer>
-        <div class="container">
-          <div class="small text">{{ t('footer') }}</div>
-        </div>
-      </footer>
+
     </main>
 
     <!-- ═══ ТОЧКИ НАВИГАЦИИ (Только для мобильной версии) ═══ -->
