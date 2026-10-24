@@ -194,6 +194,7 @@ import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue
 const showOverlay = ref(true)
 
 
+
 const isOpen = ref(false); // Переключайте на true, если заказы открыты
 
 const openGalleryModal = inject('openGalleryModal');
