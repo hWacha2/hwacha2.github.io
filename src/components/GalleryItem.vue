@@ -1,39 +1,37 @@
 <script setup>
 import { inject, defineProps, ref, onMounted } from 'vue'
+
 const openModal = inject('openGalleryModal')
 
 const props = defineProps({
-  img: { type: String, required: true }
+  thumb: { type: String, required: true },   // путь к сжатому JPG
+  full: { type: String, required: true }     // путь к полному PNG
 })
 
 const isLoading = ref(true)
-const aspectRatio = ref('4/3') // Дефолт на случай, если метаданные не успели загрузиться
+const aspectRatio = ref('4/3')
 
 onMounted(() => {
-  // Создаём невидимое изображение в памяти для чтения метаданных
+  // Загружаем метадаты из превью (оно лёгкое, загрузится быстро)
   const tempImg = new Image()
 
   tempImg.onload = () => {
-    // Как только браузер прочитал метаданные — вычисляем пропорции
     if (tempImg.naturalWidth && tempImg.naturalHeight) {
       aspectRatio.value = `${tempImg.naturalWidth} / ${tempImg.naturalHeight}`
     }
-    // Картинка уже в кэше браузера, поэтому реальная <img> загрузится мгновенно
     isLoading.value = false
   }
 
   tempImg.onerror = () => {
-    // Если картинка битая — убираем скелетон
     isLoading.value = false
   }
 
-  tempImg.src = props.img
+  tempImg.src = props.thumb
 })
 
 const handleClick = () => {
-  // Просто вызываем функцию, не используя emit
   if (openModal) {
-    openModal(props.img)
+    openModal(props.full)
   }
 }
 </script>
@@ -43,7 +41,7 @@ const handleClick = () => {
     <div
       class="card-glass gallery-item p-1"
       style="overflow: hidden; cursor: pointer;"
-       @click="handleClick"
+      @click="handleClick"
       role="button"
       aria-label="Открыть изображение"
     >
@@ -52,13 +50,15 @@ const handleClick = () => {
         <div class="skeleton-shimmer"></div>
       </div>
 
-      <!-- ═══ КАРТИНКА ═══ -->
+      <!-- ═══ ПРЕВЬЮ (JPG) ═══ -->
       <img
         v-else
-        :src="img"
+        :src="thumb"
         alt="art"
         class="gallery-img"
         :style="{ aspectRatio: aspectRatio }"
+        loading="lazy"
+        decoding="async"
       />
     </div>
   </div>

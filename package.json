@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "node scripts/spa-fallback.mjs",
+    "images": "python scripts/optimize-images.py",
     "preview": "vite preview",
     "deploy": "npm run build && git add dist -f && git commit -m 'deploy' && git subtree push --prefix dist origin main"
   },
@@ -15,7 +17,8 @@
   "dependencies": {
     "bootstrap": "^5.3.8",
     "fast-xml-parser": "^5.11.0",
-    "vue": "^3.5.28"
+    "vue": "^3.5.28",
+    "vue-router": "^5.4.0"
   },
   "devDependencies": {
     "@types/bootstrap": "^5.2.11",

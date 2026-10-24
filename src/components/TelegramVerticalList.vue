@@ -676,12 +676,9 @@ async function fetchTelegram() {
             }
             finalQuotedPostId = currentId;
             if (finalQuotedPostId !== extractedPostId) {
-              console.log(`[TG] ✅ Альбом (DOM): ссылка #${extractedPostId} скорректирована на #${finalQuotedPostId}`);
+
             }
           } else {
-            // 🟢 Вариант Б: Поста НЕТ в DOM (фантомный ID медиа внутри альбома).
-            // Ищем главный пост этого альбома математически.
-            console.log(`[TG] ⚠️ Пост #${extractedPostId} отсутствует в HTML. Ищем главный пост альбома...`);
 
             // Берем все ID, которые есть на странице, сортируем по убыванию
             const existingIds = Array.from(domMap.keys()).sort((a, b) => b - a);
@@ -692,9 +689,7 @@ async function fetchTelegram() {
             // Если разница небольшая (<= 10), считаем, что это часть одного альбома
             if (closestLowerId && (extractedPostId - closestLowerId) <= 10) {
               finalQuotedPostId = closestLowerId;
-              console.log(`[TG] ✅ Альбом (Математика): #${extractedPostId} принадлежит главному посту #${finalQuotedPostId}`);
             } else {
-              console.log(`[TG] ℹ️ Пост #${extractedPostId} отсутствует на странице и не похож на часть текущего альбома.`);
             }
           }
 
@@ -805,7 +800,6 @@ async function fetchTelegram() {
     });
   });
 
-  console.log(`[TG] 🏁 Парсинг завершен. Постов с текстом: ${parsed.length}`);
   return {
     posts: parsed.sort((a, b) => b.timestamp - a.timestamp).slice(0, typeof POSTS_LIMIT !== 'undefined' ? POSTS_LIMIT : 20),
     channelAvatar: channelAvatarUrl
