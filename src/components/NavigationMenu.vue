@@ -5,11 +5,15 @@
       ref="menuContainer"
   > <!-- Круглая кнопка-гамбургер -->
     <button
+        ref="menuButton"
         class="nav-menu-btn glass-btn"
         :class="{ 'is-mobile': isMobile }"
         @click="toggleMenu"
-        aria-label="Открыть меню"
-        :title="isOpen ? 'Закрыть меню' : 'Меню'"
+        aria-haspopup="true"
+        aria-controls="nav-menu-panel"
+        :aria-expanded="isOpen"
+        :aria-label="isOpen ? t('menuClose') : t('menuOpen')"
+        :title="isOpen ? t('menuClose') : t('menuOpen')"
     >
       <span class="hamburger-line line-1"></span>
       <span class="hamburger-line line-2"></span>
@@ -18,7 +22,7 @@
 
     <!-- Выпадающая панель (прямоугольник) -->
     <Transition name="menu-dropdown">
-      <div v-if="isOpen" class="nav-menu-panel glass-panel">
+      <div v-if="isOpen" id="nav-menu-panel" class="nav-menu-panel glass-panel">
         <RouterLink to="/" class="nav-menu-item" @click="closeMenu">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                stroke-linecap="round" stroke-linejoin="round">
@@ -54,6 +58,7 @@ const isMobile = inject('isMobile') // <-- Получаем глобальное
 
 const isOpen = ref(false)
 const menuContainer = ref(null)
+const menuButton = ref(null)
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value
@@ -70,12 +75,22 @@ const handleClickOutside = (event) => {
   }
 }
 
+// Escape закрывает меню и возвращает фокус на кнопку
+const handleKeydown = (event) => {
+  if (event.key === 'Escape' && isOpen.value) {
+    closeMenu()
+    menuButton.value?.focus()
+  }
+}
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  document.addEventListener('keydown', handleKeydown)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 

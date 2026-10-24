@@ -2,7 +2,7 @@
   <div>
     <div class="page-scroller">
       <UnderConstructionOverlay v-model="showOverlay"/>
-      <div class="container commissions-page">
+      <div class="container commissions-page" id="main-content" tabindex="-1">
 
         <!-- ═══ ШАПКА ═══ -->
         <header class="comm-header contglass">
@@ -12,11 +12,11 @@
           </div>
           <div class="ava-container">
             <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded} ">
-              <img :src="avatarUrl" alt="avatar" class="avatar" width="120" height="120" decoding="async"
+              <img :src="avatarUrl" :alt="nickName" class="avatar" width="120" height="120" decoding="async"
                    @load="avatarLoaded = true" @error="avatarLoaded = true"/>
             </div>
           </div>
-          <h1 class="h3 mb-2">{{ nickName }}</h1>
+          <div class="h3 mb-2">{{ nickName }}</div>
           <h1 class="comm-title">{{ t('commTitle') }}</h1>
           <p class="comm-subtitle">{{ t('commSubtitle') }}</p>
 

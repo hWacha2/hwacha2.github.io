@@ -50,7 +50,7 @@ function initStars() {
   }
 }
 
-function animate() {
+function draw() {
   if (!ctx) return
 
   ctx.clearRect(0, 0, width, height)
@@ -71,24 +71,41 @@ function animate() {
     ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`
     ctx.fill()
   })
+}
 
+function animate() {
+  draw()
   animationFrame = requestAnimationFrame(animate)
 }
 
-function handleResize() {
+const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
+
+function applyMotionPreference() {
   if (animationFrame) {
     cancelAnimationFrame(animationFrame)
+    animationFrame = null
   }
+
+  if (reducedMotionQuery.matches) {
+    // Без анимации рисуем один статичный кадр
+    draw()
+  } else {
+    animate()
+  }
+}
+
+function handleResize() {
   initStars()
-  animate()
+  applyMotionPreference()
 }
 
 onMounted(() => {
   if (canvas.value) {
     ctx = canvas.value.getContext('2d')
     initStars()
-    animate()
+    applyMotionPreference()
     window.addEventListener('resize', handleResize)
+    reducedMotionQuery.addEventListener('change', applyMotionPreference)
   }
 })
 
@@ -97,6 +114,7 @@ onUnmounted(() => {
     cancelAnimationFrame(animationFrame)
   }
   window.removeEventListener('resize', handleResize)
+  reducedMotionQuery.removeEventListener('change', applyMotionPreference)
 })
 </script>
 

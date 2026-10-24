@@ -1,6 +1,6 @@
 <script setup>
-import {RouterView} from 'vue-router'
-import {inject, provide, ref} from 'vue'
+import {RouterView, useRoute} from 'vue-router'
+import {inject, provide, ref, watch} from 'vue'
 import Star from './components/StarCanvas.vue'
 import NavigationMenu from './components/NavigationMenu.vue'
 import GalleryModal from './components/GalleryModal.vue'
@@ -12,6 +12,15 @@ const toggleLang = inject('toggleLang')
 
 //Смена оформления для моб устройств
 const isMobile = inject('isMobile')
+
+// Заголовок вкладки и lang у <html> следуют за роутом и языком
+const route = useRoute()
+
+watch([() => route.meta?.title, currentLang], () => {
+  const key = route.meta?.title
+  document.title = key ? `${t(key)} — ishwacha` : 'ishwacha'
+  document.documentElement.lang = currentLang.value
+}, {immediate: true})
 
 //модалка для любой картинки
 const currentImage = ref('');
@@ -26,8 +35,19 @@ const openGalleryModal = async (imgSrc) => {
   const modalEl = document.getElementById('galleryModal')
   if (!modalEl) return
 
+  // Запоминаем, откуда открыли: после закрытия вернём туда фокус
+  const trigger = document.activeElement
+
   // Bootstrap нужен только здесь, поэтому грузим его отдельным чанком при первом клике
   const {Modal} = await import('bootstrap')
+
+  const restoreFocus = () => {
+    modalEl.removeEventListener('hidden.bs.modal', restoreFocus)
+    if (trigger && trigger !== document.body && document.contains(trigger)) {
+      trigger.focus()
+    }
+  }
+  modalEl.addEventListener('hidden.bs.modal', restoreFocus)
 
   setTimeout(() => {
     Modal.getOrCreateInstance(modalEl).show()
@@ -39,13 +59,17 @@ provide('openGalleryModal', openGalleryModal)
 
 <template>
   <div class="app">
+    <!-- Пропуск навигации для клавиатуры и скринридеров -->
+    <a href="#main-content" class="skip-link">{{ t('skipToContent') }}</a>
+
     <!-- Глобальный фон -->
     <Star class="star-background"/>
 
     <!-- Глобальная кнопка языка (видна на всех страницах) -->
     <button class="lang-switcher" @click="toggleLang"
             :class="{ 'is-mobile': isMobile }"
-            :title="currentLang === 'en' ? 'Switch to Russian' : 'Переключить на English'">
+            :title="currentLang === 'en' ? 'Switch to Russian' : 'Переключить на English'"
+            :aria-label="currentLang === 'en' ? 'Switch to Russian' : 'Переключить на English'">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
         <path
             d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m7.5-6.923c-.67.204-1.335.82-1.887 1.855A8 8 0 0 0 5.145 4H7.5zM4.09 4a9.3 9.3 0 0 1 .64-1.539 7 7 0 0 1 .597-.933A7.03 7.03 0 0 0 2.255 4zm-.582 3.5c.03-.877.138-1.718.312-2.5H1.674a7 7 0 0 0-.656 2.5zM4.847 5a12.5 12.5 0 0 0-.338 2.5H7.5V5zM8.5 5v2.5h2.99a12.5 12.5 0 0 0-.337-2.5zM4.51 8.5a12.5 12.5 0 0 0 .337 2.5H7.5V8.5zm3.99 0V11h2.653c.187-.765.306-1.608.338-2.5zM5.145 12q.208.58.468 1.068c.552 1.035 1.218 1.65 1.887 1.855V12zm.182 2.472a7 7 0 0 1-.597-.933A9.3 9.3 0 0 1 4.09 12H2.255a7.02 7.02 0 0 0 3.072 2.472M3.82 11a13.7 13.7 0 0 1-.312-2.5h-2.49a7 7 0 0 0 .656 2.5zM8.5 12v2.923c.67-.204 1.335-.82 1.887-1.855q.26-.487.468-1.068zm3.68-1h2.146c.365-.767.594-1.61.656-2.5h-2.49a13.7 13.7 0 0 1-.312 2.5m2.802-3.5a7 7 0 0 0-.656-2.5H12.18c.174.782.282 1.623.312 2.5zM11.27 2.461c.247.464.462.98.64 1.539h1.835a7.02 7.02 0 0 0-3.072-2.472c.218.284.418.598.597.933M10.855 4a8 8 0 0 0-.468-1.068C9.835 1.897 9.17 1.282 8.5 1.077V4z"/>
@@ -74,6 +98,45 @@ provide('openGalleryModal', openGalleryModal)
 <style>
 * {
   box-sizing: border-box;
+}
+
+/* ═══ Клавиатурная доступность ═══ */
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 2000;
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  background: #2AABEE;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-200%);
+  transition: transform .15s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #2AABEE;
+  outline-offset: 2px;
+}
+
+/* Уважаем системную настройку «меньше движения» */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 :root {

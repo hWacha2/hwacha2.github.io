@@ -13,9 +13,9 @@ const isMobile = inject('isMobile')
 
 <template>
   <div class="d-flex justify-content-between align-items-center mb-3">
-    <component :is="isMobile ? 'h1' : 'h2'" :class="isMobile ? 'h3 mb-0' : 'h5 mb-0'">
+    <h2 :class="isMobile ? 'h3 mb-0' : 'h5 mb-0'">
       {{ t('modsTitle') }}
-    </component>
+    </h2>
     <small class="text-secondary" style="text-align: right; display: block;">{{ t('modsSubtitle') }}</small>
   </div>
 
@@ -38,7 +38,7 @@ const isMobile = inject('isMobile')
 
 <style scoped>
 @media (max-width: 576px) {
-  h1.h3 {
+  h2.h3 {
     font-size: 1.1rem;
   }
 }

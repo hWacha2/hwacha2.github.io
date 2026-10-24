@@ -13,7 +13,7 @@ const isMobile = inject('isMobile')
 <template>
   <div>
     <div class="social-row justify-content-center">
-      <h1 :class="isMobile ? 'h4 mb-2' : 'h5 mb-2'">{{ t('supportSubtitle') }}</h1>
+      <h2 :class="isMobile ? 'h4 mb-2' : 'h5 mb-2'">{{ t('supportSubtitle') }}</h2>
     </div>
     <div class="social-row justify-content-center">
       <a
@@ -37,7 +37,7 @@ const isMobile = inject('isMobile')
 
   <div>
     <div class="social-row justify-content-center">
-      <h1 :class="isMobile ? 'h4 mb-2' : 'h5 mb-2'">{{ t('socialTitle') }}</h1>
+      <h2 :class="isMobile ? 'h4 mb-2' : 'h5 mb-2'">{{ t('socialTitle') }}</h2>
     </div>
     <div class="social-row justify-content-center">
       <a
@@ -120,11 +120,11 @@ const isMobile = inject('isMobile')
     filter: blur(30px);
   }
 
-  h1.h4 {
+  h2.h4 {
     font-size: 1rem;
   }
 
-  h1.h5 {
+  h2.h5 {
     font-size: 0.9rem;
   }
 

@@ -119,7 +119,7 @@ onUnmounted(() => {
 <template>
   <div>
     <!-- ═══ МОБИЛЬНАЯ ВЕРСИЯ: секции-слайды со scroll-snap ═══ -->
-    <div v-if="isMobile" class="mobile-swiper-wrapper">
+    <div v-if="isMobile" id="main-content" tabindex="-1" class="mobile-swiper-wrapper">
       <section id="mob-links" class="mobile-section">
         <div class="contglass p-4 mx-4 my-2">
           <HomeHero/>
@@ -152,7 +152,7 @@ onUnmounted(() => {
     </div>
 
     <!-- ═══ ДЕСКТОПНАЯ ВЕРСИЯ ═══ -->
-    <main v-else class="container p-4 desktop-layout">
+    <main v-else id="main-content" tabindex="-1" class="container p-4 desktop-layout">
       <div class="page-scroller">
         <section id="links" class="contglass p-4 mt-4 mb-4">
           <HomeHero/>

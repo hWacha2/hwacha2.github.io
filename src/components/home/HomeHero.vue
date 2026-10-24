@@ -51,7 +51,7 @@ onUnmounted(() => {
         <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded }">
           <img
               :src="avatarUrl"
-              alt="avatar"
+              :alt="nickName"
               class="avatar"
               width="120"
               height="120"

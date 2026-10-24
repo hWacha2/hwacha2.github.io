@@ -2,10 +2,12 @@
 import { inject, defineProps, ref, onMounted } from 'vue'
 
 const openModal = inject('openGalleryModal')
+const t = inject('t')
 
 const props = defineProps({
-  thumb: { type: String, required: true },   // путь к сжатому JPG
-  full: { type: String, required: true }     // путь к полному PNG
+  thumb: { type: String, required: true },   // путь к превью WebP
+  full: { type: String, required: true },    // путь к полной версии
+  alt: { type: String, default: '' }         // описание для скринридеров
 })
 
 const isLoading = ref(true)
@@ -42,19 +44,22 @@ const handleClick = () => {
       class="card-glass gallery-item p-1"
       style="overflow: hidden; cursor: pointer;"
       @click="handleClick"
+      @keydown.enter.prevent="handleClick"
+      @keydown.space.prevent="handleClick"
       role="button"
-      aria-label="Открыть изображение"
+      tabindex="0"
+      :aria-label="t('openImage')"
     >
       <!-- ═══ СКЕЛЕТОН С АВТО-ПРОПОРЦИЯМИ ═══ -->
       <div v-if="isLoading" class="skeleton-wrapper" :style="{ aspectRatio: aspectRatio }">
         <div class="skeleton-shimmer"></div>
       </div>
 
-      <!-- ═══ ПРЕВЬЮ (JPG) ═══ -->
+      <!-- ═══ ПРЕВЬЮ (WebP) ═══ -->
       <img
         v-else
         :src="thumb"
-        alt="art"
+        :alt="alt || t('artAlt')"
         class="gallery-img"
         :style="{ aspectRatio: aspectRatio }"
         loading="lazy"
@@ -144,5 +149,11 @@ const handleClick = () => {
   transform: scale(1.03);
   filter: brightness(1.02);
   transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+/* Клавиатурный фокус: виден, но не мешает мышке */
+.gallery-item:focus-visible {
+  outline: 2px solid #2AABEE;
+  outline-offset: 3px;
 }
 </style>
