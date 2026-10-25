@@ -2121,7 +2121,7 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  border-radius: 10px;
+  border-radius: 30px;
   border: none;
   cursor: pointer;
   font-weight: 500;

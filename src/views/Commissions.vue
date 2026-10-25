@@ -130,7 +130,7 @@
               <button type="button" class="comm-order-btn"
                       :disabled="!isOpen"
                       @click="isFormOpen = true"
-              :class="{ 'is-disabled': !isOpen }"
+                      :class="{ 'is-disabled': !isOpen }"
               >
                 {{ t('formOpen') }}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -138,11 +138,13 @@
                   <path d="M5 12h14M13 6l6 6-6 6"></path>
                 </svg>
               </button>
-              <a :href="contactLink" target="_blank" rel="noopener"
+              <a
+                  :href="contactLink" target="_blank" rel="noopener"
                  class="social-btn btn-telegram comm-cta-btn comm-howto-alt">
                 {{ t('formOrTelegram') }}
               </a>
             </div>
+
           </section>
 
           <!-- ═══ ВЫПОЛНЕННЫЕ КОМИШКИ ═══ -->
@@ -204,15 +206,14 @@ const t = inject('t');
 const nickName = 'ishwacha';
 const avatarUrl = 'ava.webp';
 const avatarLoaded = ref(false);
-const contactLink = 'https://t.me/ishwacha';
+const contactLink = 'https://t.me/ishwacha?direct';
 import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue'
 import CommissionModal from '../components/comm/CommissionModal.vue'
 import {FORMATS, FORMAT_IDS, PRICING} from '../data/pricing'
 
 const showOverlay = ref(false)
-const isOpen = ref(true); // Переключайте на true, если заказы открыты
+const isOpen = ref(false); // Переключайте на true, если заказы открыты
 const isFormOpen = ref(false)
-
 
 const openGalleryModal = inject('openGalleryModal');
 
@@ -412,6 +413,7 @@ const completedWorks = ref([
   padding: 16px 40px;
   font-size: 18px;
 }
+
 
 /* ═══ СЕКЦИИ ═══ */
 .comm-section {
@@ -1043,7 +1045,7 @@ const completedWorks = ref([
   padding: 0.4rem 1rem;
   min-width: auto; /* Убираем жесткую ширину 130px */
   color: rgba(255, 255, 255, 0.8);
-    display: inline-flex;
+  display: inline-flex;
   align-items: center;
   text-align: center;
   gap: .6rem;
@@ -1102,11 +1104,6 @@ const completedWorks = ref([
   font-size: 13px;
   color: #e03131;
   font-weight: 500;
-}
-
-/* Плавный скролл для якорей */
-html {
-  scroll-behavior: smooth;
 }
 
 

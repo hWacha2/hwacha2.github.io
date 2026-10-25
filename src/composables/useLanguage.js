@@ -159,12 +159,12 @@ const translations = reactive({
         commLoveDraw: "What I draw",
         commLove1: "Fan Art",
         commLove2: "Original characters",
-        commLove3: "NSFW, but without sex",
+        commLove3: "Mild NSFW / Ecchi / Suggestive themes (No explicit sexual acts)",
         commLove4: "Although almost all my art is based on Silksong, I can draw not only on it",
         commDontDraw: "What I don't draw",
-        commDont1: "Furs",
-        commDont2: "Portraits based on photos",
-        commDont3: "American furries, ponies",
+        commDont1: "Mecha / Heavy machinery",
+        commDont2: "Real people portraits from photos",
+        commDont3: "American/Western furries, My Little Pony style",
         commDont4: "Gore / Guro",
 
 
@@ -359,12 +359,12 @@ const translations = reactive({
         commLoveDraw: "Что рисую",
         commLove1: "Фан-арт",
         commLove2: "Оригинальные персонажи",
-        commLove3: "NSFW, но без секса",
+        commLove3: "Умеренный NSFW / Этти / Непристойные темы (без откровенных сексуальных действий)",
         commLove4: "Хоть почти все арты у меня по Silksong - я могу рисовать не только по нему",
 
         commDontDraw: "Что НЕ рисую",
         commDont1: "Меха",
-        commDont2: "Портреты по фото",
+        commDont2: "Портреты реальных людей по фото",
         commDont3: "Американские фурри, пони",
         commDont4: "Gore / Guro",
 
