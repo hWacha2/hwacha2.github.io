@@ -148,6 +148,7 @@ const handleClick = () => {
 .gallery-item:hover .gallery-img {
   transform: scale(1.03);
   filter: brightness(1.02);
+  
   transition: transform 0.18s ease, filter 0.18s ease;
 }
 

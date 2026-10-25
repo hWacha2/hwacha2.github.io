@@ -6,9 +6,6 @@ import router from './router' // Импортируем роутер
 import './assets/css/tiktokbtn.css'
 import './assets/css/nexusbtn.css'
 import './assets/css/vkbtn.css'
-import './assets/css/animation.css'
-import './assets/css/modcard.css'
-import './assets/css/glasscss.css'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 // Импортируем нашу новую логику языка

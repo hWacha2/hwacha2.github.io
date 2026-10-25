@@ -20,13 +20,15 @@
           <h1 class="comm-title">{{ t('commTitle') }}</h1>
           <p class="comm-subtitle">{{ t('commSubtitle') }}</p>
 
-          <a :href="contactLink" target="_blank" rel="noopener" class="social-btn btn-telegram comm-cta-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
-              <path
-                  d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
-            </svg>
-            {{ t('commContactBtn') }}
-          </a>
+          <!-- ═══ НАВИГАЦИЯ ПО СЕКЦИЯМ (НОВОЕ) ═══ -->
+          <div class="comm-nav-row">
+            <a href="#pricing" class="social-btn btn-nav">{{ t('navPricing') || 'Прайс' }}</a>
+            <a href="#will-wont" class="social-btn btn-nav">{{ t('navWillWont') || 'Что рисую' }}</a>
+            <a href="#tos" class="social-btn btn-nav">{{ t('navTos') || 'Условия' }}</a>
+            <a href="#completed" class="social-btn btn-nav">{{ t('navCompleted') || 'Примеры' }}</a>
+          </div>
+
+
           <hr class="border-1 border-secondary my-3 "/>
           <p class="comm-price-update-date">{{ t('commPriceUpdateDate') }}</p>
         </header>
@@ -35,7 +37,7 @@
         <div class="comm-content-wrapper contglass p-3">
 
           <!-- ═══ ЦЕНЫ И ФОРМАТЫ (Стиль Jaykart: Категория -> Примеры -> Цена) ═══ -->
-          <section class="comm-section">
+          <section id="pricing" class="comm-section">
             <h2 class="comm-section-title">{{ t('commPricing') }}</h2>
             <div class="comm-pricing-categories">
               <template v-for="(cat, idx) in pricingCategories" :key="idx">
@@ -82,7 +84,7 @@
               </template>
             </div>
           </section>
-          <section class="comm-section">
+          <section id="will-wont" class="comm-section">
             <h2 class="comm-section-title">{{ t('commWillWont') }}</h2>
             <div class="comm-grid-2">
               <div class="comm-card comm-card--do">
@@ -114,8 +116,56 @@
 
           </section>
 
-          <!-- ═══ ЧТО Я РИСУЮ / НЕ РИСУЮ + ПРАВИЛА ═══ -->
-          <section class="comm-section">
+
+          <!-- ═══ КАК ЗАКАЗАТЬ ═══ -->
+          <section id="how-to" class="comm-section comm-how-to">
+            <h2 class="comm-section-title">{{ t('commHowTo') }}</h2>
+            <ol class="comm-steps">
+              <li>{{ t('commStep1') }}</li>
+              <li>{{ t('commStep2') }}</li>
+              <li>{{ t('commStep3') }}</li>
+              <li>{{ t('commStep4') }}</li>
+            </ol>
+            <div class="comm-howto-actions">
+              <button type="button" class="comm-order-btn"
+                      :disabled="!isOpen"
+                      @click="isFormOpen = true"
+              :class="{ 'is-disabled': !isOpen }"
+              >
+                {{ t('formOpen') }}
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6"></path>
+                </svg>
+              </button>
+              <a :href="contactLink" target="_blank" rel="noopener"
+                 class="social-btn btn-telegram comm-cta-btn comm-howto-alt">
+                {{ t('formOrTelegram') }}
+              </a>
+            </div>
+          </section>
+
+          <!-- ═══ ВЫПОЛНЕННЫЕ КОМИШКИ ═══ -->
+          <section id="completed" class="comm-section">
+            <h2 class="comm-section-title">{{ t('commCompleted') }}</h2>
+            <div class="comm-completed-grid">
+              <div v-for="(work, idx) in completedWorks" :key="idx" class="comm-work-card">
+                <div class="comm-work-img-wrapper">
+                  <img :src="work.thumb" :alt="work.client" @click="handleClick(work.full)" style="cursor: pointer;"
+                       loading="lazy" decoding="async" width="600" height="600"/>
+                </div>
+                <div class="comm-work-info">
+                  <a class="comm-work-client" :href="work.clientUrl" target="_blank" rel="noopener">@{{
+                      work.client
+                    }}</a>
+                  <div class="comm-work-desc">{{ t(work.desc) }}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ═══  Terms of Service ═══ -->
+          <section id="tos" class="comm-section">
             <h2 class="comm-section-title">{{ t('commTermsOfService') }}</h2>
 
             <div class="comm-tos">
@@ -132,41 +182,6 @@
             </div>
           </section>
 
-
-          <!-- ═══ КАК ЗАКАЗАТЬ ═══ -->
-          <section class="comm-section comm-how-to">
-            <h2 class="comm-section-title">{{ t('commHowTo') }}</h2>
-            <ol class="comm-steps">
-              <li>{{ t('commStep1') }}</li>
-              <li>{{ t('commStep2') }}</li>
-              <li>{{ t('commStep3') }}</li>
-              <li>{{ t('commStep4') }}</li>
-            </ol>
-            <a :href="contactLink" target="_blank" rel="noopener"
-               class="social-btn btn-telegram comm-cta-btn comm-cta-btn--large">
-              {{ t('commContactBtn') }}
-            </a>
-          </section>
-
-          <!-- ═══ ВЫПОЛНЕННЫЕ КОМИШКИ ═══ -->
-          <section class="comm-section">
-            <h2 class="comm-section-title">{{ t('commCompleted') }}</h2>
-            <div class="comm-completed-grid">
-              <div v-for="(work, idx) in completedWorks" :key="idx" class="comm-work-card">
-                <div class="comm-work-img-wrapper">
-                  <img :src="work.thumb" :alt="work.client" @click="handleClick(work.full)" style="cursor: pointer;"
-                       loading="lazy" decoding="async" width="600" height="600"/>
-                </div>
-                <div class="comm-work-info">
-                  <a class="comm-work-client" :href="work.clientUrl" target="_blank" rel="noopener" >@{{
-                      work.client
-                    }}</a>
-                  <div class="comm-work-desc">{{ work.desc }}</div>
-                </div>
-              </div>
-            </div>
-          </section>
-
         </div> <!-- Конец comm-content-wrapper -->
 
       </div>
@@ -178,6 +193,7 @@
     </div>
 
 
+    <CommissionModal v-if="isFormOpen" @close="isFormOpen = false"/>
   </div>
 </template>
 
@@ -190,12 +206,13 @@ const avatarUrl = 'ava.webp';
 const avatarLoaded = ref(false);
 const contactLink = 'https://t.me/ishwacha';
 import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue'
+import CommissionModal from '../components/comm/CommissionModal.vue'
+import {FORMATS, FORMAT_IDS, PRICING} from '../data/pricing'
 
-const showOverlay = ref(true)
+const showOverlay = ref(false)
+const isOpen = ref(true); // Переключайте на true, если заказы открыты
+const isFormOpen = ref(false)
 
-
-
-const isOpen = ref(false); // Переключайте на true, если заказы открыты
 
 const openGalleryModal = inject('openGalleryModal');
 
@@ -225,6 +242,7 @@ const getExamples = (folder) => Object.keys(thumbModules)
       full: matchFullImage(thumbPath) || thumbModules[thumbPath]
     }));
 
+
 const examples = {
   portrets: getExamples('portrets'),
   halfbody: getExamples('halfbody'),
@@ -247,57 +265,25 @@ const dontDraw = computed(() => [
 ]);
 
 // ═══ Цены ═══
-// Заглушки: замени '00' на реальные суммы — они подставятся в прайс.
-// У каждой категории свой набор надбавок и своя цена на каждую надбавку.
-const PRICING = {
-  portrait: {
-    base: '00',
-    addons: [
-      {key: 'addonBg', price: '00'},
-
-      {key: 'addonDetail', price: '00'}
-    ]
-  },
-  halfbody: {
-    base: '00',
-    addons: [
-      {key: 'addonBg', price: '00'},
-      {key: 'addonExtraChar', price: '00'},
-      {key: 'addonPose', price: '00'}
-    ]
-  },
-  fullbody: {
-    base: '00',
-    addons: [
-      {key: 'addonBg', price: '00'},
-      {key: 'addonExtraChar', price: '00'},
-      {key: 'addonProp', price: '00'},
-      {key: 'addonDetail', price: '00'}
-    ]
-  }
-};
-
-const createCategory = (pricingKey, titleKey, descKey, folder) => {
-  const pricing = PRICING[pricingKey];
+// Цены живут в src/data/pricing.js — оттуда же считается форма заявки.
+const createCategory = (formatId) => {
+  const pricing = PRICING[formatId];
+  const meta = FORMATS[formatId];
 
   return {
-    title: t(titleKey),
-    description: t(descKey),
-    baseLabel: t('priceBaseLabel'),
+    title: t(meta.nameKey),
+    description: t(meta.descKey),
+    baseLabel: t('priceBaseOneChar'),
     basePrice: pricing.base,
-    examples: examples[folder],
+    examples: examples[meta.examples],
     addons: pricing.addons.map(addon => ({
-      label: t(addon.key),
+      label: t(addon.labelKey),
       price: addon.price
     }))
   };
 };
 
-const pricingCategories = computed(() => [
-  createCategory('portrait', 'pricePortraitName', 'pricePortraitDesc', 'portrets'),
-  createCategory('halfbody', 'priceHalfName', 'priceHalfDesc', 'halfbody'),
-  createCategory('fullbody', 'priceFullName', 'priceFullDesc', 'fullbody')
-]);
+const pricingCategories = computed(() => FORMAT_IDS.map(createCategory));
 
 // ═══ Условия использования: структура → тексты из переводов ═══
 const TOS_STRUCTURE = [
@@ -336,7 +322,7 @@ const completedWorks = ref([
     full: 'commishionsart/commish1.webp',
     client: 'theamberstar.space (bsky)',
     clientUrl: "https://bsky.app/profile/theamberstar.space",
-    desc: 'Fullbody art with bg 250$'
+    desc: 'commCompletedDesc1'
   },
 
 ]);
@@ -599,7 +585,7 @@ const completedWorks = ref([
   margin-left: auto;
   flex-shrink: 0;
   color: #fff;
-  font-weight: 600;
+  font-weight: 400;
   white-space: nowrap;
 }
 
@@ -856,6 +842,39 @@ const completedWorks = ref([
   font-weight: bold;
 }
 
+.comm-howto-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.comm-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 30px;
+  border: none;
+  border-radius: 50rem;
+  background: linear-gradient(135deg, #2AABEE, #229ED9);
+  color: #06121c;
+  font-size: 17px;
+  font-weight: 700;
+  box-shadow: 0 10px 30px rgba(42, 171, 238, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.comm-order-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(42, 171, 238, 0.4);
+}
+
+.comm-howto-alt {
+  padding: 11px 20px;
+  font-size: 14px;
+}
+
 /* ═══ АДАПТИВНОСТЬ ═══ */
 @media (max-width: 768px) {
   .comm-grid-2 {
@@ -1006,6 +1025,88 @@ const completedWorks = ref([
   100% {
     transform: translateX(100%);
   }
+}
+
+/* ═══ НАВИГАЦИЯ В ШАПКЕ ═══ */
+.comm-nav-row {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Стиль кнопок навигации (наследуем от .social-btn, но делаем компактнее) */
+.btn-nav {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.9rem;
+  padding: 0.4rem 1rem;
+  min-width: auto; /* Убираем жесткую ширину 130px */
+  color: rgba(255, 255, 255, 0.8);
+    display: inline-flex;
+  align-items: center;
+  text-align: center;
+  gap: .6rem;
+
+  border-radius: 30px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+
+  transition: transform .16s ease, box-shadow .16s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+.btn-nav:hover {
+  background: rgba(34, 158, 217, 0.15);
+  color: #fff;
+  border-color: rgba(34, 158, 217, 0.4);
+  transform: translateY(-1px);
+}
+
+/* ═══ ЛОГИКА РАСПОЛОЖЕНИЯ КНОПОК ═══ */
+
+/* По умолчанию (Mobile First): в строку, с переносом */
+.comm-nav-row {
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+/* На ПК (Desktop): в столбик */
+@media (min-width: 992px) {
+  .comm-nav-row {
+    flex-direction: column;
+    align-items: stretch; /* Растягиваем кнопки на всю ширину сайдбара */
+    max-width: 280px; /* Ограничиваем ширину, чтобы не были гигантскими */
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .btn-nav {
+    justify-content: center;
+  }
+}
+
+/* ═══ СТИЛИ ДЛЯ НЕАКТИВНОЙ КНОПКИ ЗАЯВКИ ═══ */
+.comm-order-btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+  box-shadow: none;
+  transform: none !important;
+}
+
+.comm-closed-hint {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #e03131;
+  font-weight: 500;
+}
+
+/* Плавный скролл для якорей */
+html {
+  scroll-behavior: smooth;
 }
 
 

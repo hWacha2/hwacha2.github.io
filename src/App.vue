@@ -308,4 +308,24 @@ footer {
   text-align: center;
   color: var(--muted);
 }
+
+.social-btn {
+  display: inline-flex;
+  align-items: center;
+  text-align: center;
+  gap: .6rem;
+  padding: .5rem .9rem;
+  border-radius: 30px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  min-width: 130px;
+  transition: transform .16s ease, box-shadow .16s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+
+
 </style>
