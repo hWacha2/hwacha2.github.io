@@ -24,7 +24,7 @@ const defaults = {
   deadline: '',
   name: '',
   credit: '',
-  contactMethod: 'telegram',
+  contactMethod: 'email',
   contact: '',
   website: '' // honeypot
 }
@@ -32,8 +32,8 @@ const defaults = {
 const {form, restored, clear: clearDraft} = useFormDraft('comm-draft-v2', defaults)
 
 // Старый черновик мог сохранить способ связи, которого больше нет
-if (!['telegram', 'discord', 'email', 'twitter'].includes(form.contactMethod)) {
-  form.contactMethod = 'telegram'
+if (!['telegram', 'discord', 'email', 'twitter', 'other'].includes(form.contactMethod)) {
+  form.contactMethod = 'email'
   form.contact = ''
 }
 
