@@ -153,8 +153,14 @@
                 </svg>
               </button>
               <a
-                  :href="contactLink" target="_blank" rel="noopener"
-                  class="social-btn btn-telegram comm-cta-btn comm-howto-alt">
+                  :href="contactLink"
+                  target="_blank"
+                  rel="noopener"
+                  class="social-btn btn-telegram comm-cta-btn comm-howto-alt"
+                  :class="{ 'is-disabled': !slotsData.isOpen }"
+                  :tabindex="slotsData.isOpen ? 0 : -1"
+                  :aria-disabled="!slotsData.isOpen"
+              >
                 {{ t('formOrTelegram') }}
               </a>
             </div>
@@ -228,7 +234,6 @@ import {FORMATS, FORMAT_IDS, PRICING} from '../data/pricing'
 import {PRICES_UPDATED_AT} from '../data/dates'
 
 const showOverlay = ref(false)
-const isOpen = ref(true); // Переключайте на true, если заказы открыты
 
 const isFormOpen = ref(false)
 
@@ -912,7 +917,8 @@ const completedWorks = ref([
   background: linear-gradient(200deg, rgba(32, 42, 58, .80), rgba(16, 22, 32, .1));
   border-radius: 16px;
   padding: 28px;
-  border: 1px solid rgba(34, 158, 217, 0.15);
+  /*border: 1px solid rgba(34, 158, 217, 0.15);*/
+  border: 1px solid rgba(255, 255, 255, 0.2);
   text-align: center;
 }
 
@@ -954,7 +960,7 @@ const completedWorks = ref([
   color: #06121c;
   font-size: 17px;
   font-weight: 700;
-  box-shadow: 0 10px 30px rgba(42, 171, 238, 0.28);
+  box-shadow: 0 5px 10px rgba(42, 171, 238, 0.28);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -1169,6 +1175,16 @@ const completedWorks = ref([
   filter: grayscale(100%);
   box-shadow: none;
   transform: none !important;
+}
+/* НОВЫЙ стиль для ссылки Telegram */
+.comm-howto-alt.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+  pointer-events: none; /* Запрещает клики по ссылке */
+  transform: none !important;
+  box-shadow: none !important;
+  text-decoration: none !important;
 }
 
 .comm-closed-hint {

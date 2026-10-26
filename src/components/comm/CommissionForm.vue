@@ -13,28 +13,28 @@ const MAX_CHARACTERS = 3
 const MAX_DESCRIPTION = 1500
 
 const defaults = {
-    format: 'portrait',
-    characters: 1,
-    background: 'none',
-    pose: false,
-    prop: false,
-    pet: false,
-    description: '',
-    refs: '',
-    deadline: '',
-    name: '',
-    credit: '',
-    contactMethod: 'telegram',
-    contact: '',
-    website: '' // honeypot
+  format: 'portrait',
+  characters: 1,
+  background: 'none',
+  pose: false,
+  prop: false,
+  pet: false,
+  description: '',
+  refs: '',
+  deadline: '',
+  name: '',
+  credit: '',
+  contactMethod: 'telegram',
+  contact: '',
+  website: '' // honeypot
 }
 
 const {form, restored, clear: clearDraft} = useFormDraft('comm-draft-v2', defaults)
 
 // Старый черновик мог сохранить способ связи, которого больше нет
 if (!['telegram', 'discord', 'email', 'twitter'].includes(form.contactMethod)) {
-    form.contactMethod = 'telegram'
-    form.contact = ''
+  form.contactMethod = 'telegram'
+  form.contact = ''
 }
 
 // ─── Надбавки текущего формата ───
@@ -48,30 +48,30 @@ const availableAddons = computed(() =>
 )
 
 const backgroundOptions = computed(() => [
-    {id: 'none', labelKey: 'formBgNone', price: 0},
-    {id: 'simple', labelKey: 'formBgSimple', price: addonPrices.value.simpleBg || 0},
-    {id: 'detailed', labelKey: 'formBgDetailed', price: addonPrices.value.detailedBg || 0}
+  {id: 'none', labelKey: 'formBgNone', price: 0},
+  {id: 'simple', labelKey: 'formBgSimple', price: addonPrices.value.simpleBg || 0},
+  {id: 'detailed', labelKey: 'formBgDetailed', price: addonPrices.value.detailedBg || 0}
 ])
 
 // В портрете нет позы и питомца — сбрасываем, чтобы в заявку не ушло лишнее
 watch(() => form.format, () => {
-    if (!('pose' in addonPrices.value)) form.pose = false
-    if (!('pet' in addonPrices.value)) form.pet = false
-    if (!('prop' in addonPrices.value)) form.prop = false
+  if (!('pose' in addonPrices.value)) form.pose = false
+  if (!('pet' in addonPrices.value)) form.pet = false
+  if (!('prop' in addonPrices.value)) form.prop = false
 })
 
 const estimate = computed(() => calculateEstimate(form, t))
 
 function changeCharacters(delta) {
-    form.characters = Math.min(MAX_CHARACTERS, Math.max(1, form.characters + delta))
+  form.characters = Math.min(MAX_CHARACTERS, Math.max(1, form.characters + delta))
 }
 
 const contactMethods = computed(() => [
-     {id: 'discord', label: t('formContactDiscord'), prefix: '@', placeholder: 'username'},
-    {id: 'email', label: t('formContactEmail'), prefix: '', placeholder: 'you@example.com'},
-    {id: 'telegram', label: t('formContactTelegram'), prefix: 'https://t.me/', placeholder: 'username'},
-    {id: 'twitter', label: t('formContactTwitter'), prefix: 'https://x.com/', placeholder: 'username'},
-    {id: 'other', label: t('formContactOther')}
+  {id: 'discord', label: t('formContactDiscord'), prefix: '@', placeholder: 'username'},
+  {id: 'email', label: t('formContactEmail'), prefix: '', placeholder: 'you@example.com'},
+  {id: 'telegram', label: t('formContactTelegram'), prefix: 'https://t.me/', placeholder: 'username'},
+  {id: 'twitter', label: t('formContactTwitter'), prefix: 'https://x.com/', placeholder: 'username'},
+  {id: 'other', label: t('formContactOther')}
 ])
 
 const contactMethod = computed(() =>
@@ -86,52 +86,64 @@ const contactPlaceholder = computed(() =>
 // Собираем полную ссылку из префикса и того, что ввёл человек.
 // Если он вставил готовый URL или уже поставил @ — не дублируем.
 function resolveContact() {
-    const raw = form.contact.trim()
-    const prefix = contactPrefix.value
-    if (!raw) return ''
-    if (!prefix) return raw
-    const value = raw.replace(/^@+/, '')
-    if (/^https?:\/\//i.test(value)) return value
-    return prefix + value
+  const raw = form.contact.trim()
+  const prefix = contactPrefix.value
+  if (!raw) return ''
+  if (!prefix) return raw
+  const value = raw.replace(/^@+/, '')
+  if (/^https?:\/\//i.test(value)) return value
+  return prefix + value
 }
 
 // ─── Состояние отправки ───
+
 
 const openedAt = Date.now()
 const status = ref('idle') // idle | sending | success
 const successId = ref('')
 const submitError = ref('')
-const showFallback = ref(false)
 const copied = ref(false)
 const fieldErrors = reactive({description: '', contact: ''})
 const fallbackBox = ref(null)
 
+const showFallback = computed(() => {
+  // Если капча сломалась при загрузке — показываем запасной вариант СРАЗУ
+  if (turnstileState.value === 'failed') return true
+
+  // Если произошла ошибка отправки, требующая ручного копирования
+  if (submitError.value && ['formCaptchaUnavailable', 'formCaptchaPending', 'formErrorCaptcha', 'formErrorRate', 'formErrorNetwork'].includes(submitError.value)) {
+    return true
+  }
+
+  return false
+})
+
 // Итог показываем в шапке модалки — он всегда на виду, а не в конце формы
 watch([estimate, status], () => {
-    emit('estimate', status.value === 'success' ? null : {
-        total: estimate.value.total,
-        base: estimate.value.base,
-        parts: estimate.value.parts
-    })
+  emit('estimate', status.value === 'success' ? null : {
+    total: estimate.value.total,
+    base: estimate.value.base,
+    parts: estimate.value.parts
+  })
 }, {immediate: true})
 
 const errorText = computed(() => submitError.value ? t(submitError.value) : '')
 
 function validate() {
-    fieldErrors.description = form.description.trim().length < 10
-        ? t('formDescriptionTooShort')
-        : ''
+  fieldErrors.description = form.description.trim().length < 10
+      ? t('formDescriptionTooShort')
+      : ''
 
-    const contact = form.contact.trim()
-    if (contact.length < 2) {
-        fieldErrors.contact = t('formContactRequired')
-    } else if (form.contactMethod === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
-        fieldErrors.contact = t('formContactInvalid')
-    } else {
-        fieldErrors.contact = ''
-    }
+  const contact = form.contact.trim()
+  if (contact.length < 2) {
+    fieldErrors.contact = t('formContactRequired')
+  } else if (form.contactMethod === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
+    fieldErrors.contact = t('formContactInvalid')
+  } else {
+    fieldErrors.contact = ''
+  }
 
-    return !fieldErrors.description && !fieldErrors.contact
+  return !fieldErrors.description && !fieldErrors.contact
 }
 
 // ─── Turnstile ───
@@ -142,232 +154,231 @@ const turnstileState = ref('loading') // loading | ready | failed
 let widgetId = null
 let turnstileReady = null
 
+
 function loadTurnstile() {
-    if (window.turnstile) return Promise.resolve(window.turnstile)
-    if (turnstileReady) return turnstileReady
+  if (window.turnstile) return Promise.resolve(window.turnstile)
+  if (turnstileReady) return turnstileReady
 
-    turnstileReady = new Promise((resolve, reject) => {
-        const script = document.createElement('script')
-        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
-        script.async = true
-        script.defer = true
-        script.onload = () => resolve(window.turnstile)
-        script.onerror = () => reject(new Error('turnstile script failed'))
-        document.head.appendChild(script)
-    })
+  turnstileReady = new Promise((resolve, reject) => {
+    const script = document.createElement('script')
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve(window.turnstile)
+    script.onerror = () => reject(new Error('turnstile script failed'))
+    document.head.appendChild(script)
+  })
 
-    return turnstileReady
+  return turnstileReady
 }
 
 onMounted(async () => {
-    try {
-        const turnstile = await loadTurnstile()
-        widgetId = turnstile.render(turnstileEl.value, {
-            sitekey: TURNSTILE_SITE_KEY,
-            theme: 'dark',
-            language: currentLang.value === 'en' ? 'en' : 'ru',
-            callback: token => {
-                turnstileToken.value = token
-                turnstileState.value = 'ready'
-                if (submitError.value === 'formCaptchaPending') submitError.value = ''
-            },
-            'expired-callback': () => {
-                turnstileToken.value = ''
-            },
-            'error-callback': () => {
-                turnstileState.value = 'failed'
-            }
-        })
+  try {
+    const turnstile = await loadTurnstile()
+    widgetId = turnstile.render(turnstileEl.value, {
+      sitekey: TURNSTILE_SITE_KEY,
+      theme: 'dark',
+      language: currentLang.value === 'en' ? 'en' : 'ru',
+      callback: token => {
+        turnstileToken.value = token
         turnstileState.value = 'ready'
-    } catch {
+        if (submitError.value === 'formCaptchaPending') submitError.value = ''
+      },
+      'expired-callback': () => {
+        turnstileToken.value = ''
+      },
+      'error-callback': () => {
         turnstileState.value = 'failed'
-    }
+      }
+    })
+    turnstileState.value = 'ready'
+  } catch {
+    turnstileState.value = 'failed'
+  }
 })
 
 onUnmounted(() => {
-    try {
-        if (widgetId !== null) window.turnstile?.remove(widgetId)
-    } catch {
-        // ignore
-    }
+  try {
+    if (widgetId !== null) window.turnstile?.remove(widgetId)
+  } catch {
+    // ignore
+  }
 })
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 async function ensureToken() {
-    if (turnstileToken.value) return turnstileToken.value
-    if (turnstileState.value === 'failed') return ''
+  if (turnstileToken.value) return turnstileToken.value
+  if (turnstileState.value === 'failed') return ''
 
-    // Managed-виджет обычно выдаёт токен сам; если ещё не успел — просим и ждём
-    try {
-        window.turnstile?.execute(widgetId)
-    } catch {
-        // ignore
+  // Managed-виджет обычно выдаёт токен сам; если ещё не успел — просим и ждём
+  try {
+    window.turnstile?.execute(widgetId)
+  } catch {
+    // ignore
+  }
+
+  for (let i = 0; i < 24; i++) {
+    await sleep(250)
+    const token = turnstileToken.value || window.turnstile?.getResponse(widgetId) || ''
+    if (token) {
+      turnstileToken.value = token
+      return token
     }
+  }
 
-    for (let i = 0; i < 24; i++) {
-        await sleep(250)
-        const token = turnstileToken.value || window.turnstile?.getResponse(widgetId) || ''
-        if (token) {
-            turnstileToken.value = token
-            return token
-        }
-    }
-
-    return ''
+  return ''
 }
 
 function resetTurnstile() {
-    turnstileToken.value = ''
-    try {
-        if (widgetId !== null) window.turnstile?.reset(widgetId)
-    } catch {
-        // ignore
-    }
+  turnstileToken.value = ''
+  try {
+    if (widgetId !== null) window.turnstile?.reset(widgetId)
+  } catch {
+    // ignore
+  }
 }
 
 // ─── Отправка ───
 
 async function submit() {
-    if (status.value === 'sending') return
+  if (status.value === 'sending') return
 
-    submitError.value = ''
-    showFallback.value = false
+  submitError.value = ''
 
-    if (!validate()) {
-        submitError.value = 'formErrorValidation'
-        return
-    }
+  if (!validate()) {
+    submitError.value = 'formErrorValidation'
+    return
+  }
 
-    status.value = 'sending'
+  status.value = 'sending'
 
-    try {
-        const token = await ensureToken()
+  try {
+    const token = await ensureToken()
 
-        if (!token) {
-            status.value = 'idle'
-            if (turnstileState.value === 'failed') {
-                submitError.value = 'formCaptchaUnavailable'
-                showFallback.value = true
-            } else {
-                // Виджет ждёт подтверждения «я не робот» — подсказываем и подводим к нему
-                submitError.value = 'formCaptchaPending'
-                turnstileEl.value?.scrollIntoView({block: 'center', behavior: 'smooth'})
-            }
-            return
-        }
-
-        const response = await fetch(COMMISSION_ENDPOINT, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                format: form.format,
-                characters: form.characters,
-                background: form.background,
-                pose: form.pose,
-                prop: form.prop,
-                pet: form.pet,
-                description: form.description.trim(),
-                refs: form.refs.trim(),
-                deadline: form.deadline.trim(),
-                name: form.name.trim(),
-                credit: form.credit.trim(),
-                contactMethod: form.contactMethod,
-                contact: resolveContact(),
-                lang: currentLang.value,
-                elapsedMs: Date.now() - openedAt,
-                website: form.website,
-                estimateTotal: estimate.value.total,
-                estimateBreakdown: estimate.value.breakdown,
-                turnstileToken: token
-            })
-        })
-
-        const data = await response.json().catch(() => ({}))
-
-        if (response.ok && data.ok) {
-            successId.value = data.id || ''
-            clearDraft()
-            status.value = 'success'
-            return
-        }
-
-        status.value = 'idle'
-
-        if (data.error === 'validation') {
-            submitError.value = 'formErrorValidation'
-        } else if (data.error === 'captcha_failed') {
-            submitError.value = 'formErrorCaptcha'
-            showFallback.value = true
-            resetTurnstile()
-        } else if (data.error === 'rate_limited') {
-            submitError.value = 'formErrorRate'
-            showFallback.value = true
-        } else {
-            submitError.value = 'formErrorNetwork'
-            showFallback.value = true
-        }
-    } catch {
-        status.value = 'idle'
-        submitError.value = 'formErrorNetwork'
+    if (!token) {
+      status.value = 'idle'
+      if (turnstileState.value === 'failed') {
+        submitError.value = 'formCaptchaUnavailable'
         showFallback.value = true
+      } else {
+        // Виджет ждёт подтверждения «я не робот» — подсказываем и подводим к нему
+        submitError.value = 'formCaptchaPending'
+        turnstileEl.value?.scrollIntoView({block: 'center', behavior: 'smooth'})
+      }
+      return
     }
+
+    const response = await fetch(COMMISSION_ENDPOINT, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        format: form.format,
+        characters: form.characters,
+        background: form.background,
+        pose: form.pose,
+        prop: form.prop,
+        pet: form.pet,
+        description: form.description.trim(),
+        refs: form.refs.trim(),
+        deadline: form.deadline.trim(),
+        name: form.name.trim(),
+        credit: form.credit.trim(),
+        contactMethod: form.contactMethod,
+        contact: resolveContact(),
+        lang: currentLang.value,
+        elapsedMs: Date.now() - openedAt,
+        website: form.website,
+        estimateTotal: estimate.value.total,
+        estimateBreakdown: estimate.value.breakdown,
+        turnstileToken: token
+      })
+    })
+
+    const data = await response.json().catch(() => ({}))
+
+    if (response.ok && data.ok) {
+      successId.value = data.id || ''
+      clearDraft()
+      status.value = 'success'
+      return
+    }
+
+    status.value = 'idle'
+
+    if (data.error === 'validation') {
+      submitError.value = 'formErrorValidation'
+    } else if (data.error === 'captcha_failed') {
+      submitError.value = 'formErrorCaptcha'
+      showFallback.value = true
+      resetTurnstile()
+    } else if (data.error === 'rate_limited') {
+      submitError.value = 'formErrorRate'
+      showFallback.value = true
+    } else {
+      submitError.value = 'formErrorNetwork'
+      showFallback.value = true
+    }
+  } catch {
+    status.value = 'idle'
+    submitError.value = 'formErrorNetwork'
+    showFallback.value = true
+  }
 }
 
 // ─── Запасной вариант: скопировать заявку и написать напрямую ───
-
 const contactLabel = computed(() =>
     contactMethods.value.find(method => method.id === form.contactMethod)?.label || form.contactMethod
 )
 
 const fallbackText = computed(() => {
-    const background = backgroundOptions.value.find(option => option.id === form.background)
-    const lines = [
-        t('formFallbackHeader'),
-        `${t('formFormat')}: ${t(FORMATS[form.format].shortKey)}`,
-        `${t('formCharacters')}: ${form.characters}`,
-        `${t('formBackground')}: ${background ? t(background.labelKey) : form.background}`,
-        `${t('formEstimate')}: $${estimate.value.total}`
-    ]
+  const background = backgroundOptions.value.find(option => option.id === form.background)
+  const lines = [
+    t('formFallbackHeader'),
+    `${t('formFormat')}: ${t(FORMATS[form.format].shortKey)}`,
+    `${t('formCharacters')}: ${form.characters}`,
+    `${t('formBackground')}: ${background ? t(background.labelKey) : form.background}`,
+    `${t('formEstimate')}: $${estimate.value.total}`
+  ]
 
-    for (const addon of availableAddons.value) {
-        if (form[addon.id]) lines.push(`${t(addon.labelKey)}: +$${addon.price}`)
-    }
+  for (const addon of availableAddons.value) {
+    if (form[addon.id]) lines.push(`${t(addon.labelKey)}: +$${addon.price}`)
+  }
 
-    lines.push('', `${t('formDescription')}:`, form.description.trim())
+  lines.push('', `${t('formDescription')}:`, form.description.trim())
 
-    if (form.refs.trim()) lines.push('', `${t('formRefs')}: ${form.refs.trim()}`)
-    if (form.deadline.trim()) lines.push(`${t('formDeadline')}: ${form.deadline.trim()}`)
-    if (form.name.trim()) lines.push(`${t('formName')}: ${form.name.trim()}`)
-    if (form.credit.trim()) lines.push(`${t('formCredit')}: ${form.credit.trim()}`)
+  if (form.refs.trim()) lines.push('', `${t('formRefs')}: ${form.refs.trim()}`)
+  if (form.deadline.trim()) lines.push(`${t('formDeadline')}: ${form.deadline.trim()}`)
+  if (form.name.trim()) lines.push(`${t('formName')}: ${form.name.trim()}`)
+  if (form.credit.trim()) lines.push(`${t('formCredit')}: ${form.credit.trim()}`)
 
-    lines.push('', `${t('formContactMethod')}: ${contactLabel.value}`, `${t('formContact')}: ${resolveContact()}`)
+  lines.push('', `${t('formContactMethod')}: ${contactLabel.value}`, `${t('formContact')}: ${resolveContact()}`)
 
-    return lines.join('\n')
+  return lines.join('\n')
 })
 
 async function copyFallback() {
-    try {
-        await navigator.clipboard.writeText(fallbackText.value)
-        copied.value = true
-        setTimeout(() => {
-            copied.value = false
-        }, 2000)
-    } catch {
-        fallbackBox.value?.focus()
-        fallbackBox.value?.select()
-    }
+  try {
+    await navigator.clipboard.writeText(fallbackText.value)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  } catch {
+    fallbackBox.value?.focus()
+    fallbackBox.value?.select()
+  }
 }
 
 function clearDraftAndReset() {
-    Object.assign(form, defaults)
-    clearDraft()
-    fieldErrors.description = ''
-    fieldErrors.contact = ''
-    submitError.value = ''
-    showFallback.value = false
+  Object.assign(form, defaults)
+  clearDraft()
+  fieldErrors.description = ''
+  fieldErrors.contact = ''
+  submitError.value = ''
+  showFallback.value = false
 }
 </script>
 
@@ -424,10 +435,12 @@ function clearDraftAndReset() {
           <span class="comm-label">{{ t('formCharacters') }}</span>
           <div class="comm-stepper">
             <button type="button" class="comm-stepper-btn" :disabled="form.characters <= 1"
-                    :aria-label="t('formCharsDecrease')" @click="changeCharacters(-1)">−</button>
+                    :aria-label="t('formCharsDecrease')" @click="changeCharacters(-1)">−
+            </button>
             <span class="comm-stepper-value">{{ form.characters }}</span>
             <button type="button" class="comm-stepper-btn" :disabled="form.characters >= MAX_CHARACTERS"
-                    :aria-label="t('formCharsIncrease')" @click="changeCharacters(1)">+</button>
+                    :aria-label="t('formCharsIncrease')" @click="changeCharacters(1)">+
+            </button>
           </div>
           <span v-if="addonPrices.extraChar" class="comm-hint">
             {{ t('formExtraCharHint') }} +${{ addonPrices.extraChar }}
@@ -569,14 +582,19 @@ function clearDraftAndReset() {
 
       <!-- ═══ Проверка ═══ -->
       <div ref="turnstileEl" class="comm-turnstile"></div>
-      <p v-if="turnstileState === 'failed'" class="comm-error">{{ t('formCaptchaUnavailable') }}</p>
+
+      <!-- Сообщение об ошибке капчи -->
+      <p v-if="turnstileState === 'failed'" class="comm-error comm-error--captcha">
+        {{ t('formCaptchaUnavailable') }}
+      </p>
+
 
       <!-- ═══ Отправка ═══ -->
       <div class="comm-form-footer">
         <button
             type="button"
             class="comm-submit"
-            :disabled="status === 'sending'"
+            :disabled="status === 'sending' || turnstileState === 'failed'"
             @click="submit"
         >
           {{ status === 'sending' ? t('formSending') : t('formSubmit') }}
