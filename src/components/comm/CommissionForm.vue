@@ -67,10 +67,11 @@ function changeCharacters(delta) {
 }
 
 const contactMethods = computed(() => [
-    {id: 'telegram', label: t('formContactTelegram'), prefix: 'https://t.me/', placeholder: 'username'},
-    {id: 'discord', label: t('formContactDiscord'), prefix: '@', placeholder: 'username'},
+     {id: 'discord', label: t('formContactDiscord'), prefix: '@', placeholder: 'username'},
     {id: 'email', label: t('formContactEmail'), prefix: '', placeholder: 'you@example.com'},
-    {id: 'twitter', label: t('formContactTwitter'), prefix: 'https://x.com/', placeholder: 'username'}
+    {id: 'telegram', label: t('formContactTelegram'), prefix: 'https://t.me/', placeholder: 'username'},
+    {id: 'twitter', label: t('formContactTwitter'), prefix: 'https://x.com/', placeholder: 'username'},
+    {id: 'other', label: t('formContactOther')}
 ])
 
 const contactMethod = computed(() =>
@@ -385,9 +386,7 @@ function clearDraftAndReset() {
         {{ t('formSuccessId') }} <b>#{{ successId }}</b>
       </p>
       <p class="comm-hint">{{ t('formSuccessHint') }}</p>
-      <a :href="TELEGRAM_URL" target="_blank" rel="noopener noreferrer" class="social-btn btn-telegram">
-        {{ t('formWriteTelegram') }}
-      </a>
+
     </div>
 
     <template v-else>

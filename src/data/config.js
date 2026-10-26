@@ -9,4 +9,4 @@ export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY ||
     '0x4AAAAAAFlUgxQNbnfkn0ue'
 
 export const BOOSTY_URL = 'https://boosty.to/ishwacha'
-export const TELEGRAM_URL = 'https://t.me/ishwacha'
+export const TELEGRAM_URL = 'https://t.me/ishwacha?direct'

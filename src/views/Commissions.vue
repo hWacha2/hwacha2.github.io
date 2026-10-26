@@ -6,10 +6,19 @@
 
         <!-- ═══ ШАПКА ═══ -->
         <header class="comm-header contglass">
-          <div class="comm-status-badge" :class="isOpen ? 'status-open' : 'status-closed'">
+
+
+          <div class="comm-status-badge" :class="slotsData.isOpen ? 'status-open' : 'status-closed'">
             <span class="status-dot"></span>
-            {{ isOpen ? t('commStatusOpen') : t('commStatusClosed') }}
+
+            <span v-if="slotsData.isOpen">
+             {{ t('commStatusOpen') }} ({{ slotsData.booked }}/{{ slotsData.total }})
+            </span>
+            <span v-else>
+              {{ slotsData.total === 0 ? t('commStatusClosedNoSlots') : t('commStatusClosedFull') }}
+            </span>
           </div>
+
           <div class="ava-container">
             <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded} ">
               <img :src="avatarUrl" :alt="nickName" class="avatar" width="120" height="120" decoding="async"
@@ -133,9 +142,9 @@
             </ol>
             <div class="comm-howto-actions">
               <button type="button" class="comm-order-btn"
-                      :disabled="!isOpen"
+                      :disabled="!slotsData.isOpen"
                       @click="isFormOpen = true"
-                      :class="{ 'is-disabled': !isOpen }"
+                      :class="{ 'is-disabled': !slotsData.isOpen }"
               >
                 {{ t('formOpen') }}
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -145,7 +154,7 @@
               </button>
               <a
                   :href="contactLink" target="_blank" rel="noopener"
-                 class="social-btn btn-telegram comm-cta-btn comm-howto-alt">
+                  class="social-btn btn-telegram comm-cta-btn comm-howto-alt">
                 {{ t('formOrTelegram') }}
               </a>
             </div>
@@ -205,7 +214,7 @@
 </template>
 
 <script setup>
-import {computed, inject, ref} from 'vue';
+import {onMounted, computed, inject, ref} from 'vue';
 
 const t = inject('t');
 const formatDate = inject('formatDate');
@@ -219,8 +228,27 @@ import {FORMATS, FORMAT_IDS, PRICING} from '../data/pricing'
 import {PRICES_UPDATED_AT} from '../data/dates'
 
 const showOverlay = ref(false)
-const isOpen = ref(false); // Переключайте на true, если заказы открыты
+const isOpen = ref(true); // Переключайте на true, если заказы открыты
+
 const isFormOpen = ref(false)
+
+const slotsData = ref({total: 0, booked: 0, available: 0, isOpen: false});
+
+const fetchSlotsStatus = async () => {
+  try {
+    // Замените на реальный URL вашего воркера
+    const response = await fetch('https://ishwacha-comm.gbaranovskaa76.workers.dev/api/slots');
+    const data = await response.json();
+    slotsData.value = data;
+  } catch (e) {
+    console.error('Failed to fetch slots', e);
+  }
+};
+onMounted(() => {
+  fetchSlotsStatus();
+  // Опционально: обновлять статус каждые 5 минут
+  setInterval(fetchSlotsStatus, 300000);
+});
 
 // ─── Быстрая навигация по секциям ───
 const sectionLinks = [
@@ -881,7 +909,7 @@ const completedWorks = ref([
 
 /* ═══ КАК ЗАКАЗАТЬ ═══ */
 .comm-how-to {
-  background: rgba(34, 158, 217, 0.05);
+  background: linear-gradient(200deg, rgba(32, 42, 58, .80), rgba(16, 22, 32, .1));
   border-radius: 16px;
   padding: 28px;
   border: 1px solid rgba(34, 158, 217, 0.15);
