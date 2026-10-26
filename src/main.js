@@ -15,11 +15,12 @@ import { useScreen } from './composables/useScreen'
 const app = createApp(App)
 
 // 1. Инициализируем язык
-const { currentLang, t, toggleLang } = useLanguage()
+const { currentLang, t, formatDate, toggleLang } = useLanguage()
 
 // 2. Делаем его глобально доступным для всех компонентов (Home, Commissions и т.д.)
 app.provide('currentLang', currentLang)
 app.provide('t', t)
+app.provide('formatDate', formatDate)
 app.provide('toggleLang', toggleLang) // <-- Теперь кнопка в App.vue тоже может это использовать!
 
 // Экран <-- Добавляем это

@@ -31,7 +31,7 @@
           <path fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" d="M82 63l38 38m0-38-38 38"/>
         </svg>
       </div>
-      <p class="text-white mb-3 fw-medium">{{ t('loadError') || 'Не удалось загрузить посты' }}</p>
+      <p class="text-white mb-3 fw-medium">{{ t('loadError') }}</p>
       <div class="d-flex gap-2 justify-content-center flex-wrap">
         <button class="social-btn btn-steam" @click="retryLoad">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -40,14 +40,14 @@
             <path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/>
             <path d="M3 21v-5h5"/>
           </svg>
-          {{ t('retry') || 'Повторить' }}
+          {{ t('retry') }}
         </button>
         <a href="https://t.me/ishwacha" target="_blank" rel="noopener" class="social-btn btn-telegram">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path
                 d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
           </svg>
-          {{ t('openChannel') || 'Канал' }}
+          {{ t('openChannel') }}
         </a>
       </div>
     </div>
@@ -92,7 +92,7 @@
               >
                 {{ post.authorName || CHANNEL }}
               </a>
-              <span v-if="post.translated" class="tg-translated-badge">auto</span>
+              <span v-if="post.translated" class="tg-translated-badge" :title="t('autoTranslated')">{{ t('autoBadge') }}</span>
             </div>
 
             <!-- Цитата (reply) — кликабельная, скроллит к источнику -->
@@ -371,7 +371,7 @@
                     <path
                         d="M12 0C5.37 0 0 5.37 0 12s5.37 12 12 12 12-5.37 12-12S18.63 0 12 0zm5.94 8.03-1.82 8.57c-.13.6-.5.75-.99.46l-2.78-2.04-1.34 1.29c-.15.15-.27.27-.56.27l.2-2.84 5.18-4.68c.22-.2-.05-.3-.35-.12L9.04 12.8l-2.75-.86c-.6-.19-.61-.6.12-.89l10.76-4.15c.5-.19.93.12.77.93z"/>
                   </svg>
-                  {{ t("toPost") || 'Открыть в Telegram' }}
+                  {{ t('toPost') }}
                 </a>
               </div>
             </div>
@@ -866,6 +866,29 @@ function formatViews(v) {
 }
 
 // ═══ Переводы ═══
+// Префикс с версией: при смене логики/формулировок увеличиваем версию,
+// старые переводы перестают читаться и не мешают
+const TRANSLATE_CACHE_PREFIX = 'tgtr_';
+const TRANSLATE_CACHE_VERSION = 'v2';
+
+function cleanupLegacyTranslations() {
+  try {
+    const legacy = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(TRANSLATE_CACHE_PREFIX)
+          && !key.startsWith(`${TRANSLATE_CACHE_PREFIX}${TRANSLATE_CACHE_VERSION}_`)) {
+        legacy.push(key);
+      }
+    }
+    legacy.forEach(key => localStorage.removeItem(key));
+  } catch {
+  }
+}
+
+// Выполняется один раз при загрузке модуля
+cleanupLegacyTranslations();
+
 function hashStr(s) {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (h << 5) - h + s.charCodeAt(i) | 0;
@@ -887,7 +910,7 @@ async function fetchJsonVia(url) {
 
 async function translateText(text, tl) {
   if (!text || text.length > 4000) return text;
-  const key = `tgtr_${tl}_${hashStr(text)}`;
+  const key = `${TRANSLATE_CACHE_PREFIX}${TRANSLATE_CACHE_VERSION}_${tl}_${hashStr(text)}`;
   try {
     const cached = localStorage.getItem(key);
     if (cached) return cached;

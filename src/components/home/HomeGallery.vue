@@ -1,12 +1,14 @@
 <script setup>
 import {inject} from 'vue'
 import GalleryItem from '../GalleryItem.vue'
+import {GALLERY_UPDATED_AT} from '../../data/dates'
 
 defineProps({
   arts: {type: Array, required: true}
 })
 
 const t = inject('t')
+const formatDate = inject('formatDate')
 const isMobile = inject('isMobile')
 </script>
 
@@ -15,7 +17,7 @@ const isMobile = inject('isMobile')
     <h2 :class="isMobile ? 'h3 mb-0' : 'h5 mb-0'">
       {{ t('galleryTitle') }}
     </h2>
-    <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle') }}</small>
+    <small class="text-secondary" style="text-align: right; display: block;">{{ t('gallerySubtitle', {date: formatDate(GALLERY_UPDATED_AT)}) }}</small>
   </div>
 
   <!-- Masonry галерея -->

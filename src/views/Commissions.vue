@@ -20,17 +20,22 @@
           <h1 class="comm-title">{{ t('commTitle') }}</h1>
           <p class="comm-subtitle">{{ t('commSubtitle') }}</p>
 
-          <!-- ═══ НАВИГАЦИЯ ПО СЕКЦИЯМ (НОВОЕ) ═══ -->
-          <div class="comm-nav-row">
-            <a href="#pricing" class="social-btn btn-nav">{{ t('navPricing') || 'Прайс' }}</a>
-            <a href="#will-wont" class="social-btn btn-nav">{{ t('navWillWont') || 'Что рисую' }}</a>
-            <a href="#tos" class="social-btn btn-nav">{{ t('navTos') || 'Условия' }}</a>
-            <a href="#completed" class="social-btn btn-nav">{{ t('navCompleted') || 'Примеры' }}</a>
-          </div>
+          <!-- ═══ НАВИГАЦИЯ ПО СЕКЦИЯМ ═══ -->
+          <nav class="comm-nav-row" :aria-label="t('commNavLabel')">
+            <a
+                v-for="link in sectionLinks"
+                :key="link.id"
+                :href="`#${link.id}`"
+                class="social-btn btn-nav"
+                @click="scrollToSection($event, link.id)"
+            >
+              {{ t(link.key) }}
+            </a>
+          </nav>
 
 
           <hr class="border-1 border-secondary my-3 "/>
-          <p class="comm-price-update-date">{{ t('commPriceUpdateDate') }}</p>
+          <p class="comm-price-update-date">{{ t('commPriceUpdateDate', {date: formatDate(PRICES_UPDATED_AT)}) }}</p>
         </header>
 
         <!-- ═══ ОБЕРТКА ДЛЯ ПРОКРУЧИВАЕМОГО КОНТЕНТА ═══ -->
@@ -203,6 +208,7 @@
 import {computed, inject, ref} from 'vue';
 
 const t = inject('t');
+const formatDate = inject('formatDate');
 const nickName = 'ishwacha';
 const avatarUrl = 'ava.webp';
 const avatarLoaded = ref(false);
@@ -210,10 +216,67 @@ const contactLink = 'https://t.me/ishwacha?direct';
 import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue'
 import CommissionModal from '../components/comm/CommissionModal.vue'
 import {FORMATS, FORMAT_IDS, PRICING} from '../data/pricing'
+import {PRICES_UPDATED_AT} from '../data/dates'
 
 const showOverlay = ref(false)
 const isOpen = ref(false); // Переключайте на true, если заказы открыты
 const isFormOpen = ref(false)
+
+// ─── Быстрая навигация по секциям ───
+const sectionLinks = [
+  {id: 'pricing', key: 'navPricing'},
+  {id: 'will-wont', key: 'navWillWont'},
+  {id: 'how-to', key: 'navHowTo'},
+  {id: 'completed', key: 'navCompleted'},
+  {id: 'tos', key: 'navTos'}
+]
+
+// На мобилке прокручивается .page-scroller, на ПК — окно
+function getScrollParent(element) {
+  let node = element.parentElement
+
+  while (node && node !== document.body) {
+    const style = getComputedStyle(node)
+    const scrollable = /(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight
+    if (scrollable) return node
+    node = node.parentElement
+  }
+
+  return null
+}
+
+// Верх секции ставим на треть экрана от верха
+function scrollToSection(event, id) {
+  const target = document.getElementById(id)
+  if (!target) return
+
+  event.preventDefault()
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const behavior = reduceMotion ? 'auto' : 'smooth'
+  const scroller = getScrollParent(target)
+
+  if (scroller) {
+    const scrollerTop = scroller.getBoundingClientRect().top
+    const targetTop = target.getBoundingClientRect().top - scrollerTop + scroller.scrollTop
+    const offset = Math.max(0, targetTop - scroller.clientHeight / 3)
+    scroller.scrollTo({top: offset, behavior})
+  } else {
+    const targetTop = target.getBoundingClientRect().top + window.scrollY
+    const offset = Math.max(0, targetTop - window.innerHeight / 3)
+    window.scrollTo({top: offset, behavior})
+  }
+
+  // Адрес меняем без второго прыжка
+  history.replaceState(history.state, '', `#${id}`)
+
+  // Фокус на заголовок секции: полезно для клавиатуры и скринридеров
+  const heading = target.querySelector('h2')
+  if (heading) {
+    heading.setAttribute('tabindex', '-1')
+    heading.focus({preventScroll: true})
+  }
+}
 
 const openGalleryModal = inject('openGalleryModal');
 
@@ -1030,63 +1093,44 @@ const completedWorks = ref([
 }
 
 /* ═══ НАВИГАЦИЯ В ШАПКЕ ═══ */
+/* По умолчанию (mobile first): в строку, с переносом */
 .comm-nav-row {
   display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
   gap: 10px;
   justify-content: center;
   margin-top: 16px;
 }
 
-/* Стиль кнопок навигации (наследуем от .social-btn, но делаем компактнее) */
+/* Стиль кнопок: наследуем .social-btn, но делаем компактнее */
 .btn-nav {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 0.9rem;
-  padding: 0.4rem 1rem;
-  min-width: auto; /* Убираем жесткую ширину 130px */
-  color: rgba(255, 255, 255, 0.8);
-  display: inline-flex;
-  align-items: center;
-  text-align: center;
-  gap: .6rem;
-
-  border-radius: 30px;
-  color: #fff;
-  text-decoration: none;
-  font-weight: 600;
-
-  transition: transform .16s ease, box-shadow .16s ease;
-  cursor: pointer;
-  user-select: none;
+  justify-content: center;
+  gap: .45rem;
+  padding: .45rem 1rem;
+  min-width: 0;
+  font-size: .9rem;
+  color: rgba(255, 255, 255, .85);
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(255, 255, 255, .12);
+  transition: transform .16s ease, background .16s ease, border-color .16s ease, color .16s ease;
 }
 
 .btn-nav:hover {
-  background: rgba(34, 158, 217, 0.15);
+  background: rgba(34, 158, 217, .16);
+  border-color: rgba(34, 158, 217, .45);
   color: #fff;
-  border-color: rgba(34, 158, 217, 0.4);
   transform: translateY(-1px);
 }
 
-/* ═══ ЛОГИКА РАСПОЛОЖЕНИЯ КНОПОК ═══ */
-
-/* По умолчанию (Mobile First): в строку, с переносом */
-.comm-nav-row {
-  flex-wrap: wrap;
-  flex-direction: row;
-}
-
-/* На ПК (Desktop): в столбик */
+/* На ПК — в столбик на всю ширину сайдбара */
 @media (min-width: 992px) {
   .comm-nav-row {
     flex-direction: column;
-    align-items: stretch; /* Растягиваем кнопки на всю ширину сайдбара */
-    max-width: 280px; /* Ограничиваем ширину, чтобы не были гигантскими */
+    align-items: stretch;
+    max-width: 280px;
     margin-left: auto;
     margin-right: auto;
-  }
-
-  .btn-nav {
-    justify-content: center;
   }
 }
 

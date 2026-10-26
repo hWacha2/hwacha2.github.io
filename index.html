@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
-    <title>ishwacha site</title>
+    <title>ishwacha</title>
     <!-- Подключение шрифта Inter (не блокирует первую отрисовку) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,6 +23,14 @@
 <body>
 <div id="app"></div>
 
+<script>
+    // До загрузки Vue: язык из localStorage, чтобы <html lang> не мигал
+    try {
+        var savedLang = localStorage.getItem('lang');
+        if (savedLang === 'ru' || savedLang === 'en') document.documentElement.lang = savedLang;
+    } catch (e) {
+    }
+</script>
 <script type="module" src="/src/main.js"></script>
 
 </body>

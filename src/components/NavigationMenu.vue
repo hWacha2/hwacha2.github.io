@@ -29,7 +29,7 @@
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>{{ t('menuHome') || 'Главная' }}</span>
+          <span>{{ t('menuHome') }}</span>
         </RouterLink>
 
         <div class="nav-menu-divider"></div>
@@ -42,7 +42,7 @@
             <path d="M2 2l7.586 7.586"></path>
             <circle cx="11" cy="11" r="2"></circle>
           </svg>
-          <span>{{ t('menuCommissions') || 'Заказать арт' }}</span>
+          <span>{{ t('menuCommissions') }}</span>
         </RouterLink>
       </div>
     </Transition>

@@ -30,6 +30,20 @@ function setupMobileSwiper() {
   const dotsById = new Map(dots.map(dot => [dot.dataset.target, dot]));
   let isManualScroll = false;
 
+  // Длинная секция (моды): снап нужен, чтобы в неё попасть,
+  // но внутри неё он превращает прокрутку в рывки — там отключаем
+  const tallSection = sections.find(section => section.classList.contains('big-section'));
+  const SNAP_UNLOCK_OFFSET = 24;
+
+  const updateSnapMode = () => {
+    if (!tallSection) return;
+    // Верх длинной секции относительно верха контейнера: как только он ушёл
+    // выше на SNAP_UNLOCK_OFFSET, мы уже внутри — снап не нужен
+    const wrapperTop = wrapper.getBoundingClientRect().top;
+    const tallTop = tallSection.getBoundingClientRect().top - wrapperTop;
+    wrapper.classList.toggle('is-free-scroll', tallTop < -SNAP_UNLOCK_OFFSET);
+  };
+
   const moveIndicator = (dot) => {
     indicator.style.transform = `translateY(${dot.offsetTop}px)`;
   };
@@ -57,6 +71,7 @@ function setupMobileSwiper() {
   };
 
   wrapper.addEventListener('scroll', handleScroll, {passive: true, signal});
+  wrapper.addEventListener('scroll', updateSnapMode, {passive: true, signal});
   window.addEventListener('resize', handleScroll, {passive: true, signal});
 
   dots.forEach(dot => {
@@ -80,12 +95,16 @@ function setupMobileSwiper() {
   });
 
   // Первичная синхронизация после отрисовки
-  const rafId = requestAnimationFrame(handleScroll);
+  const rafId = requestAnimationFrame(() => {
+    handleScroll();
+    updateSnapMode();
+  });
 
   return () => {
     cancelAnimationFrame(rafId);
     controller.abort();
     clearTimeout(unlockScrollTimer);
+    wrapper.classList.remove('is-free-scroll');
   };
 }
 
@@ -263,7 +282,15 @@ onUnmounted(() => {
     height: auto;
     min-height: 100dvh !important;
     scroll-snap-align: start;
-    scroll-snap-stop: normal;
+    /* Вход в секцию — как у остальных: один свайп = верх секции */
+    scroll-snap-stop: always;
+  }
+
+  /* Внутри длинной секции — обычная прокрутка без снапа.
+     Выше неё (на 24px) снап включается снова, чтобы свайп вверх
+     возвращал к предыдущей секции. */
+  .mobile-swiper-wrapper.is-free-scroll {
+    scroll-snap-type: none;
   }
 }
 
