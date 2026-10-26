@@ -132,39 +132,40 @@
 
 
           <!-- ═══ КАК ЗАКАЗАТЬ ═══ -->
-          <section id="how-to" class="comm-section comm-how-to">
+          <section id="how-to" class="comm-section ">
             <h2 class="comm-section-title">{{ t('commHowTo') }}</h2>
-            <ol class="comm-steps">
-              <li>{{ t('commStep1') }}</li>
-              <li>{{ t('commStep2') }}</li>
-              <li>{{ t('commStep3') }}</li>
-              <li>{{ t('commStep4') }}</li>
-            </ol>
-            <div class="comm-howto-actions">
-              <button type="button" class="comm-order-btn"
-                      :disabled="!slotsData.isOpen"
-                      @click="isFormOpen = true"
-                      :class="{ 'is-disabled': !slotsData.isOpen }"
-              >
-                {{ t('formOpen') }}
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6"></path>
-                </svg>
-              </button>
-              <a
-                  :href="contactLink"
-                  target="_blank"
-                  rel="noopener"
-                  class="social-btn btn-telegram comm-cta-btn comm-howto-alt"
-                  :class="{ 'is-disabled': !slotsData.isOpen }"
-                  :tabindex="slotsData.isOpen ? 0 : -1"
-                  :aria-disabled="!slotsData.isOpen"
-              >
-                {{ t('formOrTelegram') }}
-              </a>
+            <div class="comm-how-to">
+              <ol class="comm-steps">
+                <li>{{ t('commStep1') }}</li>
+                <li>{{ t('commStep2') }}</li>
+                <li>{{ t('commStep3') }}</li>
+                <li>{{ t('commStep4') }}</li>
+              </ol>
+              <div class="comm-howto-actions">
+                <button type="button" class="comm-order-btn"
+                        :disabled="!slotsData.isOpen"
+                        @click="isFormOpen = true"
+                        :class="{ 'is-disabled': !slotsData.isOpen }"
+                >
+                  {{ t('formOpen') }}
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M5 12h14M13 6l6 6-6 6"></path>
+                  </svg>
+                </button>
+                <a
+                    :href="contactLink"
+                    target="_blank"
+                    rel="noopener"
+                    class="social-btn btn-telegram comm-cta-btn comm-howto-alt"
+                    :class="{ 'is-disabled': !slotsData.isOpen }"
+                    :tabindex="slotsData.isOpen ? 0 : -1"
+                    :aria-disabled="!slotsData.isOpen"
+                >
+                  {{ t('formOrTelegram') }}
+                </a>
+              </div>
             </div>
-
           </section>
 
           <!-- ═══ ВЫПОЛНЕННЫЕ КОМИШКИ ═══ -->
@@ -534,20 +535,6 @@ const completedWorks = ref([
   gap: 16px;
 }
 
-.comm-card {
-  background: #182533;
-  border-radius: 12px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.comm-card--do {
-  border-left: 3px solid #4fae4e;
-}
-
-.comm-card--dont {
-  border-left: 3px solid #e03131;
-}
 
 .comm-card-title {
   display: flex;
@@ -912,13 +899,30 @@ const completedWorks = ref([
   line-height: 1.4;
 }
 
+.comm-card {
+  background: rgba(32, 42, 58, 0.6);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+}
+
+.comm-card--do {
+  border-left: 3px solid #4fae4e;
+}
+
+.comm-card--dont {
+  border-left: 3px solid #e03131;
+}
+
+
 /* ═══ КАК ЗАКАЗАТЬ ═══ */
 .comm-how-to {
-  background: linear-gradient(200deg, rgba(32, 42, 58, .80), rgba(16, 22, 32, .1));
+  background: linear-gradient(200deg, rgba(32, 42, 58, .80), rgba(32, 42, 58, .4));
   border-radius: 16px;
   padding: 28px;
   /*border: 1px solid rgba(34, 158, 217, 0.15);*/
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   text-align: center;
 }
 
@@ -1176,6 +1180,7 @@ const completedWorks = ref([
   box-shadow: none;
   transform: none !important;
 }
+
 /* НОВЫЙ стиль для ссылки Telegram */
 .comm-howto-alt.is-disabled {
   opacity: 0.5;
@@ -1185,13 +1190,6 @@ const completedWorks = ref([
   transform: none !important;
   box-shadow: none !important;
   text-decoration: none !important;
-}
-
-.comm-closed-hint {
-  margin-top: 12px;
-  font-size: 13px;
-  color: #e03131;
-  font-weight: 500;
 }
 
 
