@@ -203,6 +203,11 @@
                 </ul>
               </section>
             </div>
+
+            <p class="comm-tos-note">
+              {{ t('tosPrivacyNote') }}
+              <RouterLink :to="{name: 'Privacy'}" target="_blank" rel="noopener">{{ t('tosPrivacyLink') }}</RouterLink>.
+            </p>
           </section>
 
         </div> <!-- Конец comm-content-wrapper -->
@@ -210,7 +215,11 @@
       </div>
       <footer>
         <div class="container">
-          <div class="small text">{{ t('footer') }}</div>
+          <div class="small text">
+            {{ t('footer') }}
+            ·
+            <RouterLink :to="{name: 'Privacy'}" class="comm-footer-link">{{ t('footerPrivacy') }}</RouterLink>
+          </div>
         </div>
       </footer>
     </div>
@@ -221,7 +230,7 @@
 </template>
 
 <script setup>
-import {onMounted, computed, inject, ref} from 'vue';
+import {onMounted, onUnmounted, computed, inject, ref} from 'vue';
 
 const t = inject('t');
 const formatDate = inject('formatDate');
@@ -239,6 +248,7 @@ const showOverlay = ref(false)
 const isFormOpen = ref(false)
 
 const slotsData = ref({total: 0, booked: 0, available: 0, isOpen: false});
+let slotsTimer = null;
 
 const fetchSlotsStatus = async () => {
   try {
@@ -252,8 +262,18 @@ const fetchSlotsStatus = async () => {
 };
 onMounted(() => {
   fetchSlotsStatus();
-  // Опционально: обновлять статус каждые 5 минут
-  setInterval(fetchSlotsStatus, 300000);
+  // Обновляем статус слотов, пока страница открыта
+  slotsTimer = setInterval(fetchSlotsStatus, 300000);
+
+  // Прямая ссылка вида /commissions#tos (например, из формы в новой вкладке)
+  const id = window.location.hash.slice(1);
+  if (id) {
+    setTimeout(() => scrollToSection(null, id, {smooth: false, focus: false}), 60);
+  }
+});
+
+onUnmounted(() => {
+  clearInterval(slotsTimer);
 });
 
 // ─── Быстрая навигация по секциям ───
@@ -280,24 +300,26 @@ function getScrollParent(element) {
 }
 
 // Верх секции ставим на треть экрана от верха
-function scrollToSection(event, id) {
+// event === null — вызов не из клика (например, переход по ссылке с хэшем)
+function scrollToSection(event, id, options = {}) {
   const target = document.getElementById(id)
   if (!target) return
 
-  event.preventDefault()
+  event?.preventDefault()
 
+  const {smooth = true, focus = true} = options
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const behavior = reduceMotion ? 'auto' : 'smooth'
+  const behavior = smooth && !reduceMotion ? 'smooth' : 'auto'
   const scroller = getScrollParent(target)
 
   if (scroller) {
     const scrollerTop = scroller.getBoundingClientRect().top
     const targetTop = target.getBoundingClientRect().top - scrollerTop + scroller.scrollTop
-    const offset = Math.max(0, targetTop - scroller.clientHeight / 3)
+    const offset = Math.max(0, targetTop - scroller.clientHeight / 4)
     scroller.scrollTo({top: offset, behavior})
   } else {
     const targetTop = target.getBoundingClientRect().top + window.scrollY
-    const offset = Math.max(0, targetTop - window.innerHeight / 3)
+    const offset = Math.max(0, targetTop - window.innerHeight / 4)
     window.scrollTo({top: offset, behavior})
   }
 
@@ -305,10 +327,12 @@ function scrollToSection(event, id) {
   history.replaceState(history.state, '', `#${id}`)
 
   // Фокус на заголовок секции: полезно для клавиатуры и скринридеров
-  const heading = target.querySelector('h2')
-  if (heading) {
-    heading.setAttribute('tabindex', '-1')
-    heading.focus({preventScroll: true})
+  if (focus) {
+    const heading = target.querySelector('h2')
+    if (heading) {
+      heading.setAttribute('tabindex', '-1')
+      heading.focus({preventScroll: true})
+    }
   }
 }
 
@@ -812,6 +836,25 @@ const completedWorks = ref([
   font-weight: bold;
   font-size: 20px;
   line-height: 1.1;
+}
+
+/* ═══ Политика конфиденциальности ═══ */
+.comm-tos-note {
+  margin: 20px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.comm-tos-note a,
+.comm-footer-link {
+  color: #229ED9;
+  text-decoration: none;
+}
+
+.comm-tos-note a:hover,
+.comm-footer-link:hover {
+  text-decoration: underline;
 }
 
 /* Адаптация для мобильных */

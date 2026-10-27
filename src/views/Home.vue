@@ -164,7 +164,11 @@ onUnmounted(() => {
         </div>
         <footer>
           <div class="container">
-            <div class="small text">{{ t('footer') }}</div>
+            <div class="small text">
+            {{ t('footer') }}
+            ·
+            <RouterLink :to="{name: 'Privacy'}" class="footer-privacy-link">{{ t('footerPrivacy') }}</RouterLink>
+          </div>
           </div>
         </footer>
       </section>
@@ -192,7 +196,11 @@ onUnmounted(() => {
       </div>
       <footer>
         <div class="container">
-          <div class="small text">{{ t('footer') }}</div>
+          <div class="small text">
+            {{ t('footer') }}
+            ·
+            <RouterLink :to="{name: 'Privacy'}" class="footer-privacy-link">{{ t('footerPrivacy') }}</RouterLink>
+          </div>
         </div>
       </footer>
     </main>
@@ -298,5 +306,14 @@ onUnmounted(() => {
   footer {
     padding: 1.5rem 0.5rem;
   }
+}
+
+.footer-privacy-link {
+  color: #229ED9;
+  text-decoration: none;
+}
+
+.footer-privacy-link:hover {
+  text-decoration: underline;
 }
 </style>

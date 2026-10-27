@@ -10,11 +10,15 @@
  * Переменные окружения (Settings → Variables and Secrets):
  *   BOT_TOKEN          — токен бота (Secret)
  *   CHAT_ID            — ваш chat_id (Secret)
+ *   WEBHOOK_SECRET     — случайная строка для проверки запросов от Telegram (Secret, обязательна)
  *   ALLOWED_ORIGINS    — список origin через запятую (Variable)
  *   TURNSTILE_SECRET   — секрет Cloudflare Turnstile (Secret, опционально)
  *
  * Биндинги (Settings → Variables → KV Namespace Bindings):
  *   COMM_KV            — KV namespace (используется и для антиспама, и для слотов)
+ *
+ * Без WEBHOOK_SECRET маршрут /webhook отвечает 503: иначе любой, кто узнал адрес
+ * воркера, может управлять слотами и нажимать кнопки за вас.
  */
 
 // ─── Конфигурация ───
@@ -82,7 +86,7 @@ function str(value, max) {
 }
 
 function makeId() {
-    const bytes = crypto.getRandomValues(new Uint8Array(2))
+    const bytes = crypto.getRandomValues(new Uint8Array(3))
     return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
 }
 
@@ -94,8 +98,15 @@ function nowUtc() {
 
 // ─── Управление слотами (через COMM_KV) ───
 async function getSlots(env) {
-    const total = parseInt(await env.COMM_KV.get('comm_total') || '0', 10)
-    const booked = parseInt(await env.COMM_KV.get('comm_booked') || '0', 10)
+    if (!env.COMM_KV) {
+        // Биндинг не настроен: лучше показать «закрыто», чем упасть с 500
+        return {total: 0, booked: 0, available: 0, isOpen: false}
+    }
+    const total = Math.max(0, parseInt(await env.COMM_KV.get('comm_total') || '0', 10) || 0)
+    const booked = Math.min(
+        total,
+        Math.max(0, parseInt(await env.COMM_KV.get('comm_booked') || '0', 10) || 0)
+    )
     return {
         total,
         booked,
@@ -104,23 +115,36 @@ async function getSlots(env) {
     }
 }
 
+async function setSlots(env, total, booked) {
+    if (!env.COMM_KV) return
+    await env.COMM_KV.put('comm_total', String(Math.max(0, total)))
+    await env.COMM_KV.put('comm_booked', String(Math.max(0, booked)))
+}
+
 async function addSlots(env, n) {
-    let total = parseInt(await env.COMM_KV.get('comm_total') || '0', 10)
-    total += n
+    if (!env.COMM_KV) return 0
+    let total = parseInt(await env.COMM_KV.get('comm_total') || '0', 10) || 0
+    total = Math.max(0, total + n)
     await env.COMM_KV.put('comm_total', String(total))
     return total
 }
 
+// Уменьшаем вместимость, но никогда ниже уже забронированного
 async function removeSlots(env, n) {
-    let total = parseInt(await env.COMM_KV.get('comm_total') || '0', 10)
-    total = Math.max(0, total - n)
+    if (!env.COMM_KV) return 0
+    const booked = parseInt(await env.COMM_KV.get('comm_booked') || '0', 10) || 0
+    let total = parseInt(await env.COMM_KV.get('comm_total') || '0', 10) || 0
+    total = Math.max(booked, total - n, 0)
     await env.COMM_KV.put('comm_total', String(total))
     return total
 }
 
+// Меняем число броней, не выходя за пределы 0…total
 async function changeBooked(env, delta) {
-    let booked = parseInt(await env.COMM_KV.get('comm_booked') || '0', 10)
-    booked = Math.max(0, booked + delta)
+    if (!env.COMM_KV) return 0
+    const total = Math.max(0, parseInt(await env.COMM_KV.get('comm_total') || '0', 10) || 0)
+    let booked = Math.max(0, parseInt(await env.COMM_KV.get('comm_booked') || '0', 10) || 0)
+    booked = Math.min(total, Math.max(0, booked + delta))
     await env.COMM_KV.put('comm_booked', String(booked))
     return booked
 }
@@ -212,28 +236,62 @@ async function sendTelegram(env, text, replyMarkup = null, targetChatId = null) 
 }
 
 // ─── Антиспам ───
+// Проверка ничего не пишет: счётчик увеличивается только после успешной отправки,
+// иначе опечатки в форме съедают лимит на час.
 async function isRateLimited(env, ip) {
     if (!env.COMM_KV) return false
     try {
-        const key = `rl:${ip}`
-        const current = parseInt(await env.COMM_KV.get(key) || '0', 10)
-        if (current >= LIMITS.perHour) return true
-        await env.COMM_KV.put(key, String(current + 1), {expirationTtl: 3600})
-    } catch {}
-    return false
+        const current = parseInt(await env.COMM_KV.get(`rl:${ip}`) || '0', 10) || 0
+        return current >= LIMITS.perHour
+    } catch {
+        return false
+    }
 }
 
+async function bumpRateLimit(env, ip) {
+    if (!env.COMM_KV) return
+    try {
+        const key = `rl:${ip}`
+        const current = parseInt(await env.COMM_KV.get(key) || '0', 10) || 0
+        await env.COMM_KV.put(key, String(current + 1), {expirationTtl: 3600})
+    } catch {}
+}
+
+async function duplicateKey(data) {
+    const raw = `${data.contact}|${data.description.slice(0, 80)}`
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw))
+    const hash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('')
+    return `dup:${hash.slice(0, 32)}`
+}
+
+// Только проверяем. Метку ставим после успешной отправки,
+// иначе неудачная доставка заблокирует повтор на 10 минут.
 async function isDuplicate(env, data) {
     if (!env.COMM_KV) return false
     try {
-        const raw = `${data.contact}|${data.description.slice(0, 80)}`
-        const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw))
-        const hash = Array.from(new Uint8Array(digest), b => b.toString(16).padStart(2, '0')).join('')
-        const key = `dup:${hash.slice(0, 32)}`
-        if (await env.COMM_KV.get(key)) return true
-        await env.COMM_KV.put(key, '1', {expirationTtl: 600})
+        return Boolean(await env.COMM_KV.get(await duplicateKey(data)))
+    } catch {
+        return false
+    }
+}
+
+async function markDuplicate(env, data) {
+    if (!env.COMM_KV) return
+    try {
+        await env.COMM_KV.put(await duplicateKey(data), '1', {expirationTtl: 600})
     } catch {}
-    return false
+}
+
+function allowedHostnames(env) {
+    return allowedOrigins(env)
+        .map(origin => {
+            try {
+                return new URL(origin).hostname
+            } catch {
+                return null
+            }
+        })
+        .filter(Boolean)
 }
 
 async function verifyTurnstile(env, token, ip) {
@@ -242,15 +300,29 @@ async function verifyTurnstile(env, token, ip) {
     const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: ip })
+        body: new URLSearchParams({secret: env.TURNSTILE_SECRET, response: token, remoteip: ip})
     })
     const result = await res.json().catch(() => ({}))
-    return result.success === true
+    if (result.success !== true) return false
+
+    // Токен должен быть выдан для одного из наших доменов.
+    // Если Turnstile не вернул hostname (например, тестовые ключи) — не мешаем.
+    const hosts = allowedHostnames(env)
+    if (result.hostname && hosts.length && !hosts.includes(result.hostname)) {
+        console.warn('turnstile hostname mismatch:', result.hostname)
+        return false
+    }
+    return true
 }
 
 // ─── Обработка команд бота ───
-// ─── Обработка команд бота ───
 async function handleBotCommand(env, chatId, text) {
+    // Команды принимаем только из личного чата владельца
+    if (env.CHAT_ID && String(chatId) !== String(env.CHAT_ID)) {
+        console.warn('command from foreign chat ignored:', chatId)
+        return false
+    }
+
     const cmd = text.trim().toLowerCase()
 
     if (cmd === '/status' || cmd === '/slots') {
@@ -301,6 +373,10 @@ async function handleBotCommand(env, chatId, text) {
 
     // /reset - сбросить всё в 0
     if (cmd === '/reset') {
+        if (!env.COMM_KV) {
+            await sendTelegram(env, '⚠️ KV namespace не подключён — сбрасывать нечего.', null, chatId)
+            return true
+        }
         await env.COMM_KV.put('comm_total', '0')
         await env.COMM_KV.put('comm_booked', '0')
         await sendTelegram(env, '🔄 Счетчики слотов сброшены в 0.', null, chatId)
@@ -311,92 +387,171 @@ async function handleBotCommand(env, chatId, text) {
 }
 
 // ─── Обработка нажатий кнопок (Callback) ───
+
+// Состояние заявки живёт в KV. Кнопки приходят повторно (двойной тап или retry
+// от Telegram) — переход делаем только из ожидаемого состояния.
+const APP_STATE_TTL = 60 * 60 * 24 * 180 // 180 дней
+
+function appStateKey(id) {
+    return `app:${id}`
+}
+
+async function getAppState(env, id, text) {
+    if (env.COMM_KV) {
+        try {
+            const stored = await env.COMM_KV.get(appStateKey(id))
+            if (stored) return stored
+        } catch {}
+    }
+    // Старые сообщения (до появления KV-состояния) узнаём по маркеру в тексте
+    if (text.startsWith('🔒')) return 'booked'
+    if (text.startsWith('❌')) return 'declined'
+    if (text.startsWith('🎉')) return 'done'
+    if (text.startsWith('🔄')) return 'cancelled'
+    return 'new'
+}
+
+async function setAppState(env, id, state) {
+    if (!env.COMM_KV) return
+    try {
+        await env.COMM_KV.put(appStateKey(id), state, {expirationTtl: APP_STATE_TTL})
+    } catch {}
+}
+
+async function editMessage(env, chatId, messageId, text, replyMarkup) {
+    const body = {
+        chat_id: chatId,
+        message_id: messageId,
+        text,
+        parse_mode: 'HTML'
+    }
+    // {} — убрать кнопки, отсутствие поля — оставить как есть
+    if (replyMarkup !== undefined) body.reply_markup = replyMarkup
+
+    const res = await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/editMessageText`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(body)
+    })
+    const result = await res.json().catch(() => ({}))
+    if (!res.ok || !result.ok) {
+        console.error('editMessageText failed:', result.description || res.status)
+        return false
+    }
+    return true
+}
+
+async function answerCallback(env, callbackQueryId, text) {
+    try {
+        await fetch(`https://api.telegram.org/bot${env.BOT_TOKEN}/answerCallbackQuery`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({callback_query_id: callbackQueryId, text})
+        })
+    } catch {}
+}
+
+function replaceStatus(text, from, to) {
+    // Меняем только заголовок, тело заявки не трогаем
+    return text.includes(from) ? text.replace(from, to) : text
+}
+
 async function handleCallback(env, callbackQuery) {
-    const data = callbackQuery.data
-    const chatId = callbackQuery.from.id
-    const messageId = callbackQuery.message.message_id
-    const originalText = callbackQuery.message.text
+    const message = callbackQuery.message
+    const data = callbackQuery.data || ''
+
+    // В группе редактировать надо чат сообщения, а не автора нажатия
+    const chatId = message?.chat?.id ?? callbackQuery.from?.id
+    const messageId = message?.message_id
+    const originalText = message?.text || ''
+
+    if (!messageId || !chatId) {
+        await answerCallback(env, callbackQuery.id, 'Сообщение недоступно')
+        return
+    }
+
+    if (env.CHAT_ID && String(chatId) !== String(env.CHAT_ID)) {
+        await answerCallback(env, callbackQuery.id, 'Нет доступа')
+        return
+    }
 
     const [action, id] = data.split(':')
-    const apiUrl = `https://api.telegram.org/bot${env.BOT_TOKEN}`
+    if (!action || !id) {
+        await answerCallback(env, callbackQuery.id, 'Неизвестная кнопка')
+        return
+    }
+
+    const state = await getAppState(env, id, originalText)
 
     if (action === 'book') {
-        const booked = await changeBooked(env, 1)
-        const slots = await getSlots(env)
-        const newText = originalText.replace('🧾 <b>Заявка', '🔒 <b>ЗАБРОНИРОВАНО: Заявка') +
-                        `\n\n<i>Слот занят. Забронировано: ${booked}/${slots.total}</i>`
+        if (state !== 'new') return answerCallback(env, callbackQuery.id, 'Уже обработано')
 
-        const newKeyboard = {
+        const slots = await getSlots(env)
+        const booked = Math.min(slots.total, slots.booked + 1)
+        const newText = replaceStatus(originalText, '🧾 <b>Заявка', '🔒 <b>ЗАБРОНИРОВАНО: Заявка') +
+            `\n\n<i>Слот занят. Забронировано: ${booked}/${slots.total}</i>`
+
+        const keyboard = {
             inline_keyboard: [
-                [{ text: "✅ Завершить заказ", callback_data: `complete:${id}` }],
-                [{ text: "🔄 Отменить бронь", callback_data: `cancel:${id}` }]
+                [{text: '✅ Завершить заказ', callback_data: `complete:${id}`}],
+                [{text: '🔄 Отменить бронь', callback_data: `cancel:${id}`}]
             ]
         }
 
-        // Обновляем текст и устанавливаем новые кнопки одним запросом
-        await fetch(`${apiUrl}/editMessageText`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                chat_id: chatId,
-                message_id: messageId,
-                text: newText,
-                parse_mode: 'HTML',
-                reply_markup: newKeyboard
-            })
-        })
+        if (!(await editMessage(env, chatId, messageId, newText, keyboard))) {
+            return answerCallback(env, callbackQuery.id, 'Не удалось обновить сообщение')
+        }
 
-        await fetch(`${apiUrl}/answerCallbackQuery`, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ callback_query_id: callbackQuery.id, text: 'Слот забронирован!' })
-        })
+        // Счётчики и состояние меняем только после успешного редактирования
+        await setSlots(env, slots.total, booked)
+        await setAppState(env, id, 'booked')
+        await answerCallback(env, callbackQuery.id, 'Слот забронирован!')
+        return
     }
-    else if (action === 'decline') {
-        const newText = originalText.replace('🧾 <b>Заявка', '❌ <b>ОТКЛОНЕНО: Заявка')
 
-        // Убираем кнопки, передавая пустой объект {}
-        await fetch(`${apiUrl}/editMessageText`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                chat_id: chatId,
-                message_id: messageId,
-                text: newText,
-                parse_mode: 'HTML',
-                reply_markup: {}
-            })
-        })
+    if (action === 'decline') {
+        if (state !== 'new') return answerCallback(env, callbackQuery.id, 'Уже обработано')
 
-        await fetch(`${apiUrl}/answerCallbackQuery`, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ callback_query_id: callbackQuery.id, text: 'Заявка отклонена.' })
-        })
+        const newText = replaceStatus(originalText, '🧾 <b>Заявка', '❌ <b>ОТКЛОНЕНО: Заявка')
+        if (!(await editMessage(env, chatId, messageId, newText, {}))) {
+            return answerCallback(env, callbackQuery.id, 'Не удалось обновить сообщение')
+        }
+
+        await setAppState(env, id, 'declined')
+        await answerCallback(env, callbackQuery.id, 'Заявка отклонена.')
+        return
     }
-    else if (action === 'complete' || action === 'cancel') {
-        const booked = await changeBooked(env, -1)
+
+    if (action === 'complete' || action === 'cancel') {
+        if (state !== 'booked') return answerCallback(env, callbackQuery.id, 'Уже обработано')
+
         const slots = await getSlots(env)
-        const actionText = action === 'complete' ? '🎉 ВЫПОЛНЕНО' : '🔄 БРОНЬ СНЯТА'
+        const booked = Math.max(0, slots.booked - 1)
+        const isComplete = action === 'complete'
+        const title = isComplete ? '🎉 <b>ВЫПОЛНЕНО: Заявка' : '🔄 <b>БРОНЬ СНЯТА: Заявка'
+        const note = isComplete ? '🎉 ВЫПОЛНЕНО' : '🔄 БРОНЬ СНЯТА'
 
-        const newText = originalText + `\n\n<i>⚠️ ${actionText}. Слот освобожден. (Забронировано: ${booked}/${slots.total})</i>`
+        // Убираем старую пометку о брони, чтобы не копилась при переходах
+        const baseText = originalText
+            .replace(/\n\n<i>Слот занят\.[\s\S]*$/, '')
+            .replace('🔒 <b>ЗАБРОНИРОВАНО: Заявка', title)
+            // запасной вариант, если текст сообщения почему-то остался исходным
+            .replace('🧾 <b>Заявка', title)
 
-        // Убираем кнопки, передавая пустой объект {}
-        await fetch(`${apiUrl}/editMessageText`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({
-                chat_id: chatId,
-                message_id: messageId,
-                text: newText,
-                parse_mode: 'HTML',
-                reply_markup: {} // <-- ЭТО УДАЛЯЕТ КНОПКИ
-            })
-        })
+        const newText = baseText +
+            `\n\n<i>⚠️ ${note}. Слот освобождён. (Забронировано: ${booked}/${slots.total})</i>`
 
-        await fetch(`${apiUrl}/answerCallbackQuery`, {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ callback_query_id: callbackQuery.id, text: action === 'complete' ? 'Заказ завершен!' : 'Бронь отменена!' })
-        })
+        if (!(await editMessage(env, chatId, messageId, newText, {}))) {
+            return answerCallback(env, callbackQuery.id, 'Не удалось обновить сообщение')
+        }
+
+        await setSlots(env, slots.total, booked)
+        await setAppState(env, id, isComplete ? 'done' : 'cancelled')
+        await answerCallback(env, callbackQuery.id, isComplete ? 'Заказ завершён!' : 'Бронь отменена!')
+        return
     }
+
+    await answerCallback(env, callbackQuery.id, 'Неизвестное действие')
 }
 
 // ─── Обработчик заявки с сайта ───
@@ -415,11 +570,17 @@ async function handleSubmit(request, env, cors) {
     }
 
     const ip = request.headers.get('CF-Connecting-IP') || 'unknown'
-    if (await isRateLimited(env, ip)) return json({ok: false, error: 'rate_limited'}, 429, cors)
-    if (!(await verifyTurnstile(env, body.turnstileToken, ip))) return json({ok: false, error: 'captcha_failed'}, 400, cors)
 
+    // Сначала проверяем данные, потом капчу, и только потом лимит:
+    // опечатки в форме не должны съедать квоту на час.
     const {errors, data} = validate(body)
     if (errors.length) return json({ok: false, error: 'validation', fields: errors}, 400, cors)
+
+    if (!(await verifyTurnstile(env, body.turnstileToken, ip))) {
+        return json({ok: false, error: 'captcha_failed'}, 400, cors)
+    }
+
+    if (await isRateLimited(env, ip)) return json({ok: false, error: 'rate_limited'}, 429, cors)
     if (await isDuplicate(env, data)) return json({ok: true, id: makeId(), duplicate: true}, 200, cors)
 
     try {
@@ -433,6 +594,12 @@ async function handleSubmit(request, env, cors) {
             ]
         }
         await sendTelegram(env, text, keyboard)
+
+        // Метку дубля и лимит пишем только после успешной доставки:
+        // иначе неудачная отправка блокировала бы повтор
+        await markDuplicate(env, data)
+        await bumpRateLimit(env, ip)
+
         return json({ok: true, id}, 200, cors)
     } catch (error) {
         console.error('send failed:', error)
@@ -452,20 +619,44 @@ export default {
 
         // 1. Webhook от Telegram
         if (url.pathname === '/webhook' && request.method === 'POST') {
-            const update = await request.json()
-            if (update.message && update.message.text) {
-                await handleBotCommand(env, update.message.chat.id, update.message.text)
+            // Без секрета маршрут открыт любому, кто узнал адрес воркера.
+            // Лучше явно не работать, чем молча разрешать чужие команды.
+            if (!env.WEBHOOK_SECRET) {
+                console.error('WEBHOOK_SECRET не задан: /webhook отключён')
+                return new Response('webhook secret is not configured', {status: 503})
             }
-            if (update.callback_query) {
-                await handleCallback(env, update.callback_query)
+            if (request.headers.get('X-Telegram-Bot-Api-Secret-Token') !== env.WEBHOOK_SECRET) {
+                return new Response('forbidden', {status: 403})
             }
-            return new Response('ok', { status: 200 })
+
+            let update
+            try {
+                update = await request.json()
+            } catch {
+                return new Response('bad request', {status: 400})
+            }
+
+            // Отвечаем Telegram 200 даже при сбое внутри: иначе он будет
+            // повторять один и тот же update и снова дёргать счётчики.
+            try {
+                if (update.message && update.message.text) {
+                    await handleBotCommand(env, update.message.chat.id, update.message.text)
+                }
+                if (update.callback_query) {
+                    await handleCallback(env, update.callback_query)
+                }
+            } catch (error) {
+                console.error('webhook failed:', error)
+            }
+
+            return new Response('ok', {status: 200})
         }
 
         // 2. API для сайта: Получить статус слотов
         if (url.pathname === '/api/slots' && request.method === 'GET') {
             const slots = await getSlots(env)
-            return json(slots, 200, cors)
+            // 60 секунд кэша: снимает лишние чтения KV при каждом заходе
+            return json(slots, 200, {...cors, 'Cache-Control': 'public, max-age=60'})
         }
 
         // 3. Отправка заявки с сайта
@@ -482,6 +673,7 @@ export default {
                 configured: {
                     botToken: Boolean(env.BOT_TOKEN),
                     chatId: Boolean(env.CHAT_ID),
+                    webhookSecret: Boolean(env.WEBHOOK_SECRET),
                     turnstile: Boolean(env.TURNSTILE_SECRET),
                     kv: Boolean(env.COMM_KV)
                 }

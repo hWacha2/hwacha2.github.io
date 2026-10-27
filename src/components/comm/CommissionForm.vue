@@ -9,6 +9,12 @@ const currentLang = inject('currentLang')
 
 const emit = defineEmits(['estimate'])
 
+// Юридические разделы открываем в новой вкладке, чтобы не потерять черновик
+const consentLinks = {
+  tos: `${import.meta.env.BASE_URL}commissions#tos`,
+  privacy: `${import.meta.env.BASE_URL}privacy`
+}
+
 const MAX_CHARACTERS = 3
 const MAX_DESCRIPTION = 1500
 
@@ -574,6 +580,12 @@ function clearDraftAndReset() {
       </div>
       <p v-if="fieldErrors.contact" class="comm-error">{{ fieldErrors.contact }}</p>
       <p class="comm-hint">{{ t('formPrivacyNote') }}</p>
+      <p class="comm-consent">
+        {{ t('formConsent') }}
+        <a :href="consentLinks.tos" target="_blank" rel="noopener">{{ t('formConsentTos') }}</a>
+        ·
+        <a :href="consentLinks.privacy" target="_blank" rel="noopener">{{ t('formConsentPrivacy') }}</a>.
+      </p>
 
       <!-- honeypot: люди его не видят, боты заполняют -->
       <div class="comm-honeypot" aria-hidden="true">
@@ -670,6 +682,23 @@ function clearDraftAndReset() {
   font-size: .78rem;
   color: rgba(255, 255, 255, .5);
   line-height: 1.4;
+}
+
+.comm-consent {
+  margin: 0;
+  font-size: .78rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .5);
+}
+
+.comm-consent a {
+  color: #229ED9;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.comm-consent a:hover {
+  color: #4fb8ea;
 }
 
 .comm-counter {

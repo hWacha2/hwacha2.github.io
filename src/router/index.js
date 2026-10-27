@@ -15,6 +15,12 @@ const routes = [
         meta: {title: 'commTitle'}
     },
     {
+        path: '/privacy',
+        name: 'Privacy',
+        component: () => import('../views/Privacy.vue'),
+        meta: {title: 'privacyPageTitle'}
+    },
+    {
         // Любой неизвестный адрес: GitHub Pages отдаст 404.html (это та же SPA),
         // роутер покажет эту страницу вместо пустого экрана
         path: '/:pathMatch(.*)*',
