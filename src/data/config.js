@@ -10,3 +10,6 @@ export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY ||
 
 export const BOOSTY_URL = 'https://boosty.to/ishwacha'
 export const TELEGRAM_URL = 'https://t.me/ishwacha?direct'
+
+// Публичный контакт для политики и юридических вопросов
+export const CONTACT_EMAIL = 'ishwacha@gmail.com'

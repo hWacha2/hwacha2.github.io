@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router' // Импортируем роутер
 
 // Импортируем CSS
+import './assets/css/fonts.css'
 import './assets/css/tiktokbtn.css'
 import './assets/css/nexusbtn.css'
 import './assets/css/vkbtn.css'

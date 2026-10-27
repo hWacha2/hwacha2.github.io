@@ -237,11 +237,13 @@ const formatDate = inject('formatDate');
 const nickName = 'ishwacha';
 const avatarUrl = 'ava.webp';
 const avatarLoaded = ref(false);
-const contactLink = 'https://t.me/ishwacha?direct';
 import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue'
 import CommissionModal from '../components/comm/CommissionModal.vue'
 import {FORMATS, FORMAT_IDS, PRICING} from '../data/pricing'
 import {PRICES_UPDATED_AT} from '../data/dates'
+import {TELEGRAM_URL} from '../data/config'
+
+const contactLink = TELEGRAM_URL;
 
 const showOverlay = ref(false)
 

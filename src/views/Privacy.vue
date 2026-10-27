@@ -1,6 +1,7 @@
 <script setup>
 import {computed, inject} from 'vue'
 import {PRIVACY_UPDATED_AT} from '../data/dates'
+import {CONTACT_EMAIL, TELEGRAM_URL} from '../data/config'
 
 const t = inject('t')
 const formatDate = inject('formatDate')
@@ -8,11 +9,15 @@ const formatDate = inject('formatDate')
 const PRIVACY_STRUCTURE = [
   {
     title: 'privacyDataTitle',
-    items: ['privacyData1', 'privacyData2', 'privacyData3']
+    items: ['privacyData1', 'privacyData2', 'privacyData3', 'privacyData4']
   },
   {
     title: 'privacyWhyTitle',
     items: ['privacyWhy1', 'privacyWhy2', 'privacyWhy3']
+  },
+  {
+    title: 'privacyLegalTitle',
+    items: ['privacyLegal1', 'privacyLegal2', 'privacyLegal3']
   },
   {
     title: 'privacyWhereTitle',
@@ -21,6 +26,10 @@ const PRIVACY_STRUCTURE = [
   {
     title: 'privacyThirdTitle',
     items: ['privacyThird1', 'privacyThird2', 'privacyThird3', 'privacyThird4', 'privacyThird5']
+  },
+  {
+    title: 'privacyTransferTitle',
+    items: ['privacyTransfer1', 'privacyTransfer2', 'privacyTransfer3']
   },
   {
     title: 'privacyCookiesTitle',
@@ -32,7 +41,7 @@ const PRIVACY_STRUCTURE = [
   },
   {
     title: 'privacyRightsTitle',
-    items: ['privacyRights1', 'privacyRights2']
+    items: ['privacyRights1', 'privacyRights2', 'privacyRights3', 'privacyRights4', 'privacyRights5']
   },
   {
     title: 'privacyChangesTitle',
@@ -62,6 +71,13 @@ const privacySections = computed(() => PRIVACY_STRUCTURE.map(section => ({
             </RouterLink>
 
             <h1 class="privacy-title">{{ t('privacyPageTitle') }}</h1>
+
+            <p class="privacy-controller">
+              {{ t('privacyControllerLabel') }}
+              <strong>ishwacha</strong> ·
+              <a :href="`mailto:${CONTACT_EMAIL}`">{{ CONTACT_EMAIL }}</a>
+            </p>
+
             <p class="privacy-intro">{{ t('privacyIntro') }}</p>
           </header>
 
@@ -79,7 +95,9 @@ const privacySections = computed(() => PRIVACY_STRUCTURE.map(section => ({
 
             <p class="privacy-contact">
               {{ t('privacyContact') }}
-              <a href="https://t.me/ishwacha" target="_blank" rel="noopener">@ishwacha</a>
+              <a :href="`mailto:${CONTACT_EMAIL}`">{{ CONTACT_EMAIL }}</a>
+              {{ t('privacyContactOr') }}
+              <a :href="TELEGRAM_URL" target="_blank" rel="noopener">@ishwacha</a>.
             </p>
 
             <p class="privacy-updated">
@@ -127,6 +145,21 @@ const privacySections = computed(() => PRIVACY_STRUCTURE.map(section => ({
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
   color: #fff;
+}
+
+.privacy-controller {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.privacy-controller a {
+  color: #229ED9;
+  text-decoration: none;
+}
+
+.privacy-controller a:hover {
+  text-decoration: underline;
 }
 
 .privacy-intro {
