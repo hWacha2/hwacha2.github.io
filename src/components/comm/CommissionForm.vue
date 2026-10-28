@@ -79,9 +79,20 @@ function removeRef(index) {
 const fieldErrors = reactive({description: ''})
 const copied = ref(false)
 const copyFailed = ref(false)
+// Подтверждение после перехода в Telegram не скрываем по таймеру:
+// человек возвращается из чата и должен видеть, что делать дальше.
+const briefConfirmShown = ref(false)
 const briefOpen = ref(false)
 const briefBox = ref(null)
 const descriptionEl = ref(null)
+
+// Любая правка делает старый скопированный текст неактуальным
+watch(form, () => {
+  if (!briefConfirmShown.value) return
+  briefConfirmShown.value = false
+  copied.value = false
+  copyFailed.value = false
+}, {deep: true})
 
 // Итог показываем в шапке модалки — он всегда на виду, а не в конце формы
 watch(estimate, () => {
@@ -153,11 +164,14 @@ async function copyBrief() {
     await navigator.clipboard.writeText(briefText.value)
     copied.value = true
     copyFailed.value = false
+    briefConfirmShown.value = true
+    // Кнопка возвращается к обычному виду, а подтверждение остаётся на месте
     window.setTimeout(() => {
       copied.value = false
     }, 4000)
   } catch {
     copyFailed.value = true
+    briefConfirmShown.value = true
     briefOpen.value = true
     await nextTick()
     briefBox.value?.focus()
@@ -180,6 +194,7 @@ function clearDraftAndReset() {
   fieldErrors.description = ''
   copyFailed.value = false
   copied.value = false
+  briefConfirmShown.value = false
   briefOpen.value = false
 }
 
@@ -380,7 +395,7 @@ function clearDraftAndReset() {
         </a>
       </div>
 
-      <div v-if="copied || copyFailed" class="comm-fallback" role="status">
+      <div v-if="briefConfirmShown" class="comm-fallback" role="status">
         <p class="comm-label">
           {{ copyFailed
             ? t('formBriefCopyFailed')
