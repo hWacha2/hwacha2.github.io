@@ -1,15 +1,13 @@
 // Публичные настройки фронтенда.
-// Site key Turnstile публичный — его видно в бандле, это нормально.
-// Секрет Turnstile лежит только в Cloudflare Worker.
-
-export const COMMISSION_ENDPOINT = import.meta.env.VITE_COMMISSION_ENDPOINT ||
-    'https://ishwacha-comm.gbaranovskaa76.workers.dev/submit'
-
-export const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY ||
-    '0x4AAAAAAFlUgxQNbnfkn0ue'
 
 export const BOOSTY_URL = 'https://boosty.to/ishwacha'
-export const TELEGRAM_URL = 'https://t.me/ishwacha?direct'
+
+// Личный чат в Telegram. Форма добавляет к ссылке ?text=..., чтобы бриф
+// сразу оказался в поле ввода.
+export const TELEGRAM_URL = 'https://t.me/hwaaacha'
+
+// Личка в Discord: ссылка должна содержать числовой user ID, а не username
+export const DISCORD_URL = 'https://discord.com/users/574932269312245763'
 
 // Публичный контакт для политики и юридических вопросов
 export const CONTACT_EMAIL = 'ishwacha@gmail.com'

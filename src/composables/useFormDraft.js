@@ -79,10 +79,28 @@ function sanitize(raw, defaults) {
             result[key] = Number.isFinite(number) ? number : fallback
         } else if (typeof fallback === 'string') {
             result[key] = typeof value === 'string' ? value.slice(0, 2000) : fallback
+        } else if (Array.isArray(fallback)) {
+            result[key] = sanitizeList(value, fallback[0] || {})
         }
     }
 
     return result
+}
+
+// Списки (например, ссылки на референсы) храним как массив объектов
+// с той же формой, что и элемент по умолчанию.
+function sanitizeList(value, shape) {
+    if (!Array.isArray(value)) return []
+
+    return value.slice(0, 20).flatMap(item => {
+        if (!item || typeof item !== 'object') return []
+
+        const clean = {}
+        for (const [key, fallback] of Object.entries(shape)) {
+            clean[key] = typeof item[key] === 'string' ? item[key].slice(0, 2000) : fallback
+        }
+        return [clean]
+    })
 }
 
 function isMeaningful(data, defaults) {
@@ -91,6 +109,9 @@ function isMeaningful(data, defaults) {
         if (typeof value === 'string') return value.trim() !== '' && value !== fallback
         if (typeof value === 'boolean') return value !== fallback
         if (typeof value === 'number') return value !== fallback
+        if (Array.isArray(value)) {
+            return value.some(item => Object.values(item).some(v => typeof v === 'string' && v.trim() !== ''))
+        }
         return false
     })
 }

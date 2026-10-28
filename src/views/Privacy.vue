@@ -25,7 +25,7 @@ const PRIVACY_STRUCTURE = [
   },
   {
     title: 'privacyThirdTitle',
-    items: ['privacyThird1', 'privacyThird2', 'privacyThird3', 'privacyThird4', 'privacyThird5']
+    items: ['privacyThird1', 'privacyThird2', 'privacyThird3', 'privacyThird4', 'privacyThird5', 'privacyThird6']
   },
   {
     title: 'privacyTransferTitle',
@@ -97,7 +97,7 @@ const privacySections = computed(() => PRIVACY_STRUCTURE.map(section => ({
               {{ t('privacyContact') }}
               <a :href="`mailto:${CONTACT_EMAIL}`">{{ CONTACT_EMAIL }}</a>
               {{ t('privacyContactOr') }}
-              <a :href="TELEGRAM_URL" target="_blank" rel="noopener">@ishwacha</a>.
+              <a :href="TELEGRAM_URL" target="_blank" rel="noopener">@hwaaacha</a>.
             </p>
 
             <p class="privacy-updated">

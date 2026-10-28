@@ -1,22 +1,19 @@
 <script setup>
-import {computed, inject, onMounted, onUnmounted, reactive, ref, watch} from 'vue'
+import {computed, inject, nextTick, reactive, ref, watch} from 'vue'
 import {FORMATS, FORMAT_IDS, PRICING, calculateEstimate, getAddons} from '../../data/pricing'
-import {BOOSTY_URL, COMMISSION_ENDPOINT, TELEGRAM_URL, TURNSTILE_SITE_KEY} from '../../data/config'
+import {DISCORD_URL, TELEGRAM_URL} from '../../data/config'
 import {useFormDraft} from '../../composables/useFormDraft'
 
 const t = inject('t')
-const currentLang = inject('currentLang')
 
 const emit = defineEmits(['estimate'])
 
-// Юридические разделы открываем в новой вкладке, чтобы не потерять черновик
-const consentLinks = {
-  tos: `${import.meta.env.BASE_URL}commissions#tos`,
-  privacy: `${import.meta.env.BASE_URL}privacy`
-}
+// Политика открывается в новой вкладке, чтобы не потерять черновик
+const privacyLink = `${import.meta.env.BASE_URL}privacy`
 
 const MAX_CHARACTERS = 3
 const MAX_DESCRIPTION = 1500
+const MAX_REFS = 6
 
 const defaults = {
   format: 'portrait',
@@ -26,22 +23,17 @@ const defaults = {
   prop: false,
   pet: false,
   description: '',
-  refs: '',
+  refs: [{url: '', note: ''}],
   deadline: '',
-  name: '',
-  credit: '',
-  contactMethod: 'email',
-  contact: '',
-  website: '' // honeypot
+  credit: ''
 }
 
 const {form, restored, clear: clearDraft} = useFormDraft('comm-draft-v2', defaults)
 
-// Старый черновик мог сохранить способ связи, которого больше нет
-if (!['telegram', 'discord', 'email', 'twitter', 'other'].includes(form.contactMethod)) {
-  form.contactMethod = 'email'
-  form.contact = ''
-}
+// Старый черновик мог хранить ссылки строкой — тогда остаётся одна пустая строка.
+// Копируем массив, чтобы правки не меняли defaults и сброс работал предсказуемо.
+form.refs = form.refs.map(ref => ({url: ref.url || '', note: ref.note || ''}))
+if (!form.refs.length) form.refs.push({url: '', note: ''})
 
 // ─── Надбавки текущего формата ───
 
@@ -72,277 +64,41 @@ function changeCharacters(delta) {
   form.characters = Math.min(MAX_CHARACTERS, Math.max(1, form.characters + delta))
 }
 
-const contactMethods = computed(() => [
-  {id: 'discord', label: t('formContactDiscord'), prefix: '@', placeholder: 'username'},
-  {id: 'email', label: t('formContactEmail'), prefix: '', placeholder: 'you@example.com'},
-  {id: 'telegram', label: t('formContactTelegram'), prefix: 'https://t.me/', placeholder: 'username'},
-  {id: 'twitter', label: t('formContactTwitter'), prefix: 'https://x.com/', placeholder: 'username'},
-  {id: 'other', label: t('formContactOther')}
-])
-
-const contactMethod = computed(() =>
-    contactMethods.value.find(method => method.id === form.contactMethod) || contactMethods.value[0]
-)
-
-const contactPrefix = computed(() => contactMethod.value?.prefix || '')
-const contactPlaceholder = computed(() =>
-    contactMethod.value?.placeholder || t('formContactPlaceholder')
-)
-
-// Собираем полную ссылку из префикса и того, что ввёл человек.
-// Если он вставил готовый URL или уже поставил @ — не дублируем.
-function resolveContact() {
-  const raw = form.contact.trim()
-  const prefix = contactPrefix.value
-  if (!raw) return ''
-  if (!prefix) return raw
-  const value = raw.replace(/^@+/, '')
-  if (/^https?:\/\//i.test(value)) return value
-  return prefix + value
+function addRef() {
+  if (form.refs.length >= MAX_REFS) return
+  form.refs.push({url: '', note: ''})
 }
 
-// ─── Состояние отправки ───
+function removeRef(index) {
+  form.refs.splice(index, 1)
+  if (!form.refs.length) form.refs.push({url: '', note: ''})
+}
 
+// ─── Сборка брифа ───
 
-const openedAt = Date.now()
-const status = ref('idle') // idle | sending | success
-const successId = ref('')
-const submitError = ref('')
+const fieldErrors = reactive({description: ''})
 const copied = ref(false)
-const fieldErrors = reactive({description: '', contact: ''})
-const fallbackBox = ref(null)
-
-const showFallback = computed(() => {
-  // Если капча сломалась при загрузке — показываем запасной вариант СРАЗУ
-  if (turnstileState.value === 'failed') return true
-
-  // Если произошла ошибка отправки, требующая ручного копирования
-  if (submitError.value && ['formCaptchaUnavailable', 'formCaptchaPending', 'formErrorCaptcha', 'formErrorRate', 'formErrorNetwork'].includes(submitError.value)) {
-    return true
-  }
-
-  return false
-})
+const copyFailed = ref(false)
+const briefOpen = ref(false)
+const briefBox = ref(null)
+const descriptionEl = ref(null)
 
 // Итог показываем в шапке модалки — он всегда на виду, а не в конце формы
-watch([estimate, status], () => {
-  emit('estimate', status.value === 'success' ? null : {
+watch(estimate, () => {
+  emit('estimate', {
     total: estimate.value.total,
     base: estimate.value.base,
     parts: estimate.value.parts
   })
 }, {immediate: true})
 
-const errorText = computed(() => submitError.value ? t(submitError.value) : '')
-
-function validate() {
-  fieldErrors.description = form.description.trim().length < 10
-      ? t('formDescriptionTooShort')
-      : ''
-
-  const contact = form.contact.trim()
-  if (contact.length < 2) {
-    fieldErrors.contact = t('formContactRequired')
-  } else if (form.contactMethod === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact)) {
-    fieldErrors.contact = t('formContactInvalid')
-  } else {
-    fieldErrors.contact = ''
-  }
-
-  return !fieldErrors.description && !fieldErrors.contact
-}
-
-// ─── Turnstile ───
-
-const turnstileEl = ref(null)
-const turnstileToken = ref('')
-const turnstileState = ref('loading') // loading | ready | failed
-let widgetId = null
-let turnstileReady = null
-
-
-function loadTurnstile() {
-  if (window.turnstile) return Promise.resolve(window.turnstile)
-  if (turnstileReady) return turnstileReady
-
-  turnstileReady = new Promise((resolve, reject) => {
-    const script = document.createElement('script')
-    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'
-    script.async = true
-    script.defer = true
-    script.onload = () => resolve(window.turnstile)
-    script.onerror = () => reject(new Error('turnstile script failed'))
-    document.head.appendChild(script)
-  })
-
-  return turnstileReady
-}
-
-onMounted(async () => {
-  try {
-    const turnstile = await loadTurnstile()
-    widgetId = turnstile.render(turnstileEl.value, {
-      sitekey: TURNSTILE_SITE_KEY,
-      theme: 'dark',
-      language: currentLang.value === 'en' ? 'en' : 'ru',
-      callback: token => {
-        turnstileToken.value = token
-        turnstileState.value = 'ready'
-        if (submitError.value === 'formCaptchaPending') submitError.value = ''
-      },
-      'expired-callback': () => {
-        turnstileToken.value = ''
-      },
-      'error-callback': () => {
-        turnstileState.value = 'failed'
-      }
-    })
-    turnstileState.value = 'ready'
-  } catch {
-    turnstileState.value = 'failed'
-  }
-})
-
-onUnmounted(() => {
-  try {
-    if (widgetId !== null) window.turnstile?.remove(widgetId)
-  } catch {
-    // ignore
-  }
-})
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
-
-async function ensureToken() {
-  if (turnstileToken.value) return turnstileToken.value
-  if (turnstileState.value === 'failed') return ''
-
-  // Managed-виджет обычно выдаёт токен сам; если ещё не успел — просим и ждём
-  try {
-    window.turnstile?.execute(widgetId)
-  } catch {
-    // ignore
-  }
-
-  for (let i = 0; i < 24; i++) {
-    await sleep(250)
-    const token = turnstileToken.value || window.turnstile?.getResponse(widgetId) || ''
-    if (token) {
-      turnstileToken.value = token
-      return token
-    }
-  }
-
-  return ''
-}
-
-function resetTurnstile() {
-  turnstileToken.value = ''
-  try {
-    if (widgetId !== null) window.turnstile?.reset(widgetId)
-  } catch {
-    // ignore
-  }
-}
-
-// ─── Отправка ───
-
-async function submit() {
-  if (status.value === 'sending') return
-
-  submitError.value = ''
-
-  if (!validate()) {
-    submitError.value = 'formErrorValidation'
-    return
-  }
-
-  status.value = 'sending'
-
-  try {
-    const token = await ensureToken()
-
-    if (!token) {
-      status.value = 'idle'
-      if (turnstileState.value === 'failed') {
-        submitError.value = 'formCaptchaUnavailable'
-        showFallback.value = true
-      } else {
-        // Виджет ждёт подтверждения «я не робот» — подсказываем и подводим к нему
-        submitError.value = 'formCaptchaPending'
-        turnstileEl.value?.scrollIntoView({block: 'center', behavior: 'smooth'})
-      }
-      return
-    }
-
-    const response = await fetch(COMMISSION_ENDPOINT, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        format: form.format,
-        characters: form.characters,
-        background: form.background,
-        pose: form.pose,
-        prop: form.prop,
-        pet: form.pet,
-        description: form.description.trim(),
-        refs: form.refs.trim(),
-        deadline: form.deadline.trim(),
-        name: form.name.trim(),
-        credit: form.credit.trim(),
-        contactMethod: form.contactMethod,
-        contact: resolveContact(),
-        lang: currentLang.value,
-        elapsedMs: Date.now() - openedAt,
-        website: form.website,
-        estimateTotal: estimate.value.total,
-        estimateBreakdown: estimate.value.breakdown,
-        turnstileToken: token
-      })
-    })
-
-    const data = await response.json().catch(() => ({}))
-
-    if (response.ok && data.ok) {
-      successId.value = data.id || ''
-      clearDraft()
-      status.value = 'success'
-      return
-    }
-
-    status.value = 'idle'
-
-    if (data.error === 'validation') {
-      submitError.value = 'formErrorValidation'
-    } else if (data.error === 'captcha_failed') {
-      submitError.value = 'formErrorCaptcha'
-      showFallback.value = true
-      resetTurnstile()
-    } else if (data.error === 'rate_limited') {
-      submitError.value = 'formErrorRate'
-      showFallback.value = true
-    } else {
-      submitError.value = 'formErrorNetwork'
-      showFallback.value = true
-    }
-  } catch {
-    status.value = 'idle'
-    submitError.value = 'formErrorNetwork'
-    showFallback.value = true
-  }
-}
-
-// ─── Запасной вариант: скопировать заявку и написать напрямую ───
-const contactLabel = computed(() =>
-    contactMethods.value.find(method => method.id === form.contactMethod)?.label || form.contactMethod
-)
-
-const fallbackText = computed(() => {
+const briefText = computed(() => {
   const background = backgroundOptions.value.find(option => option.id === form.background)
   const lines = [
-    t('formFallbackHeader'),
+    t('formBriefGreeting'),
+    '',
+    `${t('formBriefHeader')}:`,
+    '',
     `${t('formFormat')}: ${t(FORMATS[form.format].shortKey)}`,
     `${t('formCharacters')}: ${form.characters}`,
     `${t('formBackground')}: ${background ? t(background.labelKey) : form.background}`,
@@ -355,58 +111,82 @@ const fallbackText = computed(() => {
 
   lines.push('', `${t('formDescription')}:`, form.description.trim())
 
-  if (form.refs.trim()) lines.push('', `${t('formRefs')}: ${form.refs.trim()}`)
-  if (form.deadline.trim()) lines.push(`${t('formDeadline')}: ${form.deadline.trim()}`)
-  if (form.name.trim()) lines.push(`${t('formName')}: ${form.name.trim()}`)
-  if (form.credit.trim()) lines.push(`${t('formCredit')}: ${form.credit.trim()}`)
+  const refs = form.refs.filter(ref => ref.url.trim())
+  if (refs.length) {
+    lines.push('', `${t('formRefs')}:`)
+    for (const ref of refs) {
+      const note = ref.note.trim()
+      lines.push(note ? `- ${ref.url.trim()} — ${note}` : `- ${ref.url.trim()}`)
+    }
+  }
 
-  lines.push('', `${t('formContactMethod')}: ${contactLabel.value}`, `${t('formContact')}: ${resolveContact()}`)
+  if (form.deadline.trim()) lines.push('', `${t('formDeadline')}: ${form.deadline.trim()}`)
+  if (form.credit.trim()) lines.push(`${t('formCredit')}: ${form.credit.trim()}`)
 
   return lines.join('\n')
 })
 
-async function copyFallback() {
+// Telegram поддерживает подстановку текста в поле ввода: t.me/username?text=...
+// Слишком длинный URL браузер или клиент могут обрезать — тогда остаётся буфер.
+const TELEGRAM_URL_LIMIT = 3000
+const telegramPayload = computed(() => `${TELEGRAM_URL}?text=${encodeURIComponent(briefText.value)}`)
+const telegramPrefilled = computed(() => telegramPayload.value.length <= TELEGRAM_URL_LIMIT)
+const telegramHref = computed(() => telegramPrefilled.value ? telegramPayload.value : TELEGRAM_URL)
+
+function validate() {
+  fieldErrors.description = form.description.trim().length < 10
+      ? t('formDescriptionTooShort')
+      : ''
+
+  if (fieldErrors.description) {
+    nextTick(() => {
+      descriptionEl.value?.scrollIntoView({block: 'center', behavior: 'smooth'})
+      descriptionEl.value?.focus()
+    })
+  }
+
+  return !fieldErrors.description
+}
+
+async function copyBrief() {
   try {
-    await navigator.clipboard.writeText(fallbackText.value)
+    await navigator.clipboard.writeText(briefText.value)
     copied.value = true
-    setTimeout(() => {
+    copyFailed.value = false
+    window.setTimeout(() => {
       copied.value = false
-    }, 2000)
+    }, 4000)
   } catch {
-    fallbackBox.value?.focus()
-    fallbackBox.value?.select()
+    copyFailed.value = true
+    briefOpen.value = true
+    await nextTick()
+    briefBox.value?.focus()
+    briefBox.value?.select()
   }
 }
 
+function copyAndOpen(event) {
+  if (!validate()) {
+    event?.preventDefault()
+    return
+  }
+  // Копируем в момент клика; переход по ссылке браузер откроет сам, без блокировки попапов
+  copyBrief()
+}
+
 function clearDraftAndReset() {
-  Object.assign(form, defaults)
+  Object.assign(form, {...defaults, refs: defaults.refs.map(ref => ({...ref}))})
   clearDraft()
   fieldErrors.description = ''
-  fieldErrors.contact = ''
-  submitError.value = ''
-  showFallback.value = false
+  copyFailed.value = false
+  copied.value = false
+  briefOpen.value = false
 }
+
 </script>
 
 <template>
   <div class="comm-form">
-    <!-- ═══ Успех ═══ -->
-    <div v-if="status === 'success'" class="comm-form-success" role="status">
-      <div class="comm-form-success-icon" aria-hidden="true">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-             stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-      </div>
-      <h3 class="comm-form-success-title">{{ t('formSuccessTitle') }}</h3>
-      <p v-if="successId" class="comm-form-success-id">
-        {{ t('formSuccessId') }} <b>#{{ successId }}</b>
-      </p>
-      <p class="comm-hint">{{ t('formSuccessHint') }}</p>
-
-    </div>
-
-    <template v-else>
       <p class="comm-form-subtitle">{{ t('formSubtitle') }}</p>
 
       <div v-if="restored" class="comm-draft-note">
@@ -500,6 +280,7 @@ function clearDraftAndReset() {
       <label class="comm-field">
         <span class="comm-label">{{ t('formDescription') }} <span class="comm-req" aria-hidden="true">*</span></span>
         <textarea
+            ref="descriptionEl"
             v-model="form.description"
             class="comm-input comm-textarea"
             rows="5"
@@ -512,133 +293,123 @@ function clearDraftAndReset() {
       </label>
 
       <!-- ═══ Референсы ═══ -->
-      <label class="comm-field">
+      <div class="comm-field">
         <span class="comm-label">{{ t('formRefs') }}</span>
-        <input
-            v-model="form.refs"
-            type="text"
-            class="comm-input"
-            maxlength="800"
-            :placeholder="t('formRefsPlaceholder')"
-        />
-        <span class="comm-hint">{{ t('formRefsHint') }}</span>
-      </label>
 
-      <!-- ═══ Имя ═══ -->
-      <div class="comm-field-grid">
-        <label class="comm-field">
-          <span class="comm-label">{{ t('formName') }}</span>
-          <input
-              v-model="form.name"
-              type="text"
-              class="comm-input"
-              maxlength="80"
-              :placeholder="t('formNamePlaceholder')"
-          />
-        </label>
-
-        <label class="comm-field">
-          <span class="comm-label">{{ t('formCredit') }}</span>
-          <input
-              v-model="form.credit"
-              type="text"
-              class="comm-input"
-              maxlength="80"
-              :placeholder="t('formCreditPlaceholder')"
-          />
-          <span class="comm-hint">{{ t('formCreditHint') }}</span>
-        </label>
-      </div>
-
-      <!-- ═══ Контакт ═══ -->
-      <div class="comm-field-grid">
-        <label class="comm-field">
-          <span class="comm-label">{{ t('formContactMethod') }}</span>
-          <select v-model="form.contactMethod" class="comm-input">
-            <option v-for="method in contactMethods" :key="method.id" :value="method.id">
-              {{ method.label }}
-            </option>
-          </select>
-        </label>
-
-        <label class="comm-field">
-          <span class="comm-label">{{ t('formContact') }} <span class="comm-req" aria-hidden="true">*</span></span>
-          <span class="comm-input comm-prefixed" :class="{ 'is-invalid': fieldErrors.contact }">
-            <span v-if="contactPrefix" class="comm-prefix">{{ contactPrefix }}</span>
+        <div class="comm-refs">
+          <div v-for="(ref, index) in form.refs" :key="index" class="comm-ref-row">
             <input
-                v-model="form.contact"
-                :type="form.contactMethod === 'email' ? 'email' : 'text'"
-                class="comm-prefixed-input"
-                maxlength="200"
-                :placeholder="contactPlaceholder"
-                :aria-invalid="Boolean(fieldErrors.contact)"
-                autocomplete="off"
+                v-model="ref.url"
+                type="url"
+                class="comm-input"
+                maxlength="500"
+                :placeholder="t('formRefsUrlPlaceholder')"
+                :aria-label="t('formRefsUrl')"
                 spellcheck="false"
             />
-          </span>
-        </label>
-      </div>
-      <p v-if="fieldErrors.contact" class="comm-error">{{ fieldErrors.contact }}</p>
-      <p class="comm-hint">{{ t('formPrivacyNote') }}</p>
-      <p class="comm-consent">
-        {{ t('formConsent') }}
-        <a :href="consentLinks.tos" target="_blank" rel="noopener">{{ t('formConsentTos') }}</a>
-        ·
-        <a :href="consentLinks.privacy" target="_blank" rel="noopener">{{ t('formConsentPrivacy') }}</a>.
-      </p>
+            <input
+                v-model="ref.note"
+                type="text"
+                class="comm-input"
+                maxlength="120"
+                :placeholder="t('formRefsNotePlaceholder')"
+                :aria-label="t('formRefsNote')"
+            />
+            <button
+                type="button"
+                class="comm-ref-remove"
+                :aria-label="t('formRefsRemove')"
+                :title="t('formRefsRemove')"
+                @click="removeRef(index)"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M18 6 6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+        </div>
 
-      <!-- honeypot: люди его не видят, боты заполняют -->
-      <div class="comm-honeypot" aria-hidden="true">
-        <label>Website <input v-model="form.website" type="text" tabindex="-1" autocomplete="off"/></label>
-      </div>
-
-      <!-- ═══ Проверка ═══ -->
-      <div ref="turnstileEl" class="comm-turnstile"></div>
-
-      <!-- Сообщение об ошибке капчи -->
-      <p v-if="turnstileState === 'failed'" class="comm-error comm-error--captcha">
-        {{ t('formCaptchaUnavailable') }}
-      </p>
-
-
-      <!-- ═══ Отправка ═══ -->
-      <div class="comm-form-footer">
         <button
             type="button"
-            class="comm-submit"
-            :disabled="status === 'sending' || turnstileState === 'failed'"
-            @click="submit"
+            class="comm-ref-add"
+            :disabled="form.refs.length >= MAX_REFS"
+            @click="addRef"
         >
-          {{ status === 'sending' ? t('formSending') : t('formSubmit') }}
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          {{ t('formRefsAdd') }}
         </button>
+
+        <p class="comm-callout">{{ t('formRefsFilesNote') }}</p>
       </div>
 
-      <p v-if="errorText" class="comm-error comm-error--submit" role="alert">{{ errorText }}</p>
+      <!-- ═══ Ник для кредитов ═══ -->
+      <label class="comm-field">
+        <span class="comm-label">{{ t('formCredit') }}</span>
+        <input
+            v-model="form.credit"
+            type="text"
+            class="comm-input"
+            maxlength="80"
+            :placeholder="t('formCreditPlaceholder')"
+        />
+        <span class="comm-hint">{{ t('formCreditHint') }}</span>
+      </label>
 
-      <!-- ═══ Запасной вариант ═══ -->
-      <div v-if="showFallback" class="comm-fallback">
-        <p class="comm-label">{{ t('formFallbackText') }}</p>
+      <p class="comm-hint">{{ t('formBriefNote') }}</p>
+      <p class="comm-consent">
+        {{ t('formBriefConsent') }}
+        <a :href="privacyLink" target="_blank" rel="noopener">{{ t('formConsentPrivacy') }}</a>.
+      </p>
+
+      <!-- ═══ Копирование и переход в Telegram ═══ -->
+      <div class="comm-form-footer">
+        <a
+            :href="telegramHref"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="comm-submit"
+            @click="copyAndOpen"
+        >
+          {{ copied
+            ? t('formBriefCopied')
+            : telegramPrefilled ? t('formBriefSubmit') : t('formBriefSubmitCopy') }}
+        </a>
+      </div>
+
+      <div v-if="copied || copyFailed" class="comm-fallback" role="status">
+        <p class="comm-label">
+          {{ copyFailed
+            ? t('formBriefCopyFailed')
+            : telegramPrefilled ? t('formBriefCopiedHint') : t('formBriefNoPrefill') }}
+        </p>
         <div class="comm-fallback-actions">
-          <button type="button" class="comm-secondary" @click="copyFallback">
-            {{ copied ? t('formCopied') : t('formCopy') }}
+          <button type="button" class="comm-secondary" @click="copyBrief">
+            {{ copied ? t('formCopyAgain') : t('formCopy') }}
           </button>
-          <a :href="TELEGRAM_URL" target="_blank" rel="noopener noreferrer" class="comm-secondary">
-            {{ t('formWriteTelegram') }}
+          <a :href="telegramHref" target="_blank" rel="noopener noreferrer" class="comm-secondary">
+            {{ t('formOpenTelegram') }}
           </a>
-          <a :href="BOOSTY_URL" target="_blank" rel="noopener noreferrer" class="comm-secondary">
-            {{ t('formWriteBoosty') }}
+          <a :href="DISCORD_URL" target="_blank" rel="noopener noreferrer" class="comm-secondary">
+            {{ t('formOpenDiscord') }}
           </a>
         </div>
+      </div>
+
+      <details class="comm-preview" :open="briefOpen" @toggle="briefOpen = $event.target.open">
+        <summary>{{ t('formBriefPreview') }}</summary>
         <textarea
-            ref="fallbackBox"
+            ref="briefBox"
             class="comm-input comm-textarea"
-            rows="6"
+            rows="8"
             readonly
-            :value="fallbackText"
+            :value="briefText"
             @focus="$event.target.select()"
         ></textarea>
-      </div>
-    </template>
+      </details>
   </div>
 </template>
 
@@ -732,62 +503,75 @@ function clearDraftAndReset() {
   min-height: 110px;
 }
 
-/* Поле с несъёмным префиксом: https://t.me/ + ник */
-.comm-prefixed {
+/* Ссылки на референсы: строка = ссылка + пояснение + удалить */
+.comm-refs {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.comm-ref-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  gap: .5rem;
+  align-items: center;
+}
+
+.comm-ref-remove {
   display: flex;
   align-items: center;
-  padding-left: .75rem;
-  cursor: text;
-}
-
-.comm-prefix {
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   flex: 0 0 auto;
-  color: rgba(255, 255, 255, .62);
-  font-size: .9rem;
-  white-space: nowrap;
-  user-select: none;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .04);
+  color: rgba(255, 255, 255, .55);
+  transition: color .15s ease, border-color .15s ease, background .15s ease;
 }
 
-.comm-prefixed-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: .6rem .75rem .6rem 0;
-  border: none;
-  background: transparent;
-  color: #fff;
-  font: inherit;
-  font-size: .9rem;
+.comm-ref-remove:hover {
+  color: #ff8a8a;
+  border-color: rgba(255, 90, 90, .45);
+  background: rgba(255, 90, 90, .1);
 }
 
-.comm-prefixed-input:focus {
-  outline: none;
+.comm-ref-add {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  align-self: flex-start;
+  padding: .45rem .75rem;
+  border-radius: 9px;
+  border: 1px dashed rgba(42, 171, 238, .5);
+  background: rgba(42, 171, 238, .07);
+  color: #6cc8f5;
+  font-size: .82rem;
+  font-weight: 600;
+  transition: background .15s ease, border-color .15s ease;
 }
 
-.comm-prefixed-input::placeholder {
-  color: rgba(255, 255, 255, .35);
-}
-
-.comm-prefixed:focus-within {
+.comm-ref-add:hover:not(:disabled) {
+  background: rgba(42, 171, 238, .14);
   border-color: #2AABEE;
-  background: rgba(255, 255, 255, .08);
 }
 
-.comm-prefixed.is-invalid {
-  border-color: rgba(255, 90, 90, .6);
+.comm-ref-add:disabled {
+  opacity: .45;
+  cursor: default;
 }
 
-select.comm-input {
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, .6) 50%),
-  linear-gradient(135deg, rgba(255, 255, 255, .6) 50%, transparent 50%);
-  background-position: calc(100% - 18px) calc(50% + 2px), calc(100% - 13px) calc(50% + 2px);
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
-}
-
-select.comm-input option {
-  background: #161d29;
-  color: #fff;
+/* Заметка, которую не должны пропустить: файлы можно прислать лично */
+.comm-callout {
+  margin: 0;
+  padding: .55rem .7rem;
+  border-radius: 8px;
+  border-left: 3px solid #2AABEE;
+  background: rgba(42, 171, 238, .1);
+  color: rgba(255, 255, 255, .8);
+  font-size: .8rem;
+  line-height: 1.45;
 }
 
 .comm-choice-row {
@@ -909,18 +693,6 @@ select.comm-input option {
   border: 1px solid rgba(255, 90, 90, .3);
 }
 
-.comm-honeypot {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-}
-
-.comm-turnstile {
-  min-height: 65px;
-}
-
 .comm-form-footer {
   display: flex;
   justify-content: flex-end;
@@ -929,6 +701,9 @@ select.comm-input option {
 }
 
 .comm-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: .7rem 1.4rem;
   border-radius: 10px;
   border: none;
@@ -936,6 +711,7 @@ select.comm-input option {
   color: #06121c;
   font-weight: 700;
   font-size: .95rem;
+  text-decoration: none;
   white-space: nowrap;
   transition: background .15s ease, transform .1s ease;
 }
@@ -981,6 +757,23 @@ select.comm-input option {
   gap: .5rem;
 }
 
+.comm-preview {
+  font-size: .82rem;
+  color: rgba(255, 255, 255, .7);
+}
+
+.comm-preview summary {
+  cursor: pointer;
+  user-select: none;
+}
+
+.comm-preview textarea {
+  margin-top: .5rem;
+  font-size: .82rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, .8);
+}
+
 .comm-draft-note {
   display: flex;
   justify-content: space-between;
@@ -1004,45 +797,17 @@ select.comm-input option {
   padding: 0;
 }
 
-.comm-form-success {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: .6rem;
-  padding: 2rem 1rem;
-}
-
-.comm-form-success-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  background: rgba(79, 174, 78, .18);
-  border: 1px solid rgba(79, 174, 78, .45);
-  color: #7ddc7b;
-}
-
-.comm-form-success-title {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-
-.comm-form-success-id {
-  margin: 0;
-  color: rgba(255, 255, 255, .7);
-}
-
-.comm-form-success a {
-  margin-top: .5rem;
-}
-
 @media (max-width: 640px) {
   .comm-field-grid {
     grid-template-columns: 1fr;
+  }
+
+  .comm-ref-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .comm-ref-row .comm-input:first-child {
+    grid-column: 1 / -1;
   }
 
   .comm-submit {
