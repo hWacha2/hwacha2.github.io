@@ -2,6 +2,9 @@
 
 export const BOOSTY_URL = 'https://boosty.to/ishwacha'
 
+// Публичный канал — новости и анонсы набора
+export const TELEGRAM_CHANNEL_URL = 'https://t.me/ishwacha'
+
 // Личный чат в Telegram. Форма добавляет к ссылке ?text=..., чтобы бриф
 // сразу оказался в поле ввода.
 export const TELEGRAM_URL = 'https://t.me/hwaaacha'

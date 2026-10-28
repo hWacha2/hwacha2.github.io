@@ -8,10 +8,17 @@
         <header class="comm-header contglass">
 
 
-          <div class="comm-status-badge" :class="slotsData.isOpen ? 'status-open' : 'status-closed'">
-            <span class="status-dot"></span>
+          <div
+              class="comm-status-badge"
+              :class="slotsLoading ? 'status-loading' : slotsError ? 'status-error' : slotsData.isOpen ? 'status-open' : 'status-closed'"
+              role="status"
+              aria-live="polite"
+          >
+            <span class="status-dot" aria-hidden="true"></span>
 
-            <span v-if="slotsData.isOpen">
+            <span v-if="slotsLoading">{{ t('commStatusLoading') }}</span>
+            <span v-else-if="slotsError">{{ t('commStatusError') }}</span>
+            <span v-else-if="slotsData.isOpen">
              {{ t('commStatusOpen') }} ({{ slotsData.booked }}/{{ slotsData.total }})
             </span>
             <span v-else>
@@ -142,28 +149,67 @@
                 <li>{{ t('commStep4') }}</li>
               </ol>
               <div class="comm-howto-actions">
-                <button type="button" class="comm-order-btn"
-                        :disabled="!slotsData.isOpen"
-                        @click="isFormOpen = true"
-                        :class="{ 'is-disabled': !slotsData.isOpen }"
-                >
-                  {{ t('formOpen') }}
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M5 12h14M13 6l6 6-6 6"></path>
-                  </svg>
-                </button>
-                <a
-                    :href="contactLink"
-                    target="_blank"
-                    rel="noopener"
-                    class="social-btn btn-telegram comm-cta-btn comm-howto-alt"
-                    :class="{ 'is-disabled': !slotsData.isOpen }"
-                    :tabindex="slotsData.isOpen ? 0 : -1"
-                    :aria-disabled="!slotsData.isOpen"
-                >
-                  {{ t('formOrTelegram') }}
-                </a>
+                <template v-if="slotsLoading">
+                  <button type="button" class="comm-order-btn is-disabled" disabled>
+                    <span class="comm-loading-spinner" aria-hidden="true"></span>
+                    {{ t('commStatusLoading') }}
+                  </button>
+                </template>
+
+                <template v-else-if="slotsError">
+                  <p class="comm-closed-note">{{ t('commErrorNote') }}</p>
+                  <button type="button" class="comm-order-btn" @click="fetchSlotsStatus({showLoading: true})">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"></path>
+                    </svg>
+                    {{ t('commErrorRetry') }}
+                  </button>
+                  <a
+                      :href="TELEGRAM_CHANNEL_URL"
+                      target="_blank"
+                      rel="noopener"
+                      class="social-btn btn-telegram comm-cta-btn comm-howto-alt"
+                  >
+                    {{ t('commErrorNews') }}
+                  </a>
+                </template>
+
+                <template v-else-if="slotsData.isOpen">
+                  <button type="button" class="comm-order-btn"
+                          @click="isFormOpen = true"
+                  >
+                    {{ t('formOpen') }}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M5 12h14M13 6l6 6-6 6"></path>
+                    </svg>
+                  </button>
+                  <a
+                      :href="contactLink"
+                      target="_blank"
+                      rel="noopener"
+                      class="social-btn btn-telegram comm-cta-btn comm-howto-alt"
+                  >
+                    {{ t('formOrTelegram') }}
+                  </a>
+                </template>
+
+                <template v-else>
+                  <p class="comm-closed-note">{{ t('commClosedNote') }}</p>
+                  <a
+                      :href="TELEGRAM_CHANNEL_URL"
+                      target="_blank"
+                      rel="noopener"
+                      class="comm-order-btn"
+                  >
+                    {{ t('commClosedFollow') }}
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M7 17 17 7M8 7h9v9"></path>
+                    </svg>
+                  </a>
+                </template>
               </div>
             </div>
           </section>
@@ -241,7 +287,7 @@ import UnderConstructionOverlay from '../components/UnderConstructionOverlay.vue
 import CommissionModal from '../components/comm/CommissionModal.vue'
 import {FORMATS, FORMAT_IDS, PRICING} from '../data/pricing'
 import {PRICES_UPDATED_AT} from '../data/dates'
-import {TELEGRAM_URL} from '../data/config'
+import {TELEGRAM_CHANNEL_URL, TELEGRAM_URL} from '../data/config'
 
 const contactLink = TELEGRAM_URL;
 
@@ -250,16 +296,33 @@ const showOverlay = ref(false)
 const isFormOpen = ref(false)
 
 const slotsData = ref({total: 0, booked: 0, available: 0, isOpen: false});
+// Пока не пришёл ответ, не показываем «закрыто» — только состояние загрузки
+const slotsLoading = ref(true);
+// Ошибку показываем, только если статус ещё ни разу не удалось получить:
+// иначе разовый сбой при фоновом обновлении скрывал бы известный статус.
+const slotsError = ref(false);
+const slotsLoaded = ref(false);
 let slotsTimer = null;
 
-const fetchSlotsStatus = async () => {
+const fetchSlotsStatus = async ({showLoading = false} = {}) => {
+  if (showLoading) {
+    slotsLoading.value = true;
+    slotsError.value = false;
+  }
+
   try {
     // Замените на реальный URL вашего воркера
     const response = await fetch('https://ishwacha-comm.gbaranovskaa76.workers.dev/api/slots');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     slotsData.value = data;
+    slotsLoaded.value = true;
+    slotsError.value = false;
   } catch (e) {
     console.error('Failed to fetch slots', e);
+    if (!slotsLoaded.value) slotsError.value = true;
+  } finally {
+    slotsLoading.value = false;
   }
 };
 onMounted(() => {
@@ -489,6 +552,34 @@ const completedWorks = ref([
   background: rgba(224, 49, 49, 0.15);
   color: #e03131;
   border: 1px solid rgba(224, 49, 49, 0.3);
+}
+
+.comm-status-badge.status-loading {
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.comm-status-badge.status-error {
+  background: rgba(245, 158, 11, 0.14);
+  color: #f0b35a;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.comm-status-badge.status-loading .status-dot {
+  animation: status-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes status-pulse {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+    box-shadow: 0 0 10px currentColor;
+  }
 }
 
 .status-dot {
@@ -996,6 +1087,37 @@ const completedWorks = ref([
   align-items: center;
   justify-content: center;
   gap: 12px;
+}
+
+.comm-closed-note {
+  flex: 0 0 100%;
+  max-width: 560px;
+  margin: 0 0 4px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.comm-loading-spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  animation: comm-spin 0.8s linear infinite;
+}
+
+@keyframes comm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .comm-status-badge.status-loading .status-dot,
+  .comm-loading-spinner {
+    animation: none;
+  }
 }
 
 .comm-order-btn {
