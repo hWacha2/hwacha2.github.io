@@ -13,7 +13,7 @@ const isMobile = inject('isMobile')
 <template>
   <div>
     <div class="social-row justify-content-center">
-      <h2 :class="isMobile ? 'h4 mb-2' : 'h5 mb-2'">{{ t('supportSubtitle') }}</h2>
+      <h2 :class="['social-title', isMobile ? 'h4' : 'h5']">{{ t('supportSubtitle') }}</h2>
     </div>
     <div class="social-row justify-content-center">
       <a
@@ -33,11 +33,11 @@ const isMobile = inject('isMobile')
     </div>
   </div>
 
-  <hr class="border-1 border-secondary my-3"/>
+  <hr class="border-1 border-secondary social-divider"/>
 
   <div>
     <div class="social-row justify-content-center">
-      <h2 :class="isMobile ? 'h4 mb-2' : 'h5 mb-2'">{{ t('socialTitle') }}</h2>
+      <h2 :class="['social-title', isMobile ? 'h4' : 'h5']">{{ t('socialTitle') }}</h2>
     </div>
     <div class="social-row justify-content-center">
       <a
@@ -65,6 +65,7 @@ const isMobile = inject('isMobile')
   gap: .6rem;
   flex-wrap: wrap;
   align-items: center;
+
 }
 
 .social-btn {
@@ -86,6 +87,14 @@ const isMobile = inject('isMobile')
 
 .social-btn svg {
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
+}
+
+.social-title {
+  margin-bottom: .5rem;
+}
+
+.social-divider {
+  margin: 1rem 0;
 }
 
 @media (hover: hover) {
@@ -132,14 +141,38 @@ const isMobile = inject('isMobile')
 
   .social-row {
     flex-direction: column;
-    gap: 0.4rem;
+    gap: 0.3rem;
     width: 100%;
   }
 
   .social-btn {
     width: 90%;
     justify-content: center;
-    padding: 0.35rem 0.6rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  h2.social-title {
+    margin-bottom: 0.25rem;
+  }
+
+  .social-divider {
+    margin: 0.5rem 0;
+  }
+}
+
+/* Низкие экраны (до 700px по высоте): поджимаем список соцсетей,
+   чтобы обложка с аватаром влезала целиком */
+@media (max-width: 576px) and (max-height: 700px) {
+  .social-btn {
+    padding: 0.25rem 0.6rem;
+  }
+
+  h2.social-title {
+    margin-bottom: 0.15rem;
+  }
+
+  .social-divider {
+    margin: 0.35rem 0;
   }
 }
 

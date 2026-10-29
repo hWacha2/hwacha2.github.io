@@ -140,9 +140,11 @@ onUnmounted(() => {
     <!-- ═══ МОБИЛЬНАЯ ВЕРСИЯ: секции-слайды со scroll-snap ═══ -->
     <div v-if="isMobile" id="main-content" tabindex="-1" class="mobile-swiper-wrapper">
       <section id="mob-links" class="mobile-section">
-        <div class="contglass p-4 mx-4 my-2">
+        <div class="contglass mx-4 my-2">
           <HomeHero/>
-          <HomeSocials :support="support" :socials="socials"/>
+          <div class="links-body">
+            <HomeSocials :support="support" :socials="socials"/>
+          </div>
         </div>
       </section>
 
@@ -177,9 +179,11 @@ onUnmounted(() => {
     <!-- ═══ ДЕСКТОПНАЯ ВЕРСИЯ ═══ -->
     <main v-else id="main-content" tabindex="-1" class="container p-4 desktop-layout">
       <div class="page-scroller">
-        <section id="links" class="contglass p-4 mt-4 mb-4">
+        <section id="links" class="contglass mt-4 mb-4">
           <HomeHero/>
-          <HomeSocials :support="support" :socials="socials"/>
+          <div class="links-body">
+            <HomeSocials :support="support" :socials="socials"/>
+          </div>
         </section>
 
         <section id="gallery" class="contglass p-4 mt-4 mb-4">
@@ -256,6 +260,26 @@ onUnmounted(() => {
 
 /* ═══ ДЕСКТОП ═══ */
 .desktop-layout { /* Пустой, оставляем для совместимости */
+}
+
+/* Обложка прилегает к краям карточки, поэтому вертикальный отступ
+   у контента только снизу: сверху его даёт padding самого героя */
+.links-body {
+  padding: 0 1rem 1rem;
+}
+
+@media (min-width: 577px) {
+  .links-body {
+    padding: 0 1.5rem 1.5rem;
+  }
+}
+
+/* Очень низкие экраны: поджимаем нижний отступ, чтобы карточка
+   не обрезала последнюю соцкнопку */
+@media (max-width: 576px) and (max-height: 620px) {
+  .links-body {
+    padding-bottom: 0.75rem;
+  }
 }
 
 /* ═══ МОБИЛЬНАЯ ВЕРСИЯ ═══ */

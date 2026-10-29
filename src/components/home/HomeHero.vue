@@ -39,7 +39,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="hero-cover-layout" :class="{ 'mb-2': isMobile }">
+  <div class="hero-cover-layout">
     <!-- плейсхолдер пока фон грузится -->
     <div v-if="!coverLoaded" class="hero-cover-skeleton"></div>
     <!-- фон -->
@@ -47,7 +47,7 @@ onUnmounted(() => {
          :class="{ 'is-loaded': coverLoaded } "></div>
     <!-- аватар -->
     <div class="hero-content-overlay">
-      <div :class="isMobile ? 'mt-1 mb-1' : 'mt-2 mb-2'">
+      <div :class="isMobile ? 'mb-1' : 'mt-2 mb-2'">
         <div class="avatar-holder" :class="{ 'is-loaded': avatarLoaded }">
           <img
               :src="avatarUrl"
@@ -114,14 +114,15 @@ onUnmounted(() => {
 /* ═══ Hero Cover ═══ */
 .hero-cover-layout {
   position: relative;
-  border-radius: 20px;
   height: 350px;
   display: flex;
-  padding: 0.5rem;
+  padding: 0.5rem 0.5rem 1rem;
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: center;
   overflow: hidden;
+  /* Скругления рисует карточка-родитель: у неё overflow: hidden,
+     поэтому обложка прилегает к её краям без собственного радиуса */
 }
 
 .hero-cover-skeleton {
@@ -192,13 +193,16 @@ onUnmounted(() => {
 
 @media (max-width: 576px) {
   .hero-cover-layout {
-    height: 25dvh !important;
+    /* Высота подстраивается под экран: на низких телефонах обложка
+       перестаёт съедать место, на высоких — растёт */
+    height: clamp(216px, 36dvh, 330px);
     padding: 1rem;
   }
 
   .avatar {
-    width: 70px;
-    height: 70px;
+    /* Аватар масштабируется от ширины экрана, а не фиксированные 70px */
+    width: clamp(88px, 25vw, 116px);
+    height: clamp(88px, 25vw, 116px);
   }
 
   h1.h3 {
@@ -207,6 +211,19 @@ onUnmounted(() => {
 
   p {
     font-size: 0.9rem;
+  }
+}
+
+/* Очень низкие экраны (например 320×568): обложка занимает меньше
+   места, чтобы карточка целиком влезала в экран */
+@media (max-width: 576px) and (max-height: 620px) {
+  .hero-cover-layout {
+    height: clamp(190px, 34dvh, 216px);
+  }
+
+  .avatar {
+    width: clamp(80px, 25vw, 88px);
+    height: clamp(80px, 25vw, 88px);
   }
 }
 </style>
