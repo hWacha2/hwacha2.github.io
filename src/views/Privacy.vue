@@ -136,8 +136,10 @@ const privacySections = computed(() => PRIVACY_STRUCTURE.map(section => ({
   text-decoration: none;
 }
 
-.privacy-back:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .privacy-back:hover {
+    text-decoration: underline;
+  }
 }
 
 .privacy-title {
@@ -158,8 +160,10 @@ const privacySections = computed(() => PRIVACY_STRUCTURE.map(section => ({
   text-decoration: none;
 }
 
-.privacy-controller a:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .privacy-controller a:hover {
+    text-decoration: underline;
+  }
 }
 
 .privacy-intro {
@@ -234,8 +238,10 @@ const privacySections = computed(() => PRIVACY_STRUCTURE.map(section => ({
   text-decoration: none;
 }
 
-.privacy-contact a:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .privacy-contact a:hover {
+    text-decoration: underline;
+  }
 }
 
 .privacy-updated {

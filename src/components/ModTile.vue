@@ -53,9 +53,10 @@ const props = defineProps({
   transition: transform .15s ease, box-shadow .2s ease;
 }
 
-.mod-tile:hover {
-
-  box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+@media (hover: hover) {
+  .mod-tile:hover {
+    box-shadow: 0 12px 28px rgba(0,0,0,0.45);
+  }
 }
 
 .mod-thumb {
@@ -67,8 +68,10 @@ const props = defineProps({
   transition: transform .25s ease;
 }
 
-.mod-thumb:hover img {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .mod-thumb:hover img {
+    transform: scale(1.05);
+  }
 }
 
 .mod-footer {

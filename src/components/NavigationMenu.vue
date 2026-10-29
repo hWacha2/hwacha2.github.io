@@ -165,6 +165,26 @@ onUnmounted(() => {
 .nav-menu-container.is-mobile {
   top: 0.5rem;
   right: 0.5rem;
+  transition: top 0.28s cubic-bezier(0.4, 0, 0.2, 1), right 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Когда на /commissions видна мобильная плашка, кнопка меню
+   встаёт по её центру и читается как часть плашки */
+body.comm-bar-visible .nav-menu-container.is-mobile {
+  top: 16px;
+  right: 16px;
+}
+
+/* На планшетной ширине кнопка больше (44px) — центрируем так же */
+@media (max-width: 768px) {
+  body.comm-bar-visible .nav-menu-container {
+    top: 13px;
+  }
+
+  body.comm-bar-visible .nav-menu-container.is-mobile {
+    top: 16px;
+    right: 16px;
+  }
 }
 
 .nav-menu-btn.is-mobile .hamburger-line {
@@ -196,10 +216,12 @@ onUnmounted(() => {
   font-size: 0.9rem;
 }
 
-.nav-menu-btn:hover {
-  background: rgba(40, 40, 65, 0.95);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .nav-menu-btn:hover {
+    background: rgba(40, 40, 65, 0.95);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+  }
 }
 
 .nav-menu-btn:active {
@@ -260,10 +282,13 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 }
 
-.nav-menu-item:hover {
-  background: rgba(34, 158, 217, 0.15); /* Легкий синий оттенок при наведении */
-  color: #2AABEE;
-  transform: translateX(4px);
+@media (hover: hover) {
+  .nav-menu-item:hover {
+    background: rgba(34, 158, 217, 0.15);
+    /* Легкий синий оттенок при наведении */
+    color: #2AABEE;
+    transform: translateX(4px);
+  }
 }
 
 .nav-menu-item svg {
@@ -284,10 +309,12 @@ onUnmounted(() => {
   cursor: pointer;
 }
 
-.nav-menu-lang:hover {
-  background: rgba(34, 158, 217, 0.15);
-  color: #2AABEE;
-  transform: translateX(4px);
+@media (hover: hover) {
+  .nav-menu-lang:hover {
+    background: rgba(34, 158, 217, 0.15);
+    color: #2AABEE;
+    transform: translateX(4px);
+  }
 }
 
 /* Более заметный разделитель перед блоком языка */

@@ -313,7 +313,9 @@ onUnmounted(() => {
   text-decoration: none;
 }
 
-.footer-privacy-link:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .footer-privacy-link:hover {
+    text-decoration: underline;
+  }
 }
 </style>

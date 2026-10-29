@@ -188,8 +188,10 @@ onUnmounted(() => {
   color: #fff;
 }
 
-.comm-modal-close:hover {
-  border-color: rgba(42, 171, 238, .6);
+@media (hover: hover) {
+  .comm-modal-close:hover {
+    border-color: rgba(42, 171, 238, .6);
+  }
 }
 
 /* Итог закреплён под шапкой: не уезжает при прокрутке формы */
@@ -269,10 +271,12 @@ onUnmounted(() => {
   background-clip: content-box;
 }
 
-.comm-modal-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(42, 171, 238, .6);
-  border: 3px solid transparent;
-  background-clip: content-box;
+@media (hover: hover) {
+  .comm-modal-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(42, 171, 238, .6);
+    border: 3px solid transparent;
+    background-clip: content-box;
+  }
 }
 
 @keyframes comm-overlay-in {

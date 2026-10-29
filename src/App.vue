@@ -248,6 +248,23 @@ footer {
   color: var(--muted);
 }
 
+/* На таче и в мобильной вёрстке hover-эффекты отключены (они вынесены
+   в @media (hover: hover)), а нажатие показываем лёгким утапливанием */
+@media (hover: none), (max-width: 768px) {
+  a,
+  button,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .1s ease;
+  }
+
+  a:active,
+  button:active,
+  [role="button"]:active {
+    transform: scale(0.96);
+  }
+}
+
 .social-btn {
   display: inline-flex;
   align-items: center;

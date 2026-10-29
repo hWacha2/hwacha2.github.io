@@ -54,22 +54,28 @@
 }
 
 /* Эффект свечения при наведении */
-.btn-nexus:hover {
+@media (hover: hover) {
+  .btn-nexus:hover {
     transform: translateY(-3px);
     box-shadow: 0 18px 40px rgba(230,131,43,0.25);
     border-color: rgba(230,131,43,0.4);
+  }
 }
 
-.btn-nexus:hover::before {
+@media (hover: hover) {
+  .btn-nexus:hover::before {
     transform: translateX(5%);
     filter: blur(16px);
     width: 20%;
+  }
 }
 
-.btn-nexus:hover::after {
+@media (hover: hover) {
+  .btn-nexus:hover::after {
     transform: translateX(-5%);
     filter: blur(16px);
     width: 20%;
+  }
 }
 
 /* Контент поверх акцентов */
@@ -91,8 +97,10 @@
 }
 
 /* Анимация для иконки */
-.btn-nexus:hover svg {
+@media (hover: hover) {
+  .btn-nexus:hover svg {
     animation: nexusPulse 1.5s ease infinite;
+  }
 }
 
 @keyframes nexusPulse {

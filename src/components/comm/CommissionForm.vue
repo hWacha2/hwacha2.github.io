@@ -483,8 +483,10 @@ function clearDraftAndReset() {
   text-underline-offset: 2px;
 }
 
-.comm-consent a:hover {
-  color: #4fb8ea;
+@media (hover: hover) {
+  .comm-consent a:hover {
+    color: #4fb8ea;
+  }
 }
 
 .comm-counter {
@@ -546,10 +548,12 @@ function clearDraftAndReset() {
   transition: color .15s ease, border-color .15s ease, background .15s ease;
 }
 
-.comm-ref-remove:hover {
-  color: #ff8a8a;
-  border-color: rgba(255, 90, 90, .45);
-  background: rgba(255, 90, 90, .1);
+@media (hover: hover) {
+  .comm-ref-remove:hover {
+    color: #ff8a8a;
+    border-color: rgba(255, 90, 90, .45);
+    background: rgba(255, 90, 90, .1);
+  }
 }
 
 .comm-ref-add {
@@ -567,9 +571,11 @@ function clearDraftAndReset() {
   transition: background .15s ease, border-color .15s ease;
 }
 
-.comm-ref-add:hover:not(:disabled) {
-  background: rgba(42, 171, 238, .14);
-  border-color: #2AABEE;
+@media (hover: hover) {
+  .comm-ref-add:hover:not(:disabled) {
+    background: rgba(42, 171, 238, .14);
+    border-color: #2AABEE;
+  }
 }
 
 .comm-ref-add:disabled {
@@ -612,8 +618,10 @@ function clearDraftAndReset() {
   transition: border-color .15s ease, background .15s ease;
 }
 
-.comm-choice:hover {
-  border-color: rgba(42, 171, 238, .55);
+@media (hover: hover) {
+  .comm-choice:hover {
+    border-color: rgba(42, 171, 238, .55);
+  }
 }
 
 .comm-choice.is-selected {
@@ -731,8 +739,10 @@ function clearDraftAndReset() {
   transition: background .15s ease, transform .1s ease;
 }
 
-.comm-submit:hover:not(:disabled) {
-  background: #4bbcf5;
+@media (hover: hover) {
+  .comm-submit:hover:not(:disabled) {
+    background: #4bbcf5;
+  }
 }
 
 .comm-submit:disabled {
@@ -752,8 +762,10 @@ function clearDraftAndReset() {
   cursor: pointer;
 }
 
-.comm-secondary:hover {
-  border-color: rgba(42, 171, 238, .6);
+@media (hover: hover) {
+  .comm-secondary:hover {
+    border-color: rgba(42, 171, 238, .6);
+  }
 }
 
 .comm-fallback {

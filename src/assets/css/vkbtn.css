@@ -22,6 +22,8 @@
     z-index: -1;
 }
 
-.btn-vk-depth:hover::before {
+@media (hover: hover) {
+  .btn-vk-depth:hover::before {
     opacity: 0.4;
+  }
 }

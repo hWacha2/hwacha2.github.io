@@ -1,29 +1,44 @@
 <template>
   <div>
-    <div class="page-scroller">
+    <div ref="pageScroller" class="page-scroller">
       <UnderConstructionOverlay v-model="showOverlay"/>
+
+      <!-- Мобильная плашка: появляется, когда шапка ушла из виду -->
+      <div
+          class="comm-mobile-bar"
+          :class="[slotsBadgeClass, { 'is-visible': showMobileBar }]"
+          :aria-hidden="!showMobileBar"
+          :inert="!showMobileBar"
+      >
+        <span class="visually-hidden">{{ slotsBadgeText }}</span>
+
+        <nav class="comm-bar-nav" :aria-label="t('commNavLabel')">
+          <a
+              v-for="link in sectionLinks"
+              :key="link.id"
+              :href="`#${link.id}`"
+              class="social-btn btn-nav comm-bar-nav-link"
+              @click="scrollToSection($event, link.id)"
+          >
+            {{ t(link.key) }}
+          </a>
+        </nav>
+      </div>
+
       <div class="container commissions-page" id="main-content" tabindex="-1">
 
         <!-- ═══ ШАПКА ═══ -->
-        <header class="comm-header contglass">
+        <header ref="commHeader" class="comm-header contglass">
 
 
           <div
               class="comm-status-badge"
-              :class="slotsLoading ? 'status-loading' : slotsError ? 'status-error' : slotsData.isOpen ? 'status-open' : 'status-closed'"
+              :class="slotsBadgeClass"
               role="status"
               aria-live="polite"
           >
             <span class="status-dot" aria-hidden="true"></span>
-
-            <span v-if="slotsLoading">{{ t('commStatusLoading') }}</span>
-            <span v-else-if="slotsError">{{ t('commStatusError') }}</span>
-            <span v-else-if="slotsData.isOpen">
-             {{ t('commStatusOpen') }} ({{ slotsData.booked }}/{{ slotsData.total }})
-            </span>
-            <span v-else>
-              {{ slotsData.total === 0 ? t('commStatusClosedNoSlots') : t('commStatusClosedFull') }}
-            </span>
+            <span>{{ slotsBadgeText }}</span>
           </div>
 
           <div class="ava-container">
@@ -252,7 +267,8 @@
 
             <p class="comm-tos-note">
               {{ t('tosPrivacyNote') }}
-              <RouterLink :to="{name: 'Privacy'}" target="_blank" rel="noopener">{{ t('tosPrivacyLink') }}</RouterLink>.
+              <RouterLink :to="{name: 'Privacy'}" target="_blank" rel="noopener">{{ t('tosPrivacyLink') }}</RouterLink>
+              .
             </p>
           </section>
 
@@ -304,6 +320,79 @@ const slotsError = ref(false);
 const slotsLoaded = ref(false);
 let slotsTimer = null;
 
+// Единый текст/класс статуса для шапки и мобильной плашки
+const slotsBadgeClass = computed(() => slotsLoading.value
+    ? 'status-loading'
+    : slotsError.value
+        ? 'status-error'
+        : slotsData.value.isOpen ? 'status-open' : 'status-closed');
+
+const slotsBadgeText = computed(() => {
+  if (slotsLoading.value) return t('commStatusLoading')
+  if (slotsError.value) return t('commStatusError')
+  if (slotsData.value.isOpen) return `${t('commStatusOpen')} (${slotsData.value.booked}/${slotsData.value.total})`
+  return slotsData.value.total === 0 ? t('commStatusClosedNoSlots') : t('commStatusClosedFull')
+});
+
+// ─── Мобильная плашка, когда шапка ушла из виду ───
+const pageScroller = ref(null)
+const commHeader = ref(null)
+const showMobileBar = ref(false)
+let headerObserver = null
+let mobileQuery = null
+
+// Позиция прокрутки переживает F5: браузер не всегда восстанавливает
+// scrollTop у вложенного контейнера, поэтому запоминаем сами
+const SCROLL_KEY = 'commissions:scrollTop'
+let scrollSaveFrame = null
+
+const saveScrollPosition = () => {
+  if (scrollSaveFrame) return
+  scrollSaveFrame = requestAnimationFrame(() => {
+    scrollSaveFrame = null
+    saveScrollNow()
+  })
+}
+
+const saveScrollNow = () => {
+  sessionStorage.setItem(SCROLL_KEY, String(Math.round(pageScroller.value?.scrollTop || 0)))
+}
+
+const restoreScrollPosition = () => {
+  if (window.location.hash) return
+  const saved = Number(sessionStorage.getItem(SCROLL_KEY))
+  if (!Number.isFinite(saved) || saved <= 0) return
+  pageScroller.value.scrollTop = saved
+}
+
+const syncBarBodyClass = () => {
+  // Класс на body нужен, чтобы выровнять кнопку меню по плашке
+  document.body.classList.toggle('comm-bar-visible', showMobileBar.value)
+}
+
+const handleMobileQueryChange = () => {
+  if (!mobileQuery) return
+  showMobileBar.value = mobileQuery.matches && !!commHeader.value
+      && commHeader.value.getBoundingClientRect().bottom <= 0
+  syncBarBodyClass()
+}
+
+const setupMobileBar = () => {
+  if (!pageScroller.value || !commHeader.value || !('IntersectionObserver' in window)) return
+
+  mobileQuery = window.matchMedia('(max-width: 768px)')
+  mobileQuery.addEventListener('change', handleMobileQueryChange)
+
+  headerObserver = new IntersectionObserver(([entry]) => {
+    showMobileBar.value = mobileQuery.matches
+        && !entry.isIntersecting
+        && entry.boundingClientRect.bottom <= 0
+    syncBarBodyClass()
+  }, {root: pageScroller.value, threshold: 0})
+
+  headerObserver.observe(commHeader.value)
+}
+
 const fetchSlotsStatus = async ({showLoading = false} = {}) => {
   if (showLoading) {
     slotsLoading.value = true;
@@ -335,10 +424,25 @@ onMounted(() => {
   if (id) {
     setTimeout(() => scrollToSection(null, id, {smooth: false, focus: false}), 60);
   }
+
+  setupMobileBar();
+
+  // Восстанавливаем позицию до первого замера шапки, чтобы плашка
+  // сразу появилась, если страницу обновили внизу
+  pageScroller.value?.addEventListener('scroll', saveScrollPosition, {passive: true})
+  window.addEventListener('pagehide', saveScrollNow)
+  restoreScrollPosition();
 });
 
 onUnmounted(() => {
   clearInterval(slotsTimer);
+  headerObserver?.disconnect();
+  mobileQuery?.removeEventListener('change', handleMobileQueryChange);
+  pageScroller.value?.removeEventListener('scroll', saveScrollPosition);
+  window.removeEventListener('pagehide', saveScrollNow);
+  if (scrollSaveFrame) cancelAnimationFrame(scrollSaveFrame);
+  sessionStorage.removeItem(SCROLL_KEY);
+  document.body.classList.remove('comm-bar-visible');
 });
 
 // ─── Быстрая навигация по секциям ───
@@ -839,13 +943,17 @@ const completedWorks = ref([
   transition: transform 0.4s ease;
 }
 
-.thumbnail:hover {
-  border-color: rgba(34, 158, 217, 0.6);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+@media (hover: hover) {
+  .thumbnail:hover {
+    border-color: rgba(34, 158, 217, 0.6);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
 }
 
-.thumbnail:hover .frame img {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .thumbnail:hover .frame img {
+    transform: scale(1.05);
+  }
 }
 
 @media (max-width: 480px) {
@@ -945,9 +1053,11 @@ const completedWorks = ref([
   text-decoration: none;
 }
 
-.comm-tos-note a:hover,
+@media (hover: hover) {
+  .comm-tos-note a:hover,
 .comm-footer-link:hover {
-  text-decoration: underline;
+    text-decoration: underline;
+  }
 }
 
 /* Адаптация для мобильных */
@@ -982,8 +1092,10 @@ const completedWorks = ref([
   transition: transform 0.3s ease;
 }
 
-.comm-gallery-item:hover img {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .comm-gallery-item:hover img {
+    transform: scale(1.05);
+  }
 }
 
 
@@ -1135,9 +1247,11 @@ const completedWorks = ref([
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.comm-order-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 34px rgba(42, 171, 238, 0.4);
+@media (hover: hover) {
+  .comm-order-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 34px rgba(42, 171, 238, 0.4);
+  }
 }
 
 .comm-howto-alt {
@@ -1321,11 +1435,13 @@ const completedWorks = ref([
   transition: transform .16s ease, background .16s ease, border-color .16s ease, color .16s ease;
 }
 
-.btn-nav:hover {
-  background: rgba(34, 158, 217, .16);
-  border-color: rgba(34, 158, 217, .45);
-  color: #fff;
-  transform: translateY(-1px);
+@media (hover: hover) {
+  .btn-nav:hover {
+    background: rgba(34, 158, 217, .16);
+    border-color: rgba(34, 158, 217, .45);
+    color: #fff;
+    transform: translateY(-1px);
+  }
 }
 
 /* На ПК — в столбик на всю ширину сайдбара */
@@ -1359,5 +1475,131 @@ const completedWorks = ref([
   text-decoration: none !important;
 }
 
+/* ═══ МОБИЛЬНАЯ ПЛАШКА ПРИ ПРОКРУТКЕ ═══ */
+.comm-mobile-bar {
+  display: none;
+}
 
-</style>
+@media (max-width: 768px) {
+  .comm-mobile-bar {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    z-index: 998;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 54px;
+    padding: 0 46px 0 6px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(17, 23, 33, 0.92);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    transform: translateY(calc(-100% - 14px));
+    pointer-events: none;
+    transition: transform .28s cubic-bezier(.4, 0, .2, 1), opacity .28s ease;
+    /* Цвет свечения слева — по статусу слотов */
+    --bar-status: rgba(255, 255, 255, 0.4);
+  }
+
+  .comm-mobile-bar.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .comm-mobile-bar.status-open {
+    --bar-status: #4fae4e;
+  }
+
+  .comm-mobile-bar.status-closed {
+    --bar-status: #e03131;
+  }
+
+  .comm-mobile-bar.status-error {
+    --bar-status: #f0b35a;
+  }
+
+  .comm-mobile-bar.status-loading {
+    --bar-status: rgba(255, 255, 255, 0.55);
+  }
+
+  /* Линия и её глоу вдоль левого скруглённого края плашки.
+     Маска обрезает их слева, чтобы свечение не уезжало в середину. */
+  .comm-mobile-bar::before,
+  .comm-mobile-bar::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 0, transparent 30px);
+    mask-image: linear-gradient(90deg, #000 0, transparent 30px);
+  }
+
+  /* Сама линия: повторяет дугу торца */
+  .comm-mobile-bar::before {
+    border: 2px solid var(--bar-status);
+    opacity: 0.9;
+  }
+
+  /* Мягкое свечение вокруг линии */
+  .comm-mobile-bar::after {
+    box-shadow: inset 0 0 0 3px var(--bar-status),
+    inset 0 0 24px 2px var(--bar-status);
+    filter: blur(7px);
+    opacity: 0.55;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .comm-mobile-bar.status-loading::after {
+      animation: comm-bar-breathe 1.8s ease-in-out infinite;
+    }
+  }
+
+  @keyframes comm-bar-breathe {
+    0%, 100% {
+      opacity: 0.3;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .comm-bar-nav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    /* Отступы тут, а не в плашке: маска гасит именно их,
+       поэтому докрученная до конца кнопка не уходит в тень */
+    padding: 0 20px 0 20px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* Мягко намекаем, что список можно листать в обе стороны */
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  }
+
+  .comm-bar-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .comm-bar-nav-link {
+    flex: 0 0 auto;
+    height: 30px;
+    min-width: 0;
+    padding: 0 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    line-height: 1;
+    white-space: nowrap;
+  }
+}</style>

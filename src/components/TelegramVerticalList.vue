@@ -1132,8 +1132,10 @@ onBeforeUnmount(() => {
   border-radius: 3px;
 }
 
-.tg-chat::-webkit-scrollbar-thumb:hover {
-  background: rgba(34, 158, 217, 0.5);
+@media (hover: hover) {
+  .tg-chat::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 158, 217, 0.5);
+  }
 }
 
 /* ═══ Сообщение (bubble) ═══ */
@@ -1233,12 +1235,16 @@ onBeforeUnmount(() => {
   }
 }
 
-.tg-msg-bubble:hover .tg-msg-body {
-  background: #1c2c3d;
+@media (hover: hover) {
+  .tg-msg-bubble:hover .tg-msg-body {
+    background: #1c2c3d;
+  }
 }
 
-.tg-msg--highlight .tg-msg-bubble:hover .tg-msg-body {
-  background: #23435f;
+@media (hover: hover) {
+  .tg-msg--highlight .tg-msg-bubble:hover .tg-msg-body {
+    background: #23435f;
+  }
 }
 
 
@@ -1257,9 +1263,11 @@ onBeforeUnmount(() => {
   transition: color 0.15s;
 }
 
-.tg-channel-name:hover {
-  color: #4ab3e3;
-  text-decoration: underline;
+@media (hover: hover) {
+  .tg-channel-name:hover {
+    color: #4ab3e3;
+    text-decoration: underline;
+  }
 }
 
 .tg-translated-badge {
@@ -1284,8 +1292,10 @@ onBeforeUnmount(() => {
   transition: background 0.15s;
 }
 
-.tg-msg-reply:hover {
-  background: rgba(34, 158, 217, 0.2);
+@media (hover: hover) {
+  .tg-msg-reply:hover {
+    background: rgba(34, 158, 217, 0.2);
+  }
 }
 
 .tg-reply-bar {
@@ -1336,8 +1346,10 @@ onBeforeUnmount(() => {
   word-break: break-all;
 }
 
-.tg-inline-link:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .tg-inline-link:hover {
+    text-decoration: underline;
+  }
 }
 
 .tg-mention {
@@ -1346,8 +1358,10 @@ onBeforeUnmount(() => {
   font-weight: 500;
 }
 
-.tg-mention:hover {
-  text-decoration: underline;
+@media (hover: hover) {
+  .tg-mention:hover {
+    text-decoration: underline;
+  }
 }
 
 .tg-msg-meta {
@@ -1398,9 +1412,11 @@ onBeforeUnmount(() => {
   transition: filter 0.3s ease, transform 0.3s ease;
 }
 
-.tg-media-stub:hover .tg-media-img {
-  filter: brightness(0.8) blur(0px);
-  transform: scale(1.05);
+@media (hover: hover) {
+  .tg-media-stub:hover .tg-media-img {
+    filter: brightness(0.8) blur(0px);
+    transform: scale(1.05);
+  }
 }
 
 .tg-stub-overlay {
@@ -1485,10 +1501,12 @@ onBeforeUnmount(() => {
   margin-top: 12px;
 }
 
-.tg-modal-stub-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(34, 158, 217, 0.1);
+@media (hover: hover) {
+  .tg-modal-stub-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(34, 158, 217, 0.1);
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1527,8 +1545,10 @@ onBeforeUnmount(() => {
   transition: transform 0.2s ease, filter 0.2s ease;
 }
 
-.tg-msg-bubble:hover .tg-media-img {
-  filter: brightness(1.05);
+@media (hover: hover) {
+  .tg-msg-bubble:hover .tg-media-img {
+    filter: brightness(1.05);
+  }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1651,8 +1671,10 @@ onBeforeUnmount(() => {
   pointer-events: none;
 }
 
-.tg-media-item:hover .tg-play-overlay {
-  background: rgba(0, 0, 0, 0.4);
+@media (hover: hover) {
+  .tg-media-item:hover .tg-play-overlay {
+    background: rgba(0, 0, 0, 0.4);
+  }
 }
 
 .tg-play-circle {
@@ -1667,8 +1689,10 @@ onBeforeUnmount(() => {
   transition: transform 0.2s;
 }
 
-.tg-media-item:hover .tg-play-circle {
-  transform: scale(1.08);
+@media (hover: hover) {
+  .tg-media-item:hover .tg-play-circle {
+    transform: scale(1.08);
+  }
 }
 
 .tg-media-more {
@@ -1701,10 +1725,12 @@ onBeforeUnmount(() => {
   transition: all 0.2s;
 }
 
-.tg-system-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(34, 158, 217, 0.5);
-  box-shadow: 0 8px 24px rgba(34, 158, 217, 0.2);
+@media (hover: hover) {
+  .tg-system-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(34, 158, 217, 0.5);
+    box-shadow: 0 8px 24px rgba(34, 158, 217, 0.2);
+  }
 }
 
 .tg-cta-icon {
@@ -1788,8 +1814,10 @@ onBeforeUnmount(() => {
   transition: background 0.15s;
 }
 
-.tg-modal-close:hover {
-  background: rgba(224, 49, 49, 0.7);
+@media (hover: hover) {
+  .tg-modal-close:hover {
+    background: rgba(224, 49, 49, 0.7);
+  }
 }
 
 .tg-modal-content {
@@ -1994,9 +2022,11 @@ onBeforeUnmount(() => {
   background: linear-gradient(270deg, rgba(0, 0, 10, 0.55), transparent);
 }
 
-.tg-nav-btn:hover:not(:disabled) {
-  opacity: 1;
-  transform: scale(1.1);
+@media (hover: hover) {
+  .tg-nav-btn:hover:not(:disabled) {
+    opacity: 1;
+    transform: scale(1.1);
+  }
 }
 
 .tg-nav-btn:disabled {
@@ -2155,36 +2185,44 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.08);
 }
 
-.social-btn:hover {
-  transform: translateY(-1px);
-  color: #fff;
+@media (hover: hover) {
+  .social-btn:hover {
+    transform: translateY(-1px);
+    color: #fff;
+  }
 }
 
 .btn-steam {
   background: linear-gradient(135deg, #2a475e, #1b2838);
 }
 
-.btn-steam:hover {
-  background: linear-gradient(135deg, #3a5a75, #263c50);
-  box-shadow: 0 6px 18px rgba(42, 71, 94, 0.4);
+@media (hover: hover) {
+  .btn-steam:hover {
+    background: linear-gradient(135deg, #3a5a75, #263c50);
+    box-shadow: 0 6px 18px rgba(42, 71, 94, 0.4);
+  }
 }
 
 .btn-telegram {
   background: linear-gradient(135deg, #229ED9, #1976a8);
 }
 
-.btn-telegram:hover {
-  background: linear-gradient(135deg, #3bb0e8, #229ED9);
-  box-shadow: 0 6px 18px rgba(34, 158, 217, 0.4);
+@media (hover: hover) {
+  .btn-telegram:hover {
+    background: linear-gradient(135deg, #3bb0e8, #229ED9);
+    box-shadow: 0 6px 18px rgba(34, 158, 217, 0.4);
+  }
 }
 
 .btn-to-tg {
   background: linear-gradient(90deg, #229ED9, #1976a8);
 }
 
-.btn-to-tg:hover {
-  background: linear-gradient(90deg, #3bb0e8, #229ED9);
-  box-shadow: 0 6px 18px rgba(34, 158, 217, 0.4);
+@media (hover: hover) {
+  .btn-to-tg:hover {
+    background: linear-gradient(90deg, #3bb0e8, #229ED9);
+    box-shadow: 0 6px 18px rgba(34, 158, 217, 0.4);
+  }
 }
 
 @media (max-width: 576px) {

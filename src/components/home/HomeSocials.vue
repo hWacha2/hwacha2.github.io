@@ -88,10 +88,12 @@ const isMobile = inject('isMobile')
   filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
 }
 
-.social-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px rgba(2, 6, 23, 0.55);
-  opacity: 0.98;
+@media (hover: hover) {
+  .social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(2, 6, 23, 0.55);
+    opacity: 0.98;
+  }
 }
 
 .btn-telegram {
@@ -153,10 +155,6 @@ const isMobile = inject('isMobile')
 }
 
 @media (hover: none) and (pointer: coarse) {
-  .social-btn:hover {
-    transform: none;
-  }
-
   .btn-vk-depth:active,
   .btn-telegram:active,
   .btn-tiktok:active,
