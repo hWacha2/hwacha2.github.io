@@ -1,10 +1,14 @@
 <script setup>
 import {inject} from 'vue'
 import ModTile from '../ModTile.vue'
+import GithubTitle from "../GithubTitle.vue";
 
 defineProps({
+  projects: {type: Array, required: true},
   mods: {type: Array, required: true}
 })
+
+
 
 const t = inject('t')
 const currentLang = inject('currentLang')
@@ -20,6 +24,17 @@ const isMobile = inject('isMobile')
   </div>
 
   <div class="row g-3">
+     <GithubTitle
+        v-for="project in projects"
+        :key="project.link"
+        :title="project.title"
+        :img="project.img"
+        :link="project.link"
+        :uploaded="project.uploaded"
+
+        :description="project.description[currentLang] || project.description.en"
+    />
+
     <ModTile
         v-for="mod in mods"
         :key="mod.link"
@@ -29,8 +44,7 @@ const isMobile = inject('isMobile')
         :game="mod.game"
         :category="mod.category"
         :uploaded="mod.uploaded"
-        :author="mod.author"
-        :author-avatar="mod.authorAvatar"
+
         :description="mod.description[currentLang] || mod.description.en"
     />
   </div>

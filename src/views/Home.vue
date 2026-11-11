@@ -5,7 +5,7 @@ import HomeSocials from '../components/home/HomeSocials.vue'
 import HomeGallery from '../components/home/HomeGallery.vue'
 import HomeTelegram from '../components/home/HomeTelegram.vue'
 import HomeMods from '../components/home/HomeMods.vue'
-import {artsDesktop, artsMobile, mods, socials, support} from '../data/homeData'
+import {artsDesktop, artsMobile, mods, project, socials, support} from '../data/homeData'
 
 const t = inject('t');
 const isMobile = inject('isMobile')
@@ -162,7 +162,7 @@ onUnmounted(() => {
 
       <section id="mob-mods" class="mobile-section big-section">
         <div class="contglass p-4 m-4">
-          <HomeMods :mods="mods"/>
+          <HomeMods :mods="mods" :projects="project"/>
         </div>
         <footer>
           <div class="container">
@@ -195,7 +195,7 @@ onUnmounted(() => {
         </section>
 
         <section id="mods" class="contglass p-4 mt-4">
-          <HomeMods :mods="mods"/>
+          <HomeMods :mods="mods" :projects="project"/>
         </section>
       </div>
       <footer>

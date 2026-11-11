@@ -5,8 +5,7 @@ const props = defineProps({
   title: String,
   img: String,
   link: String,
-  author: String,
-  authorAvatar: String,
+
   game: String,
   category: String,
   uploaded: String,
